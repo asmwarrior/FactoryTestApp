@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="attOn">Resources/active_network_connection24_h.png</file>
+        <file alias="attOff">Resources/delete_connection24_h.png</file>
+        <file alias="download">Resources/download_binary24_h.png</file>
+        <file alias="application">Resources/preferences24_h.png</file>
+        <file alias="discovery">Resources/search24_h.png</file>
+        <file alias="powerOff">Resources/symbol_ascii_char48_24_h.png</file>
+        <file alias="powerOn">Resources/symbol_ascii_char49_24_h.png</file>
+        <file alias="autoDownload">Resources/lightning_bolt_24_h.png</file>
+        <file alias="autoDiscovery">Resources/news_find24_h.png</file>
+        <file alias="testOnly">Resources/verify_document_24_h.png</file>
+    </qresource>
+</RCC>
