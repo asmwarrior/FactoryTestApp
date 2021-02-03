@@ -7,6 +7,10 @@
 #include <QLabel>
 #include <QPushButton>
 
+#include <QSqlTableModel>
+#include <QModelIndex>
+
+#include "Database.h"
 #include "RailtestClient.h"
 
 class MainWindow : public QWidget
@@ -39,6 +43,8 @@ private:
     void jLinkScript(const QString &fileName);
 
     QSharedPointer<QSettings> _settings;
+    DataBase *_db;
+    QSqlTableModel  *model;
 
     //--- GUI Elements ------------------------------------------------
     QComboBox* _selectDeviceModelBox;

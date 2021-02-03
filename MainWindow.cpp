@@ -39,6 +39,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     _logWidget = new QListWidget(this);
     mainLayout->addWidget(_logWidget);
+
+    _db = new DataBase(this);
+    _db->connectToDataBase();
+    _db->insertIntoTable("test", QByteArray("1234567"));
 }
 
 MainWindow::~MainWindow()
