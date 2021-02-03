@@ -16,6 +16,8 @@ find_package(Qt5 COMPONENTS Widgets Sql Network SerialPort REQUIRED)
 set(SOURCES
     main.cpp
     MainWindow.cpp
+    ConsoleProcess.cpp
+    RailtestClient.cpp
 )
 
 

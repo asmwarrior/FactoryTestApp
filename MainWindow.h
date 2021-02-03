@@ -5,6 +5,9 @@
 #include <QComboBox>
 #include <QListWidget>
 #include <QLabel>
+#include <QPushButton>
+
+#include "RailtestClient.h"
 
 class MainWindow : public QWidget
 {
@@ -17,6 +20,9 @@ public:
 public slots:
 
     void onSelectDeviceBoxCurrentTextChanged(const QString& text);
+    void downloadRailtest();
+    void testRadio(RailtestClient *rail);
+    void startFullCycleTesting();
 
 private:
 
@@ -24,10 +30,13 @@ private:
     void logError(const QString &message);
     void logSuccess(const QString &message);
 
+    void jLinkScript(const QString &fileName);
+
     QSharedPointer<QSettings> _settings;
 
     //--- GUI Elements ------------------------------------------------
     QComboBox* _selectDeviceModelBox;
+    QPushButton* _startFullCycleTesting;
     QListWidget *_logWidget;
 };
 
