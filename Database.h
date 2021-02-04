@@ -7,28 +7,29 @@
 #include <QSqlDatabase>
 #include <QFile>
 #include <QDate>
+#include <QSettings>
+#include <QSharedPointer>
 #include <QDebug>
-
-#define DATABASE_HOSTNAME "TestDataBase"
-#define DATABASE_NAME "test.db"
 
 #define TABLE "TestTable"
 #define TABLE_DEVICE_ID "DeviceID"
-#define TABLE_BIN "Bin"
-
-// First column contains Autoincrement ID
+#define TABLE_INFO "Info"
 
 class DataBase : public QObject
 {
     Q_OBJECT
+
 public:
-    explicit DataBase(QObject *parent = nullptr);
+
+    explicit DataBase(const QSharedPointer<QSettings>& settings, QObject *parent = nullptr);
     ~DataBase();
 
     void connectToDataBase();
 
-private:
-    QSqlDatabase _db;
+public slots:
+
+    bool insertIntoTable(const QVariantList &data);
+    bool insertIntoTable(const QString &name, const QString &info);
 
 private:
 
@@ -37,7 +38,6 @@ private:
     void closeDataBase();
     bool createTable();
 
-public slots:
-    bool insertIntoTable(const QVariantList &data);
-    bool insertIntoTable(const QString &name, const QByteArray &pic);
+    QSqlDatabase _db;
+    QSharedPointer<QSettings> _settings;
 };

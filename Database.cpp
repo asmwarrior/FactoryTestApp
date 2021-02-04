@@ -1,6 +1,6 @@
 #include "Database.h"
 
-DataBase::DataBase(QObject *parent) : QObject(parent)
+DataBase::DataBase(const QSharedPointer<QSettings> &settings, QObject *parent) : QObject(parent), _settings(settings)
 {
 
 }
@@ -12,42 +12,38 @@ DataBase::~DataBase()
 
 void DataBase::connectToDataBase()
 {
-
-    if(!QFile("D:/Upwork/Capelon/" DATABASE_NAME).exists())
-    {
-        this->restoreDataBase();
-    }
-    else
-    {
-        this->openDataBase();
-    }
+    this->openDataBase();
 }
 
 bool DataBase::restoreDataBase()
 {
-    if(this->openDataBase())
-    {
-        return (this->createTable()) ? true : false;
-    }
-    else
-    {
-        qDebug() << "Couldn't open database!";
-        return false;
-    }
+//    if(this->openDataBase())
+//    {
+//        return (this->createTable()) ? true : false;
+//    }
+//    else
+//    {
+//        qDebug() << "Couldn't open database!";
+//        return false;
+//    }
     return false;
 }
 
 bool DataBase::openDataBase()
 {
-    _db = QSqlDatabase::addDatabase("QSQLITE");
-    _db.setHostName(DATABASE_HOSTNAME);
-    _db.setDatabaseName("D:/Upwork/Capelon/" DATABASE_NAME);
+    _db = QSqlDatabase::addDatabase("QPSQL");
+    //_db.setHostName("localhost");
+    //_db.setPort(5432);
+    _db.setUserName(_settings->value("DatabaseUserName").toString());
+    _db.setPassword(_settings->value("DatabasePassword").toString());
+    _db.setDatabaseName(_settings->value("DatabaseName").toString());
     if(_db.open())
     {
         return true;
     }
     else
     {
+        qDebug() << "Couldn't open database!";
         return false;
     }
 }
@@ -61,9 +57,9 @@ bool DataBase::createTable()
 {
     QSqlQuery query;
     if(!query.exec( "CREATE TABLE " TABLE " ("
-                            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                            TABLE_DEVICE_ID     " VARCHAR(255)    NOT NULL,"
-                            TABLE_BIN      " BLOB            NOT NULL"
+                            "id SERIAL PRIMARY KEY, "
+                            TABLE_DEVICE_ID     " CHARACTER VARYING(255),"
+                            TABLE_INFO      " CHARACTER VARYING(255)"
                         " )"
                     ))
     {
@@ -83,10 +79,10 @@ bool DataBase::insertIntoTable(const QVariantList &data)
 {
     QSqlQuery query;
     query.prepare("INSERT INTO " TABLE " ( " TABLE_DEVICE_ID ", "
-                                             TABLE_BIN " ) "
-                  "VALUES (:DeviceID, :Bin)");
+                                             TABLE_INFO " ) "
+                  "VALUES (:DeviceID, :Info)");
     query.bindValue(":DeviceID",        data[0].toString());
-    query.bindValue(":Bin",         data[1].toByteArray());
+    query.bindValue(":Info",         data[1].toString());
 
     if(!query.exec())
     {
@@ -101,11 +97,11 @@ bool DataBase::insertIntoTable(const QVariantList &data)
     return false;
 }
 
-bool DataBase::insertIntoTable(const QString &name, const QByteArray &pic)
+bool DataBase::insertIntoTable(const QString &name, const QString &info)
 {
     QVariantList data;
     data.append(name);
-    data.append(pic);
+    data.append(info);
 
     if(insertIntoTable(data))
         return true;

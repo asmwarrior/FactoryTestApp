@@ -40,9 +40,9 @@ MainWindow::MainWindow(QWidget *parent)
     _logWidget = new QListWidget(this);
     mainLayout->addWidget(_logWidget);
 
-    _db = new DataBase(this);
+    _db = new DataBase(_settings, this);
     _db->connectToDataBase();
-    _db->insertIntoTable("test", QByteArray("1234567"));
+    _db->insertIntoTable("test", QDateTime::currentDateTime().toString());
 }
 
 MainWindow::~MainWindow()
