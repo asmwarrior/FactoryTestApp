@@ -12,16 +12,20 @@
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
-    _settings = QSharedPointer<QSettings>::create(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/settings.ini", QSettings::IniFormat);
+    _workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+
+    _settings = QSharedPointer<QSettings>::create(_workDirectory + "/settings.ini", QSettings::IniFormat);
+
+    _testSequenceManager.loadSequences(_workDirectory);
 
     QVBoxLayout* mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
 
     //Choose device type
-    QLabel* selectDeviceBoxLabel = new QLabel("Step 1. Select device model", this);
+    QLabel* selectDeviceBoxLabel = new QLabel("Step 1. Choose test sequence", this);
     _selectDeviceModelBox = new QComboBox(this);
     _selectDeviceModelBox->setFixedWidth(150);
-    _selectDeviceModelBox->addItems(_settings->value("Devices").toString().split("|"));
+    _selectDeviceModelBox->addItems(_testSequenceManager.avaliableSequencesNames());
     connect(_selectDeviceModelBox, SIGNAL(currentTextChanged(const QString&)), this, SLOT(onSelectDeviceBoxCurrentTextChanged(const QString&)));
     QHBoxLayout* selectDeviceLayout = new QHBoxLayout;
     selectDeviceLayout->addWidget(selectDeviceBoxLabel);
@@ -42,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     _db = new DataBase(_settings, this);
     _db->connectToDataBase();
-    _db->insertIntoTable("test", QDateTime::currentDateTime().toString());
+    //_db->insertIntoTable("test", QDateTime::currentDateTime().toString());
 }
 
 MainWindow::~MainWindow()

@@ -11,6 +11,7 @@
 #include <QModelIndex>
 
 #include "Database.h"
+#include "TestSequence.h"
 #include "RailtestClient.h"
 
 class MainWindow : public QWidget
@@ -35,6 +36,9 @@ public slots:
     void onRfReplyReceived(QString id, QVariantMap params);
 
 private:
+
+    QString _workDirectory;
+    TestSequenceManager _testSequenceManager;
 
     void logInfo(const QString &message);
     void logError(const QString &message);

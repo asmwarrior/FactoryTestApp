@@ -17,6 +17,7 @@ set(SOURCES
     main.cpp
     MainWindow.cpp
     Database.cpp
+    TestSequence.cpp
     ConsoleProcess.cpp
     RailtestClient.cpp
 )
