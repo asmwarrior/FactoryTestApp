@@ -5,31 +5,18 @@
 #include <QStringList>
 #include <QPointer>
 
-class TestSequence
+class TestSequenceManager : public QObject
 {
-public:
+    Q_OBJECT
 
-    TestSequence(const QFileInfo& sequenceFile);
-    ~TestSequence();
-
-    QVariant getDescriptionValue(const QString& valueName) const;
-
-private:
-
-    QPointer<QSettings> _description;
-
-
-};
-
-class TestSequenceManager
-{
 public:
 
     TestSequenceManager();
     void loadSequences(const QString& dirName);
+    Q_INVOKABLE void addSequence(const QString& name, const QStringList& functionsNames);
     QStringList avaliableSequencesNames() const;
 
 private:
 
-    QList<TestSequence> _sequencesList;
+    QMap<QString, QStringList> _sequences;
 };

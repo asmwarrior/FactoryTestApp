@@ -50,6 +50,8 @@ private:
     TestSequenceManager _testSequenceManager;
 
     QJSValue evaluateScriptFromFile(const QString& scriptFileName);
+    QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
+    QJSValue runScript(const QString& scriptName, const QJSValueList& args);
 
     QSharedPointer<QSettings> _settings;
     DataBase *_db;
@@ -57,7 +59,9 @@ private:
 
     //--- GUI Elements ------------------------------------------------
     QComboBox* _selectDeviceModelBox;
-    QPushButton* _startFullCycleTesting;
+    QListWidget* _testFunctionsListWidget;
+    QPushButton* _startFullCycleTestingButton;
+    QPushButton* _startSelectedTestButton;
     QListWidget *_logWidget;
 
     int _rfRSSI;

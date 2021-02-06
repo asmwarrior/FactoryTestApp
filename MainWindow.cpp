@@ -16,7 +16,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     _settings = QSharedPointer<QSettings>::create(_workDirectory + "/settings.ini", QSettings::IniFormat);
 
-    _testSequenceManager.loadSequences(_workDirectory);
+    //_testSequenceManager.loadSequences(_workDirectory);
+    QJSValue testSequenceManager = _scriptEngine.newQObject(&_testSequenceManager);
+    _scriptEngine.globalObject().setProperty("testSequenceManager", testSequenceManager);
+    evaluateScriptsFromDirectory(_workDirectory + "/sequences");
 
     QVBoxLayout* mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
@@ -24,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     //Choose device type
     QLabel* selectDeviceBoxLabel = new QLabel("Step 1. Choose test sequence", this);
     _selectDeviceModelBox = new QComboBox(this);
-    _selectDeviceModelBox->setFixedWidth(150);
+    _selectDeviceModelBox->setFixedSize(150, 30);
     _selectDeviceModelBox->addItems(_testSequenceManager.avaliableSequencesNames());
     connect(_selectDeviceModelBox, SIGNAL(currentTextChanged(const QString&)), this, SLOT(onSelectDeviceBoxCurrentTextChanged(const QString&)));
     QHBoxLayout* selectDeviceLayout = new QHBoxLayout;
@@ -33,15 +36,32 @@ MainWindow::MainWindow(QWidget *parent)
     selectDeviceLayout->addStretch();
 
     mainLayout->addLayout(selectDeviceLayout);
+
+    //Test functions list widget
+    _testFunctionsListWidget = new QListWidget(this);
+    _testFunctionsListWidget->setFixedWidth(200);
+    mainLayout->addWidget(_testFunctionsListWidget);
+
     mainLayout->addStretch();
 
-    //Start testing button
-    _startFullCycleTesting = new QPushButton(QIcon(QString::fromUtf8(":/icons/autoDownload")), tr("Start full cycle testing"), this);
-    _startFullCycleTesting->setFixedSize(180, 40);
-    mainLayout->addWidget(_startFullCycleTesting);
-    connect(_startFullCycleTesting, SIGNAL(clicked()), this, SLOT(startFullCycleTesting()));
+    //Start testing buttons
+    QHBoxLayout* startTestingButtonsLayout = new QHBoxLayout;
+    mainLayout->addLayout(startTestingButtonsLayout);
 
+    startTestingButtonsLayout->addStretch();
+    _startFullCycleTestingButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/autoDownload")), tr("Start full cycle testing"), this);
+    _startFullCycleTestingButton->setFixedSize(180, 40);
+    startTestingButtonsLayout->addWidget(_startFullCycleTestingButton);
+    connect(_startFullCycleTestingButton, SIGNAL(clicked()), this, SLOT(startFullCycleTesting()));
+
+    _startSelectedTestButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/checked")), tr("Start Selected Test"), this);
+    _startSelectedTestButton->setFixedSize(180, 40);
+    startTestingButtonsLayout->addWidget(_startSelectedTestButton);
+    startTestingButtonsLayout->addStretch();
+
+    //Log widget
     _logWidget = new QListWidget(this);
+    _logWidget->setFixedHeight(200);
     mainLayout->addWidget(_logWidget);
 
     //Database
@@ -52,7 +72,8 @@ MainWindow::MainWindow(QWidget *parent)
     _jlink = new ConsoleProcess(_settings, this);
     QJSValue jlink = _scriptEngine.newQObject(_jlink);
     _scriptEngine.globalObject().setProperty("jlink", jlink);
-    evaluateScriptFromFile(_workDirectory + "/test.js");
+//    evaluateScriptFromFile(_workDirectory + "/test.js");
+//    runScript("testFunction", {"Some arguments"});
 }
 
 MainWindow::~MainWindow()
@@ -376,4 +397,23 @@ QJSValue MainWindow::evaluateScriptFromFile(const QString &scriptFileName)
     QJSValue scriptResult = _scriptEngine.evaluate(QString(in.readAll()));
     scriptFile.close();
     return scriptResult;
+}
+
+QList<QJSValue> MainWindow::evaluateScriptsFromDirectory(const QString& directoryName)
+{
+    QDir scriptsDir = QDir(directoryName, "*.js", QDir::Name, QDir::Files);
+    QStringList fileNames = scriptsDir.entryList();
+    QList<QJSValue> results;
+
+    for (auto & i : fileNames)
+    {
+        results.push_back(evaluateScriptFromFile(scriptsDir.absoluteFilePath(i)));
+    }
+
+    return results;
+}
+
+QJSValue MainWindow::runScript(const QString& scriptName, const QJSValueList& args)
+{
+    return _scriptEngine.globalObject().property(scriptName).call(args);
 }
