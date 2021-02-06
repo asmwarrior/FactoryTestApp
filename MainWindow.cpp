@@ -7,11 +7,11 @@
 #include <QHBoxLayout>
 #include <QThread>
 
-#include "ConsoleProcess.h"
-
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
+    _scriptEngine.installExtensions(QJSEngine::ConsoleExtension);
+
     _workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
 
     _settings = QSharedPointer<QSettings>::create(_workDirectory + "/settings.ini", QSettings::IniFormat);
@@ -44,9 +44,15 @@ MainWindow::MainWindow(QWidget *parent)
     _logWidget = new QListWidget(this);
     mainLayout->addWidget(_logWidget);
 
+    //Database
     _db = new DataBase(_settings, this);
     _db->connectToDataBase();
     //_db->insertIntoTable("test", QDateTime::currentDateTime().toString());
+
+    _jlink = new ConsoleProcess(_settings, this);
+    QJSValue jlink = _scriptEngine.newQObject(_jlink);
+    _scriptEngine.globalObject().setProperty("jlink", jlink);
+    evaluateScriptFromFile(_workDirectory + "/test.js");
 }
 
 MainWindow::~MainWindow()
@@ -61,7 +67,7 @@ void MainWindow::onSelectDeviceBoxCurrentTextChanged(const QString &text)
 
 void MainWindow::downloadRailtest()
 {
-    jLinkScript(_settings->value("Zhaga/Script", "olc_zhaga_software.jlink").toString());
+   _jlink->startJLinkScript(_settings->value("Zhaga/Script", "olc_zhaga_software.jlink").toString());
 }
 
 void MainWindow::initDali(RailtestClient *rail)
@@ -282,6 +288,9 @@ void MainWindow::testGNSS(RailtestClient *rail)
 
 void MainWindow::startFullCycleTesting()
 {
+    _jlink->startJLinkScript(_workDirectory + "/olc_zhaga_railtest.jlink");
+    return;
+
     RailtestClient rail;
 
     if (!rail.open(_settings->value("Railtest/Serial", "COM1").toString()))
@@ -358,31 +367,13 @@ void MainWindow::logSuccess(const QString &message)
     qInfo().noquote() << message;
 }
 
-void MainWindow::jLinkScript(const QString &fileName)
+QJSValue MainWindow::evaluateScriptFromFile(const QString &scriptFileName)
 {
-    ConsoleProcess jlink;
-    QStringList args;
-
-    _settings->beginGroup("JLink");
-    args = _settings->value("Options").toString().split("::", QString::SkipEmptyParts);
-    args.append("-CommanderScript");
-    args.append(fileName);
-    logInfo("JLink Commander script " + fileName + "...");
-    if (!jlink.start(_settings->value("Commander", "JLink.exe").toString(), args))
-    {
-        logError("Cannot start JLink Commander!");
-    }
-        //throw InputOutputError("Cannot start JLink Commander!");
-
-    if (!jlink.skipUntilFinished())
-    {
-    }
-        //throw InputOutputError("JLink Commander was executed too long!");
-
-    if (jlink.exitCode())
-    {
-    }
-        //throw TestError("Error while executing JLink Commander script!");
-
-    logInfo("JLink Commander script completed.");
+    QFile scriptFile(scriptFileName);
+    scriptFile.open(QIODevice::ReadOnly | QIODevice::Text);
+    QTextStream in(&scriptFile);
+    in.setCodec("Utf-8");
+    QJSValue scriptResult = _scriptEngine.evaluate(QString(in.readAll()));
+    scriptFile.close();
+    return scriptResult;
 }

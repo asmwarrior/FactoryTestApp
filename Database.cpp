@@ -34,9 +34,9 @@ bool DataBase::openDataBase()
     _db = QSqlDatabase::addDatabase("QPSQL");
     //_db.setHostName("localhost");
     //_db.setPort(5432);
-    _db.setUserName(_settings->value("DatabaseUserName").toString());
-    _db.setPassword(_settings->value("DatabasePassword").toString());
-    _db.setDatabaseName(_settings->value("DatabaseName").toString());
+    _db.setUserName(_settings->value("Database/userName").toString());
+    _db.setPassword(_settings->value("Database/password").toString());
+    _db.setDatabaseName(_settings->value("Database/name").toString());
     if(_db.open())
     {
         return true;

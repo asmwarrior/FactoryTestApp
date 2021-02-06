@@ -11,7 +11,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt5 COMPONENTS Widgets Sql Network SerialPort REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Qml Sql Network SerialPort REQUIRED)
 
 set(SOURCES
     main.cpp
@@ -32,6 +32,7 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         Qt5::Widgets
+        Qt5::Qml
         Qt5::Sql
         Qt5::Network
         Qt5::SerialPort

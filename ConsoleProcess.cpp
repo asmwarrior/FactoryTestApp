@@ -1,13 +1,17 @@
 #include "ConsoleProcess.h"
+#include "MainWindow.h"
 
+#include <QDebug>
 #include <QProcess>
 #include <QThread>
 #include <QCoreApplication>
 
-ConsoleProcess::ConsoleProcess(QObject *parent)
-    : QObject(parent), m_proc(this)
+ConsoleProcess::ConsoleProcess(const QSharedPointer<QSettings> &settings, QObject *parent)
+    : QObject(parent), _settings(settings), m_proc(this)
 {
+    _mainWindow = dynamic_cast<MainWindow*>(parent);
     connect(&m_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
+    connect(&m_proc, &QProcess::errorOccurred, this, &ConsoleProcess::logError);
 }
 
 ConsoleProcess::~ConsoleProcess()
@@ -27,6 +31,37 @@ bool ConsoleProcess::start(const QString &path, const QStringList &args, int tim
 
         return false;
     }
+
+    return true;
+}
+
+bool ConsoleProcess::startJLinkScript(const QString &scriptFileName)
+{
+    QStringList args;
+
+    args.append("-CommanderScript");
+    args.append(scriptFileName);
+    _mainWindow->logInfo("Running JLink Commander script " + scriptFileName + "...");
+    if (!start(_settings->value("JLink/path", "JLink.exe").toString(), args))
+    {
+        _mainWindow->logError("Cannot start JLink Commander!");
+    }
+        //throw InputOutputError("Cannot start JLink Commander!");
+
+    if (!skipUntilFinished())
+    {
+        return false;
+    }
+        //throw InputOutputError("JLink Commander was executed too long!");
+
+    if (exitCode())
+    {
+        _mainWindow->logInfo("JLink Commander script failed!.");
+        return false;
+    }
+        //throw TestError("Error while executing JLink Commander script!");
+
+    _mainWindow->logInfo("JLink Commander script completed.");
 
     return true;
 }
@@ -53,6 +88,7 @@ int ConsoleProcess::exitCode()
 void ConsoleProcess::readStandardOutput()
 {
     QByteArray data = m_proc.readAllStandardOutput();
+    qDebug() << data;
 
     data.replace('\0', ' ');
     if (receivers(SIGNAL(log(QStringList))) > 0)
@@ -62,6 +98,11 @@ void ConsoleProcess::readStandardOutput()
         emit log(lines);
     }
     m_rdBuf.append(data);
+}
+
+void ConsoleProcess::logError(QProcess::ProcessError error)
+{
+    qDebug() << error;
 }
 
 bool ConsoleProcess::write(const QByteArray &data)

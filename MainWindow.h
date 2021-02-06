@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QJSEngine>
 #include <QSettings>
 #include <QComboBox>
 #include <QListWidget>
@@ -10,6 +11,7 @@
 #include <QSqlTableModel>
 #include <QModelIndex>
 
+#include "ConsoleProcess.h"
 #include "Database.h"
 #include "TestSequence.h"
 #include "RailtestClient.h"
@@ -21,6 +23,10 @@ class MainWindow : public QWidget
 public:
     explicit MainWindow(QWidget *parent = Q_NULLPTR);
     ~MainWindow() Q_DECL_OVERRIDE;
+
+    void logInfo(const QString &message);
+    void logError(const QString &message);
+    void logSuccess(const QString &message);
 
 public slots:
 
@@ -37,14 +43,13 @@ public slots:
 
 private:
 
+    QJSEngine _scriptEngine;
+    ConsoleProcess* _jlink;
+
     QString _workDirectory;
     TestSequenceManager _testSequenceManager;
 
-    void logInfo(const QString &message);
-    void logError(const QString &message);
-    void logSuccess(const QString &message);
-
-    void jLinkScript(const QString &fileName);
+    QJSValue evaluateScriptFromFile(const QString& scriptFileName);
 
     QSharedPointer<QSettings> _settings;
     DataBase *_db;

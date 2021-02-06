@@ -2,16 +2,20 @@
 #define __CONSOLEPROCESS_H__
 
 #include <QProcess>
+#include <QSharedPointer>
+#include <QSettings>
 
+class MainWindow;
 class ConsoleProcess : public QObject
 {
     Q_OBJECT
 
     public:
-        explicit ConsoleProcess(QObject *parent = Q_NULLPTR);
+        explicit ConsoleProcess(const QSharedPointer<QSettings>& settings, QObject *parent = Q_NULLPTR);
         ~ConsoleProcess() Q_DECL_OVERRIDE;
 
-        bool start(const QString &path, const QStringList &args = QStringList(), int timeout = 30000);
+        Q_INVOKABLE bool start(const QString &path, const QStringList &args = QStringList(), int timeout = 30000);
+        Q_INVOKABLE bool startJLinkScript(const QString& scriptFileName);
         void stop();
         bool isRunning();
         int exitCode();
@@ -25,11 +29,15 @@ class ConsoleProcess : public QObject
         bool skipUntilFinished(int timeout = 30000);
 
     private:
+
+        MainWindow* _mainWindow;
+        QSharedPointer<QSettings> _settings;
         QProcess m_proc;
         QByteArray m_rdBuf;
 
     private slots:
         void readStandardOutput();
+        void logError(QProcess::ProcessError error);
 
     signals:
         void error(QString message);
