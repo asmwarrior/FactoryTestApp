@@ -3,7 +3,9 @@
 #include <QDir>
 #include <QSettings>
 #include <QStringList>
-#include <QPointer>
+#include <QSharedPointer>
+#include <QJSEngine>
+#include <QJSValue>
 
 class TestSequenceManager : public QObject
 {
@@ -11,12 +13,27 @@ class TestSequenceManager : public QObject
 
 public:
 
-    TestSequenceManager();
-    void loadSequences(const QString& dirName);
-    Q_INVOKABLE void addSequence(const QString& name, const QStringList& functionsNames);
+    struct TestFunction
+    {
+        QString functionName;
+        QJSValue function;
+    };
+
+
+    TestSequenceManager(const QSharedPointer<QJSEngine>& scriptEngine);
+
+    Q_INVOKABLE void addSequence(const QString& name);
+    Q_INVOKABLE void addTestFunction(const QString& name, const QJSValue& function);
     QStringList avaliableSequencesNames() const;
+    QStringList currentSequenceFunctionNames() const;
+    void runTestFunction(const QString& name, const QJSValueList& args = {});
+
+public slots:
+    void setCurrentSequence(const QString& name);
 
 private:
 
-    QMap<QString, QStringList> _sequences;
+    QSharedPointer<QJSEngine> _scriptEngine;
+    QString _currentSequence;
+    QMap<QString, QList<TestFunction>> _sequences;
 };

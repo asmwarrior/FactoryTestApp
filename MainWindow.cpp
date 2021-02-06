@@ -10,15 +10,17 @@
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
-    _scriptEngine.installExtensions(QJSEngine::ConsoleExtension);
-
     _workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+
+    _scriptEngine = QSharedPointer<QJSEngine>::create();
+    _scriptEngine->installExtensions(QJSEngine::ConsoleExtension);
 
     _settings = QSharedPointer<QSettings>::create(_workDirectory + "/settings.ini", QSettings::IniFormat);
 
-    //_testSequenceManager.loadSequences(_workDirectory);
-    QJSValue testSequenceManager = _scriptEngine.newQObject(&_testSequenceManager);
-    _scriptEngine.globalObject().setProperty("testSequenceManager", testSequenceManager);
+    _testSequenceManager = new TestSequenceManager(_scriptEngine);
+
+    QJSValue testSequenceManager = _scriptEngine->newQObject(_testSequenceManager);
+    _scriptEngine->globalObject().setProperty("testSequenceManager", testSequenceManager);
     evaluateScriptsFromDirectory(_workDirectory + "/sequences");
 
     QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -28,8 +30,15 @@ MainWindow::MainWindow(QWidget *parent)
     QLabel* selectDeviceBoxLabel = new QLabel("Step 1. Choose test sequence", this);
     _selectDeviceModelBox = new QComboBox(this);
     _selectDeviceModelBox->setFixedSize(150, 30);
-    _selectDeviceModelBox->addItems(_testSequenceManager.avaliableSequencesNames());
-    connect(_selectDeviceModelBox, SIGNAL(currentTextChanged(const QString&)), this, SLOT(onSelectDeviceBoxCurrentTextChanged(const QString&)));
+    _selectDeviceModelBox->addItems(_testSequenceManager->avaliableSequencesNames());
+    _testSequenceManager->setCurrentSequence(_selectDeviceModelBox->currentText());
+    connect(_selectDeviceModelBox, SIGNAL(currentTextChanged(const QString&)), _testSequenceManager, SLOT(setCurrentSequence(const QString&)));
+    connect(_selectDeviceModelBox, &QComboBox::currentTextChanged, [=]()
+    {
+        _testFunctionsListWidget->clear();
+        _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
+    });
+
     QHBoxLayout* selectDeviceLayout = new QHBoxLayout;
     selectDeviceLayout->addWidget(selectDeviceBoxLabel);
     selectDeviceLayout->addWidget(_selectDeviceModelBox);
@@ -40,6 +49,7 @@ MainWindow::MainWindow(QWidget *parent)
     //Test functions list widget
     _testFunctionsListWidget = new QListWidget(this);
     _testFunctionsListWidget->setFixedWidth(200);
+    _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
     mainLayout->addWidget(_testFunctionsListWidget);
 
     mainLayout->addStretch();
@@ -70,10 +80,8 @@ MainWindow::MainWindow(QWidget *parent)
     //_db->insertIntoTable("test", QDateTime::currentDateTime().toString());
 
     _jlink = new ConsoleProcess(_settings, this);
-    QJSValue jlink = _scriptEngine.newQObject(_jlink);
-    _scriptEngine.globalObject().setProperty("jlink", jlink);
-//    evaluateScriptFromFile(_workDirectory + "/test.js");
-//    runScript("testFunction", {"Some arguments"});
+    QJSValue jlink = _scriptEngine->newQObject(_jlink);
+    _scriptEngine->globalObject().setProperty("jlink", jlink);
 }
 
 MainWindow::~MainWindow()
@@ -394,7 +402,7 @@ QJSValue MainWindow::evaluateScriptFromFile(const QString &scriptFileName)
     scriptFile.open(QIODevice::ReadOnly | QIODevice::Text);
     QTextStream in(&scriptFile);
     in.setCodec("Utf-8");
-    QJSValue scriptResult = _scriptEngine.evaluate(QString(in.readAll()));
+    QJSValue scriptResult = _scriptEngine->evaluate(QString(in.readAll()));
     scriptFile.close();
     return scriptResult;
 }
@@ -415,5 +423,5 @@ QList<QJSValue> MainWindow::evaluateScriptsFromDirectory(const QString& director
 
 QJSValue MainWindow::runScript(const QString& scriptName, const QJSValueList& args)
 {
-    return _scriptEngine.globalObject().property(scriptName).call(args);
+    return _scriptEngine->globalObject().property(scriptName).call(args);
 }

@@ -43,11 +43,11 @@ public slots:
 
 private:
 
-    QJSEngine _scriptEngine;
+    QSharedPointer<QJSEngine> _scriptEngine;
     ConsoleProcess* _jlink;
 
     QString _workDirectory;
-    TestSequenceManager _testSequenceManager;
+    TestSequenceManager* _testSequenceManager;
 
     QJSValue evaluateScriptFromFile(const QString& scriptFileName);
     QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
