@@ -19,6 +19,7 @@ set(SOURCES
     Database.cpp
     TestSequence.cpp
     ConsoleProcess.cpp
+    Logger.cpp
     RailtestClient.cpp
 )
 

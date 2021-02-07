@@ -13,16 +13,17 @@ MainWindow::MainWindow(QWidget *parent)
     //_workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
     _workDirectory = "../..";
 
-    _scriptEngine = QSharedPointer<QJSEngine>::create();
+    _settings = QSharedPointer<QSettings>::create(_workDirectory + "/settings.ini", QSettings::IniFormat);
+    _settings->setValue("workDirectory", QDir(_workDirectory).absolutePath()); //Make name of work directory avaliable for other classes that use settings
+
+    _scriptEngine = QSharedPointer<QJSEngine>::create(this);
     _scriptEngine->installExtensions(QJSEngine::ConsoleExtension);
 
-    _settings = QSharedPointer<QSettings>::create(_workDirectory + "/settings.ini", QSettings::IniFormat);
+    //_testSequenceManager = new TestSequenceManager(_scriptEngine, this);
 
-    _testSequenceManager = new TestSequenceManager(_scriptEngine);
-
-    QJSValue testSequenceManager = _scriptEngine->newQObject(_testSequenceManager);
-    _scriptEngine->globalObject().setProperty("testSequenceManager", testSequenceManager);
-    evaluateScriptsFromDirectory(_workDirectory + "/sequences");
+//    QJSValue testSequenceManager = _scriptEngine->newQObject(_testSequenceManager);
+//    _scriptEngine->globalObject().setProperty("testSequenceManager", testSequenceManager);
+//    evaluateScriptsFromDirectory(_workDirectory + "/sequences");
 
 //--- GUI ---
     QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -53,26 +54,26 @@ MainWindow::MainWindow(QWidget *parent)
     headerLayout->addStretch();
 
     //Choose sequence box
-    QLabel* selectDeviceBoxLabel = new QLabel("Step 1. Choose test sequence", this);
-    _selectDeviceModelBox = new QComboBox(this);
-    _selectDeviceModelBox->setFixedSize(300, 30);
-    _selectDeviceModelBox->addItems(_testSequenceManager->avaliableSequencesNames());
-    _testSequenceManager->setCurrentSequence(_selectDeviceModelBox->currentText());
-    connect(_selectDeviceModelBox, SIGNAL(currentTextChanged(const QString&)), _testSequenceManager, SLOT(setCurrentSequence(const QString&)));
-    connect(_selectDeviceModelBox, &QComboBox::currentTextChanged, [=]()
-    {
-        _testFunctionsListWidget->clear();
-        _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
-    });
+    QLabel* selectSequenceBoxLabel = new QLabel("Step 1. Choose test sequence", this);
+    _selectSequenceBox = new QComboBox(this);
+    _selectSequenceBox->setFixedSize(300, 30);
+    //_selectSequenceBox->addItems(_testSequenceManager->avaliableSequencesNames());
+    //_testSequenceManager->setCurrentSequence(_selectSequenceBox->currentText());
+    //connect(_selectSequenceBox, SIGNAL(currentTextChanged(const QString&)), _testSequenceManager, SLOT(setCurrentSequence(const QString&)));
+    //connect(_selectSequenceBox, &QComboBox::currentTextChanged, [=]()
+//    {
+//        _testFunctionsListWidget->clear();
+//        _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
+//    });
 
-    leftPanelLayout->addWidget(selectDeviceBoxLabel);
-    leftPanelLayout->addWidget(_selectDeviceModelBox);
+    leftPanelLayout->addWidget(selectSequenceBoxLabel);
+    leftPanelLayout->addWidget(_selectSequenceBox);
 
     //Test functions list widget
     QLabel* testFunctionsListLabel = new QLabel("Avaliable testing steps:", this);
     _testFunctionsListWidget = new QListWidget(this);
     _testFunctionsListWidget->setFixedWidth(300);
-    _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
+    //_testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
 
     leftPanelLayout->addWidget(testFunctionsListLabel);
     leftPanelLayout->addWidget(_testFunctionsListWidget);
@@ -90,11 +91,18 @@ MainWindow::MainWindow(QWidget *parent)
     _startSelectedTestButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/checked")), tr("Start Selected Test"), this);
     _startSelectedTestButton->setFixedSize(148, 40);
     startTestingButtonsLayout->addWidget(_startSelectedTestButton);
+    connect(_startSelectedTestButton, &QPushButton::clicked, [=](){
+        _testSequenceManager->runTestFunction(_testFunctionsListWidget->currentItem()->text());
+    });
 
     //Log widget
-    _logWidget = new QListWidget(this);
-    _logWidget->setFixedHeight(200);
-    logLayout->addWidget(_logWidget);
+//    _logWidget = QSharedPointer<QListWidget>::create();
+//    _logWidget->setFixedHeight(200);
+//    logLayout->addWidget(_logWidget.get());
+
+//    _logger = QSharedPointer<Logger>::create(this);
+//    _logger->setLogWidget(_logWidget);
+//    _testSequenceManager->setLogger(_logger);
 
     //Database
     _db = new DataBase(_settings, this);
@@ -102,6 +110,7 @@ MainWindow::MainWindow(QWidget *parent)
     //_db->insertIntoTable("test", QDateTime::currentDateTime().toString());
 
     _jlink = new ConsoleProcess(_settings, this);
+    _jlink->setLogger(_logger);
     QJSValue jlink = _scriptEngine->newQObject(_jlink);
     _scriptEngine->globalObject().setProperty("jlink", jlink);
 }
@@ -109,11 +118,6 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
 
-}
-
-void MainWindow::onSelectDeviceBoxCurrentTextChanged(const QString &text)
-{
-    qDebug() << text << "device selected";
 }
 
 void MainWindow::downloadRailtest()
@@ -130,7 +134,7 @@ void MainWindow::initDali(RailtestClient *rail)
 
 void MainWindow::testRadio(RailtestClient *rail)
 {
-    logInfo("Testing Radio Interface...");
+    _logger->logInfo("Testing Radio Interface...");
 
     _settings->beginGroup("Radio");
 
@@ -139,13 +143,13 @@ void MainWindow::testRadio(RailtestClient *rail)
     connect(&rf, &RailtestClient::replyReceived, this, &MainWindow::onRfReplyReceived);
     if (!rf.open(_settings->value("Serial", "COM2").toString()))
     {
-        logError("Cannot open serial port for reference radio module!");
+        _logger->logError("Cannot open serial port for reference radio module!");
     }
 
     rf.syncCommand("reset", "", 3000);
     if (!rf.waitCommandPrompt())
     {
-        logError("Timeout waiting reference radio module command prompt!");
+        _logger->logError("Timeout waiting reference radio module command prompt!");
     }
 
     rf.syncCommand("rx", "0", 1000);
@@ -164,27 +168,27 @@ void MainWindow::testRadio(RailtestClient *rail)
 
     if (_rfCount < 8)
     {
-        logError(QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount));
+        _logger->logError(QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount));
     }
 
     if (_rfRSSI < _settings->value("Min", -50).toInt() || _rfRSSI > _settings->value("Max", 20).toInt())
     {
-        logError(QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI));
+        _logger->logError(QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI));
     }
 
-    logInfo(QString("Radio Interface: RSSI=%1.").arg(_rfRSSI));
-    logInfo("Radio Interface is OK.");
+    _logger->logInfo(QString("Radio Interface: RSSI=%1.").arg(_rfRSSI));
+    _logger->logInfo("Radio Interface is OK.");
 }
 
 void MainWindow::testAccelerometer(RailtestClient *rail)
 {
-    logInfo("Testing Accelerometer...");
+    _logger->logInfo("Testing Accelerometer...");
 
     auto reply = rail->syncCommand("accl");
 
     if (reply.isEmpty())
     {
-        logError("No reply to accelerometer command!");
+        _logger->logError("No reply to accelerometer command!");
         return;
     }
 
@@ -192,7 +196,7 @@ void MainWindow::testAccelerometer(RailtestClient *rail)
 
     if (map.contains("error"))
     {
-        logError(QString("Accelerometer error: %1, %2!").arg(map["error"].toString()).arg(map["errorCode"].toString()));
+        _logger->logError(QString("Accelerometer error: %1, %2!").arg(map["error"].toString()).arg(map["errorCode"].toString()));
     }
 
     if (map.contains("X") && map.contains("Y") && map.contains("Z"))
@@ -204,20 +208,20 @@ void MainWindow::testAccelerometer(RailtestClient *rail)
 
         if (x > 10 || x < -10 || y > 10 || y < -10 || z < 80 || z > 100)
         {
-            logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+            _logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
         }
         else
-            logInfo(QString("Accelerometer: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+            _logger->logInfo(QString("Accelerometer: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
     }
     else
-        logError("Wrong reply to accelerometer command!");
+        _logger->logError("Wrong reply to accelerometer command!");
 
-    logInfo("Accelerometer is OK.");
+    _logger->logInfo("Accelerometer is OK.");
 }
 
 void MainWindow::testLightSensor(RailtestClient *rail)
 {
-    logInfo("Testing Light Sensor...");
+    _logger->logInfo("Testing Light Sensor...");
     rail->syncCommand("lsen");
     QThread::sleep(1);
 
@@ -225,7 +229,7 @@ void MainWindow::testLightSensor(RailtestClient *rail)
 
     if (reply.isEmpty())
     {
-        logError("No reply to light sensor command!");
+        _logger->logError("No reply to light sensor command!");
         return;
     }
 
@@ -233,7 +237,7 @@ void MainWindow::testLightSensor(RailtestClient *rail)
 
     if (map.contains("error"))
     {
-        logError(QString("Light Sensor error: %1, %2!").arg(map["error"].toString()).arg(map["errorCode"].toString()));
+        _logger->logError(QString("Light Sensor error: %1, %2!").arg(map["error"].toString()).arg(map["errorCode"].toString()));
     }
 
     if (map.contains("opwr"))
@@ -242,30 +246,30 @@ void MainWindow::testLightSensor(RailtestClient *rail)
 
         if (opwr < 0)
         {
-            logError(QString("Light Sensor failure: opwr=%1.").arg(opwr));
+            _logger->logError(QString("Light Sensor failure: opwr=%1.").arg(opwr));
         }
         else
         {
-            logInfo(QString("Light Sensor: opwr=%1.").arg(opwr));
+            _logger->logInfo(QString("Light Sensor: opwr=%1.").arg(opwr));
         }
     }
     else
     {
-        logError("Wrong reply to light sensor command!");
+        _logger->logError("Wrong reply to light sensor command!");
     }
 
-    logInfo("Light Sensor is OK.");
+    _logger->logInfo("Light Sensor is OK.");
 }
 
 void MainWindow::testDALI(RailtestClient *rail)
 {
-    logInfo("Testing DALI...");
+    _logger->logInfo("Testing DALI...");
 
     auto reply = rail->syncCommand("dali", "0xFF90 16 0 1000000");
 
     if (reply.isEmpty())
     {
-        logError("No reply to DALI status command!");
+        _logger->logError("No reply to DALI status command!");
         return;
     }
 
@@ -280,37 +284,37 @@ void MainWindow::testDALI(RailtestClient *rail)
 
         if (error != "0" || bits != "8")
         {
-            logError(QString("DALI failure: code=%1, reply_bits=%2, reply_data=%3!")
+            _logger->logError(QString("DALI failure: code=%1, reply_bits=%2, reply_data=%3!")
                             .arg(error).arg(bits).arg(data));
         }
         else
-            logInfo(QString("DALI status: reply_data=%1.").arg(data));
+            _logger->logInfo(QString("DALI status: reply_data=%1.").arg(data));
     }
     else
         if (map.contains("error"))
         {
-            logError(QString("DALI error: %1, %2!")
+            _logger->logError(QString("DALI error: %1, %2!")
                             .arg(map["error"].toString()).arg(map["errorCode"].toString()));
         }
         else
         {
-            logError("Wrong reply to DALI status command!");
+            _logger->logError("Wrong reply to DALI status command!");
         }
 
     rail->syncCommand("dali", "0xFE00 16 0 0");
     rail->syncCommand("dlpw", "0");
-    logInfo("DALI is OK.");
+    _logger->logInfo("DALI is OK.");
 }
 
 void MainWindow::testGNSS(RailtestClient *rail)
 {
-    logInfo("Testing GNSS...");
+    _logger->logInfo("Testing GNSS...");
 
     auto replies = rail->syncCommand("gnrx", "3", 15000);
 
     if (replies.isEmpty())
     {
-        logError("No reply to GNSS command!");
+        _logger->logError("No reply to GNSS command!");
         return;
     }
 
@@ -320,21 +324,21 @@ void MainWindow::testGNSS(RailtestClient *rail)
 
         if (map.contains("error"))
         {
-            logError(QString("GNSS error: %1, %2!")
+            _logger->logError(QString("GNSS error: %1, %2!")
                             .arg(map["error"].toString()).arg(map["errorCode"].toString()));
         }
 
         if (map.contains("line"))
         {
-            logInfo("GNSS reply: " + map["line"].toString());
+            _logger->logInfo("GNSS reply: " + map["line"].toString());
         }
         else
         {
-            logError("Wrong reply to GNSS command!");
+            _logger->logError("Wrong reply to GNSS command!");
         }
     }
 
-    logInfo("GNSS is OK.");
+    _logger->logInfo("GNSS is OK.");
 }
 
 void MainWindow::startFullCycleTesting()
@@ -346,29 +350,29 @@ void MainWindow::startFullCycleTesting()
 
     if (!rail.open(_settings->value("Railtest/Serial", "COM1").toString()))
     {
-        logError("Cannot open RAILTEST serial port!");
+        _logger->logError("Cannot open RAILTEST serial port!");
     }
 
     if (!rail.waitCommandPrompt())
     {
-        logError("Timeout waiting RAILTEST command prompt!");
+        _logger->logError("Timeout waiting RAILTEST command prompt!");
     }
 
     auto id = rail.readChipId();
 
     if (id.isEmpty())
     {
-        logError("Cannot read unique device identifier!");
+        _logger->logError("Cannot read unique device identifier!");
     }
 
-    logInfo("Device ID: " + id);
+    _logger->logInfo("Device ID: " + id);
     initDali(&rail);
     testRadio(&rail);
     testAccelerometer(&rail);
     testLightSensor(&rail);
     testDALI(&rail);
     testGNSS(&rail);
-    logInfo("Test sequence completed.");
+    _logger->logInfo("Test sequence completed.");
 
     downloadRailtest();
 }
@@ -387,35 +391,6 @@ void MainWindow::onRfReplyReceived(QString id, QVariantMap params)
                 _rfRSSI = rssi;
         }
     }
-}
-
-void MainWindow::logInfo(const QString &message)
-{
-    _logWidget->addItem(message);
-    _logWidget->scrollToBottom();
-    qInfo().noquote() << message;
-}
-
-void MainWindow::logError(const QString &message)
-{
-    QListWidgetItem *item = new QListWidgetItem(message);
-
-    item->setBackground(Qt::darkRed);
-    item->setForeground(Qt::white);
-    _logWidget->addItem(item);
-    _logWidget->scrollToBottom();
-    qCritical().noquote() << message;
-}
-
-void MainWindow::logSuccess(const QString &message)
-{
-    QListWidgetItem *item = new QListWidgetItem(message);
-
-    item->setBackground(Qt::green);
-    item->setForeground(Qt::black);
-    _logWidget->addItem(item);
-    _logWidget->scrollToBottom();
-    qInfo().noquote() << message;
 }
 
 QJSValue MainWindow::evaluateScriptFromFile(const QString &scriptFileName)

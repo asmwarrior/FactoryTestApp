@@ -1,5 +1,4 @@
 #include "ConsoleProcess.h"
-#include "MainWindow.h"
 
 #include <QDebug>
 #include <QProcess>
@@ -9,7 +8,7 @@
 ConsoleProcess::ConsoleProcess(const QSharedPointer<QSettings> &settings, QObject *parent)
     : QObject(parent), _settings(settings), m_proc(this)
 {
-    _mainWindow = dynamic_cast<MainWindow*>(parent);
+
     connect(&m_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
     connect(&m_proc, &QProcess::errorOccurred, this, &ConsoleProcess::logError);
 }
@@ -17,6 +16,11 @@ ConsoleProcess::ConsoleProcess(const QSharedPointer<QSettings> &settings, QObjec
 ConsoleProcess::~ConsoleProcess()
 {
     stop();
+}
+
+void ConsoleProcess::setLogger(const QSharedPointer<Logger> &logger)
+{
+    _logger = logger;
 }
 
 bool ConsoleProcess::start(const QString &path, const QStringList &args, int timeout)
@@ -40,11 +44,12 @@ bool ConsoleProcess::startJLinkScript(const QString &scriptFileName)
     QStringList args;
 
     args.append("-CommanderScript");
-    args.append(scriptFileName);
-    _mainWindow->logInfo("Running JLink Commander script " + scriptFileName + "...");
+    args.append(_settings->value("_workDirectory").toString() + scriptFileName);
+    _logger->logInfo("Running JLink Commander script " + _settings->value("_workDirectory").toString() + scriptFileName + "...");
     if (!start(_settings->value("JLink/path", "JLink.exe").toString(), args))
     {
-        _mainWindow->logError("Cannot start JLink Commander!");
+        _logger->logError("Cannot start JLink Commander!");
+        return false;
     }
         //throw InputOutputError("Cannot start JLink Commander!");
 
@@ -56,12 +61,12 @@ bool ConsoleProcess::startJLinkScript(const QString &scriptFileName)
 
     if (exitCode())
     {
-        _mainWindow->logInfo("JLink Commander script failed!.");
+        _logger->logInfo("JLink Commander script failed!.");
         return false;
     }
         //throw TestError("Error while executing JLink Commander script!");
 
-    _mainWindow->logInfo("JLink Commander script completed.");
+    _logger->logInfo("JLink Commander script completed.");
 
     return true;
 }

@@ -14,6 +14,7 @@
 #include "ConsoleProcess.h"
 #include "Database.h"
 #include "TestSequence.h"
+#include "Logger.h"
 #include "RailtestClient.h"
 
 class MainWindow : public QWidget
@@ -24,13 +25,8 @@ public:
     explicit MainWindow(QWidget *parent = Q_NULLPTR);
     ~MainWindow() Q_DECL_OVERRIDE;
 
-    void logInfo(const QString &message);
-    void logError(const QString &message);
-    void logSuccess(const QString &message);
-
 public slots:
 
-    void onSelectDeviceBoxCurrentTextChanged(const QString& text);
     void downloadRailtest();
     void initDali(RailtestClient *rail);
     void testRadio(RailtestClient *rail);
@@ -57,12 +53,14 @@ private:
     DataBase *_db;
     QSqlTableModel  *model;
 
+    QSharedPointer<Logger> _logger;
+
     //--- GUI Elements ------------------------------------------------
-    QComboBox* _selectDeviceModelBox;
+    QComboBox* _selectSequenceBox;
     QListWidget* _testFunctionsListWidget;
     QPushButton* _startFullCycleTestingButton;
     QPushButton* _startSelectedTestButton;
-    QListWidget *_logWidget;
+    QSharedPointer<QListWidget> _logWidget;
 
     int _rfRSSI;
     int _rfCount;

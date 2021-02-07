@@ -2,9 +2,14 @@
 
 #include <QDebug>
 
-TestSequenceManager::TestSequenceManager(const QSharedPointer<QJSEngine> &scriptEngine) : _scriptEngine(scriptEngine)
+TestSequenceManager::TestSequenceManager(const QSharedPointer<QJSEngine> &scriptEngine, QObject *parent) : QObject(parent), _scriptEngine(scriptEngine)
 {
 
+}
+
+void TestSequenceManager::setLogger(const QSharedPointer<Logger> &logger)
+{
+    _logger = logger;
 }
 
 void TestSequenceManager::addSequence(const QString& name)
