@@ -102,6 +102,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     _logger = QSharedPointer<Logger>::create(this);
     _logger->setLogWidget(_logWidget);
+    QJSValue logger = _scriptEngine->newQObject(_logger.get());
+    _scriptEngine->globalObject().setProperty("logger", logger);
+
     _testSequenceManager->setLogger(_logger);
 
     //Database

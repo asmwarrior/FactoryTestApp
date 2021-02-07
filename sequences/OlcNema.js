@@ -6,7 +6,7 @@ testSequenceManager.addTestFunction("test Nema3", testNema3);
 
 function testNema1()
 {
-    console.log("test Nema1 called");
+    logger.logInfo("test Nema1 called");
 }
 
 function testNema2()

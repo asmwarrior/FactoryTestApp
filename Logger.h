@@ -14,9 +14,9 @@ public:
 
     void setLogWidget(const QSharedPointer<QListWidget>& widget);
 
-    void logInfo(const QString &message);
-    void logError(const QString &message);
-    void logSuccess(const QString &message);
+    Q_INVOKABLE void logInfo(const QString &message);
+    Q_INVOKABLE void logError(const QString &message);
+    Q_INVOKABLE void logSuccess(const QString &message);
 
 private:
 
