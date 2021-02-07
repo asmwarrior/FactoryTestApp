@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     a.setApplicationName("FactoryTestApp");
 
     MainWindow w;
-    w.setFixedSize(800, 600);
+    w.setFixedSize(1200, 900);
     w.show();
 
     return a.exec();

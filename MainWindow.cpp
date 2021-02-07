@@ -10,7 +10,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
-    _workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    //_workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
+    _workDirectory = "../..";
 
     _scriptEngine = QSharedPointer<QJSEngine>::create();
     _scriptEngine->installExtensions(QJSEngine::ConsoleExtension);
@@ -23,13 +24,38 @@ MainWindow::MainWindow(QWidget *parent)
     _scriptEngine->globalObject().setProperty("testSequenceManager", testSequenceManager);
     evaluateScriptsFromDirectory(_workDirectory + "/sequences");
 
+//--- GUI ---
     QVBoxLayout* mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
 
-    //Choose device type
+    mainLayout->addSpacing(30);
+    QHBoxLayout* headerLayout = new QHBoxLayout;
+    mainLayout->addLayout(headerLayout);
+    mainLayout->addSpacing(30);
+
+    QHBoxLayout* panelsLayout = new QHBoxLayout;
+    mainLayout->addLayout(panelsLayout);
+
+    QVBoxLayout* leftPanelLayout = new QVBoxLayout;
+    panelsLayout->addLayout(leftPanelLayout);
+    panelsLayout->addStretch();
+
+    QVBoxLayout* rightPanelLayout = new QVBoxLayout;
+    panelsLayout->addLayout(rightPanelLayout);
+
+    QHBoxLayout* logLayout = new QHBoxLayout;
+    mainLayout->addLayout(logLayout);
+
+    //Header info
+
+    headerLayout->addStretch();
+    headerLayout->addWidget(new QLabel("HERE WE PLACE HEADER INFO"));
+    headerLayout->addStretch();
+
+    //Choose sequence box
     QLabel* selectDeviceBoxLabel = new QLabel("Step 1. Choose test sequence", this);
     _selectDeviceModelBox = new QComboBox(this);
-    _selectDeviceModelBox->setFixedSize(150, 30);
+    _selectDeviceModelBox->setFixedSize(300, 30);
     _selectDeviceModelBox->addItems(_testSequenceManager->avaliableSequencesNames());
     _testSequenceManager->setCurrentSequence(_selectDeviceModelBox->currentText());
     connect(_selectDeviceModelBox, SIGNAL(currentTextChanged(const QString&)), _testSequenceManager, SLOT(setCurrentSequence(const QString&)));
@@ -39,40 +65,36 @@ MainWindow::MainWindow(QWidget *parent)
         _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
     });
 
-    QHBoxLayout* selectDeviceLayout = new QHBoxLayout;
-    selectDeviceLayout->addWidget(selectDeviceBoxLabel);
-    selectDeviceLayout->addWidget(_selectDeviceModelBox);
-    selectDeviceLayout->addStretch();
-
-    mainLayout->addLayout(selectDeviceLayout);
+    leftPanelLayout->addWidget(selectDeviceBoxLabel);
+    leftPanelLayout->addWidget(_selectDeviceModelBox);
 
     //Test functions list widget
+    QLabel* testFunctionsListLabel = new QLabel("Avaliable testing steps:", this);
     _testFunctionsListWidget = new QListWidget(this);
-    _testFunctionsListWidget->setFixedWidth(200);
+    _testFunctionsListWidget->setFixedWidth(300);
     _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
-    mainLayout->addWidget(_testFunctionsListWidget);
 
-    mainLayout->addStretch();
+    leftPanelLayout->addWidget(testFunctionsListLabel);
+    leftPanelLayout->addWidget(_testFunctionsListWidget);
+    leftPanelLayout->addStretch();
 
     //Start testing buttons
     QHBoxLayout* startTestingButtonsLayout = new QHBoxLayout;
-    mainLayout->addLayout(startTestingButtonsLayout);
+    leftPanelLayout->addLayout(startTestingButtonsLayout);
 
-    startTestingButtonsLayout->addStretch();
     _startFullCycleTestingButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/autoDownload")), tr("Start full cycle testing"), this);
-    _startFullCycleTestingButton->setFixedSize(180, 40);
+    _startFullCycleTestingButton->setFixedSize(148, 40);
     startTestingButtonsLayout->addWidget(_startFullCycleTestingButton);
     connect(_startFullCycleTestingButton, SIGNAL(clicked()), this, SLOT(startFullCycleTesting()));
 
     _startSelectedTestButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/checked")), tr("Start Selected Test"), this);
-    _startSelectedTestButton->setFixedSize(180, 40);
+    _startSelectedTestButton->setFixedSize(148, 40);
     startTestingButtonsLayout->addWidget(_startSelectedTestButton);
-    startTestingButtonsLayout->addStretch();
 
     //Log widget
     _logWidget = new QListWidget(this);
     _logWidget->setFixedHeight(200);
-    mainLayout->addWidget(_logWidget);
+    logLayout->addWidget(_logWidget);
 
     //Database
     _db = new DataBase(_settings, this);
