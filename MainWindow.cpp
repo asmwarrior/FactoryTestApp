@@ -19,11 +19,11 @@ MainWindow::MainWindow(QWidget *parent)
     _scriptEngine = QSharedPointer<QJSEngine>::create(this);
     _scriptEngine->installExtensions(QJSEngine::ConsoleExtension);
 
-    //_testSequenceManager = new TestSequenceManager(_scriptEngine, this);
+    _testSequenceManager = new TestSequenceManager(_scriptEngine, this);
 
-//    QJSValue testSequenceManager = _scriptEngine->newQObject(_testSequenceManager);
-//    _scriptEngine->globalObject().setProperty("testSequenceManager", testSequenceManager);
-//    evaluateScriptsFromDirectory(_workDirectory + "/sequences");
+    QJSValue testSequenceManager = _scriptEngine->newQObject(_testSequenceManager);
+    _scriptEngine->globalObject().setProperty("testSequenceManager", testSequenceManager);
+    evaluateScriptsFromDirectory(_workDirectory + "/sequences");
 
 //--- GUI ---
     QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -57,14 +57,14 @@ MainWindow::MainWindow(QWidget *parent)
     QLabel* selectSequenceBoxLabel = new QLabel("Step 1. Choose test sequence", this);
     _selectSequenceBox = new QComboBox(this);
     _selectSequenceBox->setFixedSize(300, 30);
-    //_selectSequenceBox->addItems(_testSequenceManager->avaliableSequencesNames());
-    //_testSequenceManager->setCurrentSequence(_selectSequenceBox->currentText());
-    //connect(_selectSequenceBox, SIGNAL(currentTextChanged(const QString&)), _testSequenceManager, SLOT(setCurrentSequence(const QString&)));
-    //connect(_selectSequenceBox, &QComboBox::currentTextChanged, [=]()
-//    {
-//        _testFunctionsListWidget->clear();
-//        _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
-//    });
+    _selectSequenceBox->addItems(_testSequenceManager->avaliableSequencesNames());
+    _testSequenceManager->setCurrentSequence(_selectSequenceBox->currentText());
+    connect(_selectSequenceBox, SIGNAL(currentTextChanged(const QString&)), _testSequenceManager, SLOT(setCurrentSequence(const QString&)));
+    connect(_selectSequenceBox, &QComboBox::currentTextChanged, [=]()
+    {
+        _testFunctionsListWidget->clear();
+        _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
+    });
 
     leftPanelLayout->addWidget(selectSequenceBoxLabel);
     leftPanelLayout->addWidget(_selectSequenceBox);
@@ -73,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent)
     QLabel* testFunctionsListLabel = new QLabel("Avaliable testing steps:", this);
     _testFunctionsListWidget = new QListWidget(this);
     _testFunctionsListWidget->setFixedWidth(300);
-    //_testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
+    _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
 
     leftPanelLayout->addWidget(testFunctionsListLabel);
     leftPanelLayout->addWidget(_testFunctionsListWidget);
@@ -96,13 +96,13 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     //Log widget
-//    _logWidget = QSharedPointer<QListWidget>::create();
-//    _logWidget->setFixedHeight(200);
-//    logLayout->addWidget(_logWidget.get());
+    _logWidget = QSharedPointer<QListWidget>::create();
+    _logWidget->setFixedHeight(200);
+    logLayout->addWidget(_logWidget.get());
 
-//    _logger = QSharedPointer<Logger>::create(this);
-//    _logger->setLogWidget(_logWidget);
-//    _testSequenceManager->setLogger(_logger);
+    _logger = QSharedPointer<Logger>::create(this);
+    _logger->setLogWidget(_logWidget);
+    _testSequenceManager->setLogger(_logger);
 
     //Database
     _db = new DataBase(_settings, this);
@@ -117,7 +117,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-
+    delete _testSequenceManager;
+    delete _jlink;
 }
 
 void MainWindow::downloadRailtest()

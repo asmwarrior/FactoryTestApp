@@ -4,7 +4,6 @@
 
 TestSequenceManager::TestSequenceManager(const QSharedPointer<QJSEngine> &scriptEngine, QObject *parent) : QObject(parent), _scriptEngine(scriptEngine)
 {
-
 }
 
 void TestSequenceManager::setLogger(const QSharedPointer<Logger> &logger)
