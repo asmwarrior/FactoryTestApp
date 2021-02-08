@@ -19,11 +19,24 @@ MainWindow::MainWindow(QWidget *parent)
     _scriptEngine = QSharedPointer<QJSEngine>::create(this);
     _scriptEngine->installExtensions(QJSEngine::ConsoleExtension);
 
-    _testSequenceManager = new TestSequenceManager(_scriptEngine, this);
+    _logger = QSharedPointer<Logger>::create(this);
+    QJSValue logger = _scriptEngine->newQObject(_logger.get());
+    _scriptEngine->globalObject().setProperty("logger", logger);
 
+    _testSequenceManager = new TestSequenceManager(_scriptEngine, this);
+    _testSequenceManager->setLogger(_logger);
     QJSValue testSequenceManager = _scriptEngine->newQObject(_testSequenceManager);
     _scriptEngine->globalObject().setProperty("testSequenceManager", testSequenceManager);
     evaluateScriptsFromDirectory(_workDirectory + "/sequences");
+
+    _jlink = new ConsoleProcess(_settings, this);
+    _jlink->setLogger(_logger);
+    QJSValue jlink = _scriptEngine->newQObject(_jlink);
+    _scriptEngine->globalObject().setProperty("jlink", jlink);
+
+    _rail = new RailtestClient(this);
+    QJSValue rail = _scriptEngine->newQObject(_rail);
+    _scriptEngine->globalObject().setProperty("rail", rail);
 
 //--- GUI ---
     QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -99,27 +112,13 @@ MainWindow::MainWindow(QWidget *parent)
     _logWidget = QSharedPointer<QListWidget>::create();
     _logWidget->setFixedHeight(200);
     logLayout->addWidget(_logWidget.get());
-
-    _logger = QSharedPointer<Logger>::create(this);
     _logger->setLogWidget(_logWidget);
-    QJSValue logger = _scriptEngine->newQObject(_logger.get());
-    _scriptEngine->globalObject().setProperty("logger", logger);
-
-    _testSequenceManager->setLogger(_logger);
 
     //Database
     _db = new DataBase(_settings, this);
     _db->connectToDataBase();
     //_db->insertIntoTable("test", QDateTime::currentDateTime().toString());
 
-    _jlink = new ConsoleProcess(_settings, this);
-    _jlink->setLogger(_logger);
-    QJSValue jlink = _scriptEngine->newQObject(_jlink);
-    _scriptEngine->globalObject().setProperty("jlink", jlink);
-
-    _rail = new RailtestClient(this);
-    QJSValue rail = _scriptEngine->newQObject(_rail);
-    _scriptEngine->globalObject().setProperty("rail", rail);
 }
 
 MainWindow::~MainWindow()

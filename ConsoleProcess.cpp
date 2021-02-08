@@ -44,8 +44,8 @@ bool ConsoleProcess::startJLinkScript(const QString &scriptFileName)
     QStringList args;
 
     args.append("-CommanderScript");
-    args.append(_settings->value("_workDirectory").toString() + scriptFileName);
-    _logger->logInfo("Running JLink Commander script " + _settings->value("_workDirectory").toString() + scriptFileName + "...");
+    args.append(_settings->value("workDirectory").toString() + scriptFileName);
+    _logger->logInfo("Running JLink Commander script " + _settings->value("workDirectory").toString() + scriptFileName + "...");
     if (!start(_settings->value("JLink/path", "JLink.exe").toString(), args))
     {
         _logger->logError("Cannot start JLink Commander!");
@@ -93,14 +93,17 @@ int ConsoleProcess::exitCode()
 void ConsoleProcess::readStandardOutput()
 {
     QByteArray data = m_proc.readAllStandardOutput();
-    qDebug() << data;
 
     data.replace('\0', ' ');
-    if (receivers(SIGNAL(log(QStringList))) > 0)
+    //if (receivers(SIGNAL(log(QStringList))) > 0)
     {
         QStringList lines = QString::fromLocal8Bit(data).split("\r\n");
-
         emit log(lines);
+        for(auto & line : lines)
+        {
+            if(!line.isEmpty())
+                _logger->logInfo(line);
+        }
     }
     m_rdBuf.append(data);
 }
