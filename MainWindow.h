@@ -39,15 +39,18 @@ public slots:
 
 private:
 
+    QJSValue evaluateScriptFromFile(const QString& scriptFileName);
+    QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
+    QJSValue runScript(const QString& scriptName, const QJSValueList& args);
+
     QSharedPointer<QJSEngine> _scriptEngine;
     ConsoleProcess* _jlink;
+
+    RailtestClient* _rail;
 
     QString _workDirectory;
     TestSequenceManager* _testSequenceManager;
 
-    QJSValue evaluateScriptFromFile(const QString& scriptFileName);
-    QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
-    QJSValue runScript(const QString& scriptName, const QJSValueList& args);
 
     QSharedPointer<QSettings> _settings;
     DataBase *_db;

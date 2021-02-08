@@ -116,6 +116,10 @@ MainWindow::MainWindow(QWidget *parent)
     _jlink->setLogger(_logger);
     QJSValue jlink = _scriptEngine->newQObject(_jlink);
     _scriptEngine->globalObject().setProperty("jlink", jlink);
+
+    _rail = new RailtestClient(this);
+    QJSValue rail = _scriptEngine->newQObject(_rail);
+    _scriptEngine->globalObject().setProperty("rail", rail);
 }
 
 MainWindow::~MainWindow()
