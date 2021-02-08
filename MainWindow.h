@@ -35,7 +35,7 @@ public slots:
     void testDALI(RailtestClient *rail);
     void testGNSS(RailtestClient *rail);
     void startFullCycleTesting();
-    void onRfReplyReceived(QString id, QVariantMap params);
+//    void onRfReplyReceived(QString id, QVariantMap params);
 
 private:
 
@@ -65,8 +65,8 @@ private:
     QPushButton* _startSelectedTestButton;
     QSharedPointer<QListWidget> _logWidget;
 
-    int _rfRSSI;
-    int _rfCount;
+//    int _rfRSSI;
+//    int _rfCount;
 };
 
 #endif // MAINWINDOW_H

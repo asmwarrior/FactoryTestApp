@@ -1,10 +1,12 @@
 #include "RailtestClient.h"
 
+#include <QDebug>
+
 #include <QCoreApplication>
 #include <QTime>
 
-RailtestClient::RailtestClient(QObject *parent)
-    : QObject(parent)
+RailtestClient::RailtestClient(const QSharedPointer<QSettings> &settings, QObject *parent)
+    : QObject(parent), _settings(settings)
 {
     connect(&m_serial, &QSerialPort::readyRead, this, &RailtestClient::onSerialPortReadyRead);
     connect(&m_serial, &QSerialPort::errorOccurred, this, &RailtestClient::onSerialPortErrorOccurred);
@@ -13,6 +15,11 @@ RailtestClient::RailtestClient(QObject *parent)
 RailtestClient::~RailtestClient()
 {
     close();
+}
+
+void RailtestClient::setLogger(const QSharedPointer<Logger> &logger)
+{
+    _logger = logger;
 }
 
 bool RailtestClient::open(const QString &portName)
@@ -26,6 +33,12 @@ bool RailtestClient::open(const QString &portName)
     m_serial.setFlowControl(QSerialPort::NoFlowControl);
 
     return m_serial.open(QSerialPort::ReadWrite);
+}
+
+bool RailtestClient::open()
+{
+    QString portName = _settings->value("Railtest/serial", "COM1").toString();
+    return open(portName);
 }
 
 void RailtestClient::close()
@@ -107,6 +120,115 @@ QByteArray RailtestClient::readChipId()
         return QByteArray();
 
     return (hi.mid(2) + lo.mid(2)).toUpper();
+}
+
+void RailtestClient::testRadio()
+{
+    _logger->logInfo("Testing Radio Interface...");
+
+    _settings->beginGroup("Radio");
+
+    RailtestClient rf(_settings, this);
+
+    connect(&rf, &RailtestClient::replyReceived, this, &RailtestClient::onRfReplyReceived);
+    if (!rf.open(_settings->value("Serial", "COM2").toString()))
+    {
+        _logger->logError("Cannot open serial port for reference radio module!");
+    }
+
+    rf.syncCommand("reset", "", 3000);
+    if (!rf.waitCommandPrompt())
+    {
+        _logger->logError("Timeout waiting reference radio module command prompt!");
+    }
+
+    rf.syncCommand("rx", "0", 1000);
+    _rfRSSI = 255;
+    _rfCount = 0;
+    rf.syncCommand("setBleMode", "1", 1000);
+    rf.syncCommand("setBle1Mbps", "1", 1000);
+    rf.syncCommand("setChannel", "19", 1000);
+    this->syncCommand("rx", "0", 1000);
+    this->syncCommand("setBleMode", "1", 1000);
+    this->syncCommand("setBle1Mbps", "1", 1000);
+    this->syncCommand("setChannel", "19", 1000);
+    this->syncCommand("setPower", "80", 1000);
+    rf.syncCommand("rx", "1", 1000);
+    this->syncCommand("tx", "11", 5000);
+
+    bool isOk = true;
+    if (_rfCount < 8)
+    {
+        _logger->logError(QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount));
+        isOk = false;
+    }
+
+    if (_rfRSSI < _settings->value("Min", -50).toInt() || _rfRSSI > _settings->value("Max", 20).toInt())
+    {
+        _logger->logError(QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI));
+        isOk = false;
+    }
+
+    if(isOk)
+    {
+        _logger->logInfo(QString("Radio Interface: RSSI=%1.").arg(_rfRSSI));
+        _logger->logInfo("Radio Interface is OK.");
+    }
+}
+
+void RailtestClient::testAccelerometer()
+{
+    _logger->logInfo("Testing Accelerometer...");
+
+    auto reply = this->syncCommand("accl");
+
+    if (reply.isEmpty())
+    {
+        _logger->logError("No reply to accelerometer command!");
+        return;
+    }
+
+    auto map = reply[0].toMap();
+
+    if (map.contains("error"))
+    {
+        _logger->logError(QString("Accelerometer error: %1, %2!").arg(map["error"].toString()).arg(map["errorCode"].toString()));
+    }
+
+    if (map.contains("X") && map.contains("Y") && map.contains("Z"))
+    {
+        auto
+           x = map["X"].toDouble(),
+           y = map["Y"].toDouble(),
+           z = map["Z"].toDouble();
+
+        if (x > 10 || x < -10 || y > 10 || y < -10 || z < 80 || z > 100)
+        {
+            _logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+        }
+        else
+            _logger->logInfo(QString("Accelerometer: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+    }
+    else
+        _logger->logError("Wrong reply to accelerometer command!");
+
+    _logger->logInfo("Accelerometer is OK.");
+}
+
+void RailtestClient::onRfReplyReceived(QString id, QVariantMap params)
+{
+    if (id == "rxPacket" && params.contains("rssi"))
+    {
+        bool ok;
+        int rssi = params.value("rssi").toInt(&ok);
+
+        if (ok)
+        {
+            ++_rfCount;
+            if (rssi < _rfRSSI)
+                _rfRSSI = rssi;
+        }
+    }
 }
 
 void RailtestClient::decodeReply(const QByteArray &reply)

@@ -34,7 +34,8 @@ MainWindow::MainWindow(QWidget *parent)
     QJSValue jlink = _scriptEngine->newQObject(_jlink);
     _scriptEngine->globalObject().setProperty("jlink", jlink);
 
-    _rail = new RailtestClient(this);
+    _rail = new RailtestClient(_settings, this);
+    _rail->setLogger(_logger);
     QJSValue rail = _scriptEngine->newQObject(_rail);
     _scriptEngine->globalObject().setProperty("rail", rail);
 
@@ -125,66 +126,67 @@ MainWindow::~MainWindow()
 {
     delete _testSequenceManager;
     delete _jlink;
+    delete _rail;
 }
 
 void MainWindow::downloadRailtest()
 {
-   _jlink->startJLinkScript(_settings->value("Zhaga/Script", "olc_zhaga_software.jlink").toString());
+//   _jlink->startJLinkScript(_settings->value("Zhaga/Script", "olc_zhaga_software.jlink").toString());
 }
 
 void MainWindow::initDali(RailtestClient *rail)
 {
-    rail->syncCommand("dlpw", "1", 1000);
-    rail->syncCommand("dali", "0xFE80 16 0 0", 1000);
-    rail->syncCommand("dali", "0xFF90 16 0 1000000", 2000);
+//    rail->syncCommand("dlpw", "1", 1000);
+//    rail->syncCommand("dali", "0xFE80 16 0 0", 1000);
+//    rail->syncCommand("dali", "0xFF90 16 0 1000000", 2000);
 }
 
 void MainWindow::testRadio(RailtestClient *rail)
 {
-    _logger->logInfo("Testing Radio Interface...");
+//    _logger->logInfo("Testing Radio Interface...");
 
-    _settings->beginGroup("Radio");
+//    _settings->beginGroup("Radio");
 
-    RailtestClient rf;
+//    RailtestClient rf;
 
-    connect(&rf, &RailtestClient::replyReceived, this, &MainWindow::onRfReplyReceived);
-    if (!rf.open(_settings->value("Serial", "COM2").toString()))
-    {
-        _logger->logError("Cannot open serial port for reference radio module!");
-    }
+//    connect(&rf, &RailtestClient::replyReceived, this, &MainWindow::onRfReplyReceived);
+//    if (!rf.open(_settings->value("Serial", "COM2").toString()))
+//    {
+//        _logger->logError("Cannot open serial port for reference radio module!");
+//    }
 
-    rf.syncCommand("reset", "", 3000);
-    if (!rf.waitCommandPrompt())
-    {
-        _logger->logError("Timeout waiting reference radio module command prompt!");
-    }
+//    rf.syncCommand("reset", "", 3000);
+//    if (!rf.waitCommandPrompt())
+//    {
+//        _logger->logError("Timeout waiting reference radio module command prompt!");
+//    }
 
-    rf.syncCommand("rx", "0", 1000);
-    _rfRSSI = 255;
-    _rfCount = 0;
-    rf.syncCommand("setBleMode", "1", 1000);
-    rf.syncCommand("setBle1Mbps", "1", 1000);
-    rf.syncCommand("setChannel", "19", 1000);
-    rail->syncCommand("rx", "0", 1000);
-    rail->syncCommand("setBleMode", "1", 1000);
-    rail->syncCommand("setBle1Mbps", "1", 1000);
-    rail->syncCommand("setChannel", "19", 1000);
-    rail->syncCommand("setPower", "80", 1000);
-    rf.syncCommand("rx", "1", 1000);
-    rail->syncCommand("tx", "11", 5000);
+//    rf.syncCommand("rx", "0", 1000);
+//    _rfRSSI = 255;
+//    _rfCount = 0;
+//    rf.syncCommand("setBleMode", "1", 1000);
+//    rf.syncCommand("setBle1Mbps", "1", 1000);
+//    rf.syncCommand("setChannel", "19", 1000);
+//    rail->syncCommand("rx", "0", 1000);
+//    rail->syncCommand("setBleMode", "1", 1000);
+//    rail->syncCommand("setBle1Mbps", "1", 1000);
+//    rail->syncCommand("setChannel", "19", 1000);
+//    rail->syncCommand("setPower", "80", 1000);
+//    rf.syncCommand("rx", "1", 1000);
+//    rail->syncCommand("tx", "11", 5000);
 
-    if (_rfCount < 8)
-    {
-        _logger->logError(QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount));
-    }
+//    if (_rfCount < 8)
+//    {
+//        _logger->logError(QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount));
+//    }
 
-    if (_rfRSSI < _settings->value("Min", -50).toInt() || _rfRSSI > _settings->value("Max", 20).toInt())
-    {
-        _logger->logError(QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI));
-    }
+//    if (_rfRSSI < _settings->value("Min", -50).toInt() || _rfRSSI > _settings->value("Max", 20).toInt())
+//    {
+//        _logger->logError(QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI));
+//    }
 
-    _logger->logInfo(QString("Radio Interface: RSSI=%1.").arg(_rfRSSI));
-    _logger->logInfo("Radio Interface is OK.");
+//    _logger->logInfo(QString("Radio Interface: RSSI=%1.").arg(_rfRSSI));
+//    _logger->logInfo("Radio Interface is OK.");
 }
 
 void MainWindow::testAccelerometer(RailtestClient *rail)
@@ -350,55 +352,55 @@ void MainWindow::testGNSS(RailtestClient *rail)
 
 void MainWindow::startFullCycleTesting()
 {
-    _jlink->startJLinkScript(_workDirectory + "/olc_zhaga_railtest.jlink");
-    return;
+//    _jlink->startJLinkScript(_workDirectory + "/olc_zhaga_railtest.jlink");
+//    return;
 
-    RailtestClient rail;
+//    RailtestClient rail;
 
-    if (!rail.open(_settings->value("Railtest/Serial", "COM1").toString()))
-    {
-        _logger->logError("Cannot open RAILTEST serial port!");
-    }
+//    if (!rail.open(_settings->value("Railtest/Serial", "COM1").toString()))
+//    {
+//        _logger->logError("Cannot open RAILTEST serial port!");
+//    }
 
-    if (!rail.waitCommandPrompt())
-    {
-        _logger->logError("Timeout waiting RAILTEST command prompt!");
-    }
+//    if (!rail.waitCommandPrompt())
+//    {
+//        _logger->logError("Timeout waiting RAILTEST command prompt!");
+//    }
 
-    auto id = rail.readChipId();
+//    auto id = rail.readChipId();
 
-    if (id.isEmpty())
-    {
-        _logger->logError("Cannot read unique device identifier!");
-    }
+//    if (id.isEmpty())
+//    {
+//        _logger->logError("Cannot read unique device identifier!");
+//    }
 
-    _logger->logInfo("Device ID: " + id);
-    initDali(&rail);
-    testRadio(&rail);
-    testAccelerometer(&rail);
-    testLightSensor(&rail);
-    testDALI(&rail);
-    testGNSS(&rail);
-    _logger->logInfo("Test sequence completed.");
+//    _logger->logInfo("Device ID: " + id);
+//    initDali(&rail);
+//    testRadio(&rail);
+//    testAccelerometer(&rail);
+//    testLightSensor(&rail);
+//    testDALI(&rail);
+//    testGNSS(&rail);
+//    _logger->logInfo("Test sequence completed.");
 
-    downloadRailtest();
+//    downloadRailtest();
 }
 
-void MainWindow::onRfReplyReceived(QString id, QVariantMap params)
-{
-    if (id == "rxPacket" && params.contains("rssi"))
-    {
-        bool ok;
-        int rssi = params.value("rssi").toInt(&ok);
+//void MainWindow::onRfReplyReceived(QString id, QVariantMap params)
+//{
+//    if (id == "rxPacket" && params.contains("rssi"))
+//    {
+//        bool ok;
+//        int rssi = params.value("rssi").toInt(&ok);
 
-        if (ok)
-        {
-            ++_rfCount;
-            if (rssi < _rfRSSI)
-                _rfRSSI = rssi;
-        }
-    }
-}
+//        if (ok)
+//        {
+//            ++_rfCount;
+//            if (rssi < _rfRSSI)
+//                _rfRSSI = rssi;
+//        }
+//    }
+//}
 
 QJSValue MainWindow::evaluateScriptFromFile(const QString &scriptFileName)
 {
