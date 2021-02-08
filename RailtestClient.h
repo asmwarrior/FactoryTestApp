@@ -31,6 +31,9 @@ public:
 
     Q_INVOKABLE void testRadio();
     Q_INVOKABLE void testAccelerometer();
+    Q_INVOKABLE void testLightSensor();
+    Q_INVOKABLE void testDALI();
+    Q_INVOKABLE void testGNSS();
 
 public slots:
     void onRfReplyReceived(QString id, QVariantMap params);

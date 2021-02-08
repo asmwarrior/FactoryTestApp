@@ -27,13 +27,13 @@ public:
 
 public slots:
 
-    void downloadRailtest();
-    void initDali(RailtestClient *rail);
-    void testRadio(RailtestClient *rail);
-    void testAccelerometer(RailtestClient *rail);
-    void testLightSensor(RailtestClient *rail);
-    void testDALI(RailtestClient *rail);
-    void testGNSS(RailtestClient *rail);
+//    void downloadRailtest();
+//    void initDali(RailtestClient *rail);
+//    void testRadio(RailtestClient *rail);
+//    void testAccelerometer(RailtestClient *rail);
+//    void testLightSensor(RailtestClient *rail);
+//    void testDALI(RailtestClient *rail);
+//    void testGNSS(RailtestClient *rail);
     void startFullCycleTesting();
 //    void onRfReplyReceived(QString id, QVariantMap params);
 

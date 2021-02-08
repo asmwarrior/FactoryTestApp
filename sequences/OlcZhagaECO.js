@@ -55,6 +55,21 @@ ZhagaECO =
     testAccelerometer: function ()
     {
         rail.testAccelerometer();
+    },
+
+    testLightSensor: function ()
+    {
+        rail.testLightSensor();
+    },
+
+    testDALI: function ()
+    {
+        rail.testDALI();
+    },
+
+    testGNSS: function ()
+    {
+        rail.testGNSS();
     }
 }
 
@@ -64,4 +79,7 @@ testSequenceManager.addTestFunction("Read unique device identifier (ID)", ZhagaE
 testSequenceManager.addTestFunction("Initialize Dali test", ZhagaECO.initDali);
 testSequenceManager.addTestFunction("Test radio interface", ZhagaECO.testRadio);
 testSequenceManager.addTestFunction("Test accelerometer", ZhagaECO.testAccelerometer);
+testSequenceManager.addTestFunction("Test light sensor", ZhagaECO.testLightSensor);
+testSequenceManager.addTestFunction("Test DALI", ZhagaECO.testDALI);
+testSequenceManager.addTestFunction("Test GNSS", ZhagaECO.testGNSS);
 testSequenceManager.addTestFunction("Download Software", ZhagaECO.downloadSoftware);

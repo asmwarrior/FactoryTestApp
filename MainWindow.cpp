@@ -129,20 +129,20 @@ MainWindow::~MainWindow()
     delete _rail;
 }
 
-void MainWindow::downloadRailtest()
-{
+//void MainWindow::downloadRailtest()
+//{
 //   _jlink->startJLinkScript(_settings->value("Zhaga/Script", "olc_zhaga_software.jlink").toString());
-}
+//}
 
-void MainWindow::initDali(RailtestClient *rail)
-{
+//void MainWindow::initDali(RailtestClient *rail)
+//{
 //    rail->syncCommand("dlpw", "1", 1000);
 //    rail->syncCommand("dali", "0xFE80 16 0 0", 1000);
 //    rail->syncCommand("dali", "0xFF90 16 0 1000000", 2000);
-}
+//}
 
-void MainWindow::testRadio(RailtestClient *rail)
-{
+//void MainWindow::testRadio(RailtestClient *rail)
+//{
 //    _logger->logInfo("Testing Radio Interface...");
 
 //    _settings->beginGroup("Radio");
@@ -187,168 +187,168 @@ void MainWindow::testRadio(RailtestClient *rail)
 
 //    _logger->logInfo(QString("Radio Interface: RSSI=%1.").arg(_rfRSSI));
 //    _logger->logInfo("Radio Interface is OK.");
-}
+//}
 
-void MainWindow::testAccelerometer(RailtestClient *rail)
-{
-    _logger->logInfo("Testing Accelerometer...");
+//void MainWindow::testAccelerometer(RailtestClient *rail)
+//{
+//    _logger->logInfo("Testing Accelerometer...");
 
-    auto reply = rail->syncCommand("accl");
+//    auto reply = rail->syncCommand("accl");
 
-    if (reply.isEmpty())
-    {
-        _logger->logError("No reply to accelerometer command!");
-        return;
-    }
+//    if (reply.isEmpty())
+//    {
+//        _logger->logError("No reply to accelerometer command!");
+//        return;
+//    }
 
-    auto map = reply[0].toMap();
+//    auto map = reply[0].toMap();
 
-    if (map.contains("error"))
-    {
-        _logger->logError(QString("Accelerometer error: %1, %2!").arg(map["error"].toString()).arg(map["errorCode"].toString()));
-    }
+//    if (map.contains("error"))
+//    {
+//        _logger->logError(QString("Accelerometer error: %1, %2!").arg(map["error"].toString()).arg(map["errorCode"].toString()));
+//    }
 
-    if (map.contains("X") && map.contains("Y") && map.contains("Z"))
-    {
-        auto
-           x = map["X"].toDouble(),
-           y = map["Y"].toDouble(),
-           z = map["Z"].toDouble();
+//    if (map.contains("X") && map.contains("Y") && map.contains("Z"))
+//    {
+//        auto
+//           x = map["X"].toDouble(),
+//           y = map["Y"].toDouble(),
+//           z = map["Z"].toDouble();
 
-        if (x > 10 || x < -10 || y > 10 || y < -10 || z < 80 || z > 100)
-        {
-            _logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
-        }
-        else
-            _logger->logInfo(QString("Accelerometer: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
-    }
-    else
-        _logger->logError("Wrong reply to accelerometer command!");
+//        if (x > 10 || x < -10 || y > 10 || y < -10 || z < 80 || z > 100)
+//        {
+//            _logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+//        }
+//        else
+//            _logger->logInfo(QString("Accelerometer: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+//    }
+//    else
+//        _logger->logError("Wrong reply to accelerometer command!");
 
-    _logger->logInfo("Accelerometer is OK.");
-}
+//    _logger->logInfo("Accelerometer is OK.");
+//}
 
-void MainWindow::testLightSensor(RailtestClient *rail)
-{
-    _logger->logInfo("Testing Light Sensor...");
-    rail->syncCommand("lsen");
-    QThread::sleep(1);
+//void MainWindow::testLightSensor(RailtestClient *rail)
+//{
+//    _logger->logInfo("Testing Light Sensor...");
+//    rail->syncCommand("lsen");
+//    QThread::sleep(1);
 
-    auto reply = rail->syncCommand("lsen");
+//    auto reply = rail->syncCommand("lsen");
 
-    if (reply.isEmpty())
-    {
-        _logger->logError("No reply to light sensor command!");
-        return;
-    }
+//    if (reply.isEmpty())
+//    {
+//        _logger->logError("No reply to light sensor command!");
+//        return;
+//    }
 
-    auto map = reply[0].toMap();
+//    auto map = reply[0].toMap();
 
-    if (map.contains("error"))
-    {
-        _logger->logError(QString("Light Sensor error: %1, %2!").arg(map["error"].toString()).arg(map["errorCode"].toString()));
-    }
+//    if (map.contains("error"))
+//    {
+//        _logger->logError(QString("Light Sensor error: %1, %2!").arg(map["error"].toString()).arg(map["errorCode"].toString()));
+//    }
 
-    if (map.contains("opwr"))
-    {
-        auto opwr = map["opwr"].toDouble();
+//    if (map.contains("opwr"))
+//    {
+//        auto opwr = map["opwr"].toDouble();
 
-        if (opwr < 0)
-        {
-            _logger->logError(QString("Light Sensor failure: opwr=%1.").arg(opwr));
-        }
-        else
-        {
-            _logger->logInfo(QString("Light Sensor: opwr=%1.").arg(opwr));
-        }
-    }
-    else
-    {
-        _logger->logError("Wrong reply to light sensor command!");
-    }
+//        if (opwr < 0)
+//        {
+//            _logger->logError(QString("Light Sensor failure: opwr=%1.").arg(opwr));
+//        }
+//        else
+//        {
+//            _logger->logInfo(QString("Light Sensor: opwr=%1.").arg(opwr));
+//        }
+//    }
+//    else
+//    {
+//        _logger->logError("Wrong reply to light sensor command!");
+//    }
 
-    _logger->logInfo("Light Sensor is OK.");
-}
+//    _logger->logInfo("Light Sensor is OK.");
+//}
 
-void MainWindow::testDALI(RailtestClient *rail)
-{
-    _logger->logInfo("Testing DALI...");
+//void MainWindow::testDALI(RailtestClient *rail)
+//{
+//    _logger->logInfo("Testing DALI...");
 
-    auto reply = rail->syncCommand("dali", "0xFF90 16 0 1000000");
+//    auto reply = rail->syncCommand("dali", "0xFF90 16 0 1000000");
 
-    if (reply.isEmpty())
-    {
-        _logger->logError("No reply to DALI status command!");
-        return;
-    }
+//    if (reply.isEmpty())
+//    {
+//        _logger->logError("No reply to DALI status command!");
+//        return;
+//    }
 
-    auto map = reply[0].toMap();
+//    auto map = reply[0].toMap();
 
-    if (map.contains("error") && map.contains("reply_bits") && map.contains("reply_data"))
-    {
-        auto
-            error = map["error"].toString(),
-            bits = map["reply_bits"].toString(),
-            data = map["reply_data"].toString();
+//    if (map.contains("error") && map.contains("reply_bits") && map.contains("reply_data"))
+//    {
+//        auto
+//            error = map["error"].toString(),
+//            bits = map["reply_bits"].toString(),
+//            data = map["reply_data"].toString();
 
-        if (error != "0" || bits != "8")
-        {
-            _logger->logError(QString("DALI failure: code=%1, reply_bits=%2, reply_data=%3!")
-                            .arg(error).arg(bits).arg(data));
-        }
-        else
-            _logger->logInfo(QString("DALI status: reply_data=%1.").arg(data));
-    }
-    else
-        if (map.contains("error"))
-        {
-            _logger->logError(QString("DALI error: %1, %2!")
-                            .arg(map["error"].toString()).arg(map["errorCode"].toString()));
-        }
-        else
-        {
-            _logger->logError("Wrong reply to DALI status command!");
-        }
+//        if (error != "0" || bits != "8")
+//        {
+//            _logger->logError(QString("DALI failure: code=%1, reply_bits=%2, reply_data=%3!")
+//                            .arg(error).arg(bits).arg(data));
+//        }
+//        else
+//            _logger->logInfo(QString("DALI status: reply_data=%1.").arg(data));
+//    }
+//    else
+//        if (map.contains("error"))
+//        {
+//            _logger->logError(QString("DALI error: %1, %2!")
+//                            .arg(map["error"].toString()).arg(map["errorCode"].toString()));
+//        }
+//        else
+//        {
+//            _logger->logError("Wrong reply to DALI status command!");
+//        }
 
-    rail->syncCommand("dali", "0xFE00 16 0 0");
-    rail->syncCommand("dlpw", "0");
-    _logger->logInfo("DALI is OK.");
-}
+//    rail->syncCommand("dali", "0xFE00 16 0 0");
+//    rail->syncCommand("dlpw", "0");
+//    _logger->logInfo("DALI is OK.");
+//}
 
-void MainWindow::testGNSS(RailtestClient *rail)
-{
-    _logger->logInfo("Testing GNSS...");
+//void MainWindow::testGNSS(RailtestClient *rail)
+//{
+//    _logger->logInfo("Testing GNSS...");
 
-    auto replies = rail->syncCommand("gnrx", "3", 15000);
+//    auto replies = rail->syncCommand("gnrx", "3", 15000);
 
-    if (replies.isEmpty())
-    {
-        _logger->logError("No reply to GNSS command!");
-        return;
-    }
+//    if (replies.isEmpty())
+//    {
+//        _logger->logError("No reply to GNSS command!");
+//        return;
+//    }
 
-    foreach (auto reply, replies)
-    {
-        auto map = reply.toMap();
+//    foreach (auto reply, replies)
+//    {
+//        auto map = reply.toMap();
 
-        if (map.contains("error"))
-        {
-            _logger->logError(QString("GNSS error: %1, %2!")
-                            .arg(map["error"].toString()).arg(map["errorCode"].toString()));
-        }
+//        if (map.contains("error"))
+//        {
+//            _logger->logError(QString("GNSS error: %1, %2!")
+//                            .arg(map["error"].toString()).arg(map["errorCode"].toString()));
+//        }
 
-        if (map.contains("line"))
-        {
-            _logger->logInfo("GNSS reply: " + map["line"].toString());
-        }
-        else
-        {
-            _logger->logError("Wrong reply to GNSS command!");
-        }
-    }
+//        if (map.contains("line"))
+//        {
+//            _logger->logInfo("GNSS reply: " + map["line"].toString());
+//        }
+//        else
+//        {
+//            _logger->logError("Wrong reply to GNSS command!");
+//        }
+//    }
 
-    _logger->logInfo("GNSS is OK.");
-}
+//    _logger->logInfo("GNSS is OK.");
+//}
 
 void MainWindow::startFullCycleTesting()
 {

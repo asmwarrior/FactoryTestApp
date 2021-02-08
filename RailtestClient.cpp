@@ -4,6 +4,7 @@
 
 #include <QCoreApplication>
 #include <QTime>
+#include <QThread>
 
 RailtestClient::RailtestClient(const QSharedPointer<QSettings> &settings, QObject *parent)
     : QObject(parent), _settings(settings)
@@ -213,6 +214,128 @@ void RailtestClient::testAccelerometer()
         _logger->logError("Wrong reply to accelerometer command!");
 
     _logger->logInfo("Accelerometer is OK.");
+}
+
+void RailtestClient::testLightSensor()
+{
+    _logger->logInfo("Testing Light Sensor...");
+    this->syncCommand("lsen");
+    QThread::sleep(1);
+
+    auto reply = this->syncCommand("lsen");
+
+    if (reply.isEmpty())
+    {
+        _logger->logError("No reply to light sensor command!");
+        return;
+    }
+
+    auto map = reply[0].toMap();
+
+    if (map.contains("error"))
+    {
+        _logger->logError(QString("Light Sensor error: %1, %2!").arg(map["error"].toString()).arg(map["errorCode"].toString()));
+    }
+
+    if (map.contains("opwr"))
+    {
+        auto opwr = map["opwr"].toDouble();
+
+        if (opwr < 0)
+        {
+            _logger->logError(QString("Light Sensor failure: opwr=%1.").arg(opwr));
+        }
+        else
+        {
+            _logger->logInfo(QString("Light Sensor: opwr=%1.").arg(opwr));
+        }
+    }
+    else
+    {
+        _logger->logError("Wrong reply to light sensor command!");
+    }
+
+    _logger->logInfo("Light Sensor is OK.");
+}
+
+void RailtestClient::testDALI()
+{
+    _logger->logInfo("Testing DALI...");
+
+    auto reply = this->syncCommand("dali", "0xFF90 16 0 1000000");
+
+    if (reply.isEmpty())
+    {
+        _logger->logError("No reply to DALI status command!");
+        return;
+    }
+
+    auto map = reply[0].toMap();
+
+    if (map.contains("error") && map.contains("reply_bits") && map.contains("reply_data"))
+    {
+        auto
+            error = map["error"].toString(),
+            bits = map["reply_bits"].toString(),
+            data = map["reply_data"].toString();
+
+        if (error != "0" || bits != "8")
+        {
+            _logger->logError(QString("DALI failure: code=%1, reply_bits=%2, reply_data=%3!")
+                            .arg(error).arg(bits).arg(data));
+        }
+        else
+            _logger->logInfo(QString("DALI status: reply_data=%1.").arg(data));
+    }
+    else
+        if (map.contains("error"))
+        {
+            _logger->logError(QString("DALI error: %1, %2!")
+                            .arg(map["error"].toString()).arg(map["errorCode"].toString()));
+        }
+        else
+        {
+            _logger->logError("Wrong reply to DALI status command!");
+        }
+
+    this->syncCommand("dali", "0xFE00 16 0 0");
+    this->syncCommand("dlpw", "0");
+    _logger->logInfo("DALI is OK.");
+}
+
+void RailtestClient::testGNSS()
+{
+    _logger->logInfo("Testing GNSS...");
+
+    auto replies = this->syncCommand("gnrx", "3", 15000);
+
+    if (replies.isEmpty())
+    {
+        _logger->logError("No reply to GNSS command!");
+        return;
+    }
+
+    foreach (auto reply, replies)
+    {
+        auto map = reply.toMap();
+
+        if (map.contains("error"))
+        {
+            _logger->logError(QString("GNSS error: %1, %2!")
+                            .arg(map["error"].toString()).arg(map["errorCode"].toString()));
+        }
+
+        if (map.contains("line"))
+        {
+            _logger->logInfo("GNSS reply: " + map["line"].toString());
+        }
+        else
+        {
+            _logger->logError("Wrong reply to GNSS command!");
+        }
+    }
+
+    _logger->logInfo("GNSS is OK.");
 }
 
 void RailtestClient::onRfReplyReceived(QString id, QVariantMap params)
