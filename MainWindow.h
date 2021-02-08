@@ -27,15 +27,7 @@ public:
 
 public slots:
 
-//    void downloadRailtest();
-//    void initDali(RailtestClient *rail);
-//    void testRadio(RailtestClient *rail);
-//    void testAccelerometer(RailtestClient *rail);
-//    void testLightSensor(RailtestClient *rail);
-//    void testDALI(RailtestClient *rail);
-//    void testGNSS(RailtestClient *rail);
     void startFullCycleTesting();
-//    void onRfReplyReceived(QString id, QVariantMap params);
 
 private:
 
@@ -64,9 +56,6 @@ private:
     QPushButton* _startFullCycleTestingButton;
     QPushButton* _startSelectedTestButton;
     QSharedPointer<QListWidget> _logWidget;
-
-//    int _rfRSSI;
-//    int _rfCount;
 };
 
 #endif // MAINWINDOW_H
