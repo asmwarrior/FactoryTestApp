@@ -131,7 +131,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::startFullCycleTesting()
 {
-
+    for (auto & funcName : _testSequenceManager->currentSequenceFunctionNames())
+    {
+        _testSequenceManager->runTestFunction(funcName);
+    }
 }
 
 QJSValue MainWindow::evaluateScriptFromFile(const QString &scriptFileName)
