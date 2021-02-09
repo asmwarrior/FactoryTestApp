@@ -46,6 +46,7 @@ private:
         QProcess m_proc;
         QByteArray m_rdBuf;
 
+        static QList<ConsoleProcess*> JLinks;
 };
 
 #endif // __CONSOLEPROCESS_H__

@@ -5,12 +5,15 @@
 #include <QThread>
 #include <QCoreApplication>
 
+QList<ConsoleProcess*> ConsoleProcess::JLinks;
+
 ConsoleProcess::ConsoleProcess(const QSharedPointer<QSettings> &settings, QObject *parent)
     : QObject(parent), _settings(settings), m_proc(this)
 {
 
     connect(&m_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
     connect(&m_proc, &QProcess::errorOccurred, this, &ConsoleProcess::logError);
+    JLinks.push_back(this);
 }
 
 ConsoleProcess::~ConsoleProcess()

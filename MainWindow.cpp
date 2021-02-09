@@ -27,12 +27,24 @@ MainWindow::MainWindow(QWidget *parent)
     _testSequenceManager->setLogger(_logger);
     QJSValue testSequenceManager = _scriptEngine->newQObject(_testSequenceManager);
     _scriptEngine->globalObject().setProperty("testSequenceManager", testSequenceManager);
+    evaluateScriptFromFile(_workDirectory + "/init.js");
     evaluateScriptsFromDirectory(_workDirectory + "/sequences");
 
-    _jlink = new ConsoleProcess(_settings, this);
-    _jlink->setLogger(_logger);
-    QJSValue jlink = _scriptEngine->newQObject(_jlink);
-    _scriptEngine->globalObject().setProperty("jlink", jlink);
+    //_jlink = new ConsoleProcess(_settings, this);
+    //_jlink->setLogger(_logger);
+    //QJSValue jlink = _scriptEngine->newQObject(_jlink);
+    //_scriptEngine->globalObject().setProperty("jlink", jlink);
+    //_scriptEngine->globalObject().property("JlinksList").setProperty(0, jlink);
+
+    for (int i = 0; i < 5; i++)
+    {
+        auto newJlink = new ConsoleProcess(_settings);
+        newJlink->setLogger(_logger);
+        QJSValue jlink = _scriptEngine->newQObject(newJlink);
+        _scriptEngine->globalObject().property("JlinksList").setProperty(i, jlink);
+    }
+
+//
 
     _rail = new RailtestClient(_settings, this);
     _rail->setLogger(_logger);
@@ -125,7 +137,6 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete _testSequenceManager;
-    delete _jlink;
     delete _rail;
 }
 

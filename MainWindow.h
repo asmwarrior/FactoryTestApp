@@ -38,6 +38,8 @@ private:
     QSharedPointer<QJSEngine> _scriptEngine;
     ConsoleProcess* _jlink;
 
+    QList<ConsoleProcess*> _JLinkList;
+
     RailtestClient* _rail;
 
     QString _workDirectory;
