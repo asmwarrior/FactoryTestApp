@@ -4,12 +4,12 @@ ZhagaECO =
 {
     downloadRailtest: function ()
     {
-        JlinksList[4].startJLinkScript("/sequences/OlcZhagaECO/olc_zhaga_railtest.jlink");
+        JlinksList[currentJLinkIndex].startJLinkScript("/sequences/OlcZhagaECO/olc_zhaga_railtest.jlink");
     },
 
     downloadSoftware: function ()
     {
-        jlink.startJLinkScript("/sequences/OlcZhagaECO/olc_zhaga_software.jlink");
+        JlinksList[currentJLinkIndex].startJLinkScript("/sequences/OlcZhagaECO/olc_zhaga_software.jlink");
     },
 
     openRailTestClient: function ()

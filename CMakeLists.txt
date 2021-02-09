@@ -18,7 +18,7 @@ set(SOURCES
     MainWindow.cpp
     Database.cpp
     TestSequence.cpp
-    ConsoleProcess.cpp
+    JLinkManager.cpp
     Logger.cpp
     RailtestClient.cpp
 )

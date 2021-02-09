@@ -1,5 +1,4 @@
-#ifndef __CONSOLEPROCESS_H__
-#define __CONSOLEPROCESS_H__
+#pragma once
 
 #include <QProcess>
 #include <QSharedPointer>
@@ -7,13 +6,13 @@
 
 #include "Logger.h"
 
-class ConsoleProcess : public QObject
+class JLinkManager : public QObject
 {
     Q_OBJECT
 
     public:
-        explicit ConsoleProcess(const QSharedPointer<QSettings>& settings, QObject *parent = Q_NULLPTR);
-        ~ConsoleProcess() Q_DECL_OVERRIDE;
+        explicit JLinkManager(const QSharedPointer<QSettings> &settings, QObject *parent = Q_NULLPTR);
+        ~JLinkManager() Q_DECL_OVERRIDE;
 
         void setLogger(const QSharedPointer<Logger>& logger);
 
@@ -45,8 +44,4 @@ private:
         QSharedPointer<Logger> _logger;
         QProcess m_proc;
         QByteArray m_rdBuf;
-
-        static QList<ConsoleProcess*> JLinks;
 };
-
-#endif // __CONSOLEPROCESS_H__

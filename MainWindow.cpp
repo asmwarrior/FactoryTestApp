@@ -30,26 +30,33 @@ MainWindow::MainWindow(QWidget *parent)
     evaluateScriptFromFile(_workDirectory + "/init.js");
     evaluateScriptsFromDirectory(_workDirectory + "/sequences");
 
-    //_jlink = new ConsoleProcess(_settings, this);
-    //_jlink->setLogger(_logger);
-    //QJSValue jlink = _scriptEngine->newQObject(_jlink);
-    //_scriptEngine->globalObject().setProperty("jlink", jlink);
-    //_scriptEngine->globalObject().property("JlinksList").setProperty(0, jlink);
-
+    // Creating threads for run the tests for each test panel
     for (int i = 0; i < 5; i++)
     {
-        auto newJlink = new ConsoleProcess(_settings);
+        auto newThread = new QThread(this);
+        _threads.push_back(newThread);
+        //_JLinkList[i]->moveToThread(newThread);
+        //newThread->start();
+    }
+
+    // Creating objects for controlling JLinks
+    for (int i = 0; i < 5; i++)
+    {
+        auto newJlink = new JLinkManager(_settings);
         newJlink->setLogger(_logger);
+        _JLinkList.push_back(newJlink);
+        _JLinkList[i]->moveToThread(_threads[i]);
+        _threads[i]->start();
         QJSValue jlink = _scriptEngine->newQObject(newJlink);
         _scriptEngine->globalObject().property("JlinksList").setProperty(i, jlink);
     }
-
-//
 
     _rail = new RailtestClient(_settings, this);
     _rail->setLogger(_logger);
     QJSValue rail = _scriptEngine->newQObject(_rail);
     _scriptEngine->globalObject().setProperty("rail", rail);
+
+
 
 //--- GUI ---
     QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -131,11 +138,20 @@ MainWindow::MainWindow(QWidget *parent)
     _db = new DataBase(_settings, this);
     _db->connectToDataBase();
     //_db->insertIntoTable("test", QDateTime::currentDateTime().toString());
-
 }
 
 MainWindow::~MainWindow()
 {
+    for(auto & thread : _threads)
+    {
+        thread->quit();
+    }
+
+    for(auto & jlink : _JLinkList)
+    {
+        delete jlink;
+    }
+
     delete _testSequenceManager;
     delete _rail;
 }
@@ -176,4 +192,14 @@ QList<QJSValue> MainWindow::evaluateScriptsFromDirectory(const QString& director
 QJSValue MainWindow::runScript(const QString& scriptName, const QJSValueList& args)
 {
     return _scriptEngine->globalObject().property(scriptName).call(args);
+}
+
+void MainWindow::setCurrentJLinkIndex(int index)
+{
+    _scriptEngine->globalObject().setProperty("currentJLinkIndex", index);
+}
+
+int MainWindow::getCurrentJLinkIndex()
+{
+    return _scriptEngine->globalObject().property("currentJLinkIndex").toInt();
 }

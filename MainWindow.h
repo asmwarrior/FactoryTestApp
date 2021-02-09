@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QThread>
 #include <QJSEngine>
 #include <QSettings>
 #include <QComboBox>
@@ -11,7 +12,7 @@
 #include <QSqlTableModel>
 #include <QModelIndex>
 
-#include "ConsoleProcess.h"
+#include "JLinkManager.h"
 #include "Database.h"
 #include "TestSequence.h"
 #include "Logger.h"
@@ -35,10 +36,13 @@ private:
     QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
     QJSValue runScript(const QString& scriptName, const QJSValueList& args);
 
-    QSharedPointer<QJSEngine> _scriptEngine;
-    ConsoleProcess* _jlink;
+    void setCurrentJLinkIndex(int index);
+    int getCurrentJLinkIndex();
 
-    QList<ConsoleProcess*> _JLinkList;
+    QSharedPointer<QJSEngine> _scriptEngine;
+
+    QList<QThread*> _threads;
+    QList<JLinkManager*> _JLinkList;
 
     RailtestClient* _rail;
 
@@ -58,6 +62,9 @@ private:
     QPushButton* _startFullCycleTestingButton;
     QPushButton* _startSelectedTestButton;
     QSharedPointer<QListWidget> _logWidget;
+
+//    QThread* thr1;
+//    QList<TestObject1*> _obj;
 };
 
 #endif // MAINWINDOW_H

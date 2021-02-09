@@ -1,32 +1,29 @@
-#include "ConsoleProcess.h"
+#include "JLinkManager.h"
 
 #include <QDebug>
 #include <QProcess>
 #include <QThread>
 #include <QCoreApplication>
 
-QList<ConsoleProcess*> ConsoleProcess::JLinks;
-
-ConsoleProcess::ConsoleProcess(const QSharedPointer<QSettings> &settings, QObject *parent)
-    : QObject(parent), _settings(settings), m_proc(this)
+JLinkManager::JLinkManager(const QSharedPointer<QSettings> &settings, QObject *parent)
+    : QObject(parent), _settings(settings)/*, m_proc(this)*/
 {
 
     connect(&m_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
-    connect(&m_proc, &QProcess::errorOccurred, this, &ConsoleProcess::logError);
-    JLinks.push_back(this);
+    connect(&m_proc, &QProcess::errorOccurred, this, &JLinkManager::logError);
 }
 
-ConsoleProcess::~ConsoleProcess()
+JLinkManager::~JLinkManager()
 {
     stop();
 }
 
-void ConsoleProcess::setLogger(const QSharedPointer<Logger> &logger)
+void JLinkManager::setLogger(const QSharedPointer<Logger> &logger)
 {
     _logger = logger;
 }
 
-bool ConsoleProcess::start(const QString &path, const QStringList &args, int timeout)
+bool JLinkManager::start(const QString &path, const QStringList &args, int timeout)
 {
     stop();
     m_proc.setInputChannelMode(QProcess::ManagedInputChannel);
@@ -42,7 +39,7 @@ bool ConsoleProcess::start(const QString &path, const QStringList &args, int tim
     return true;
 }
 
-bool ConsoleProcess::startJLinkScript(const QString &scriptFileName)
+bool JLinkManager::startJLinkScript(const QString &scriptFileName)
 {
     QStringList args;
 
@@ -54,27 +51,24 @@ bool ConsoleProcess::startJLinkScript(const QString &scriptFileName)
         _logger->logError("Cannot start JLink Commander!");
         return false;
     }
-        //throw InputOutputError("Cannot start JLink Commander!");
 
     if (!skipUntilFinished())
     {
         return false;
     }
-        //throw InputOutputError("JLink Commander was executed too long!");
 
     if (exitCode())
     {
         _logger->logInfo("JLink Commander script failed!.");
         return false;
     }
-        //throw TestError("Error while executing JLink Commander script!");
 
     _logger->logInfo("JLink Commander script completed.");
 
     return true;
 }
 
-void ConsoleProcess::stop()
+void JLinkManager::stop()
 {
     if (m_proc.state() != QProcess::NotRunning)
     {
@@ -83,17 +77,17 @@ void ConsoleProcess::stop()
     }
 }
 
-bool ConsoleProcess::isRunning()
+bool JLinkManager::isRunning()
 {
     return m_proc.state() == QProcess::Running;
 }
 
-int ConsoleProcess::exitCode()
+int JLinkManager::exitCode()
 {
     return m_proc.exitStatus() == QProcess::NormalExit ? m_proc.exitCode() : 0x7FFFFFFFL;
 }
 
-void ConsoleProcess::readStandardOutput()
+void JLinkManager::readStandardOutput()
 {
     QByteArray data = m_proc.readAllStandardOutput();
 
@@ -111,12 +105,12 @@ void ConsoleProcess::readStandardOutput()
     m_rdBuf.append(data);
 }
 
-void ConsoleProcess::logError(QProcess::ProcessError error)
+void JLinkManager::logError(QProcess::ProcessError error)
 {
     qDebug() << error;
 }
 
-bool ConsoleProcess::write(const QByteArray &data)
+bool JLinkManager::write(const QByteArray &data)
 {
     if (m_proc.state() != QProcess::Running)
     {
@@ -135,7 +129,7 @@ bool ConsoleProcess::write(const QByteArray &data)
     return true;
 }
 
-QByteArray ConsoleProcess::read()
+QByteArray JLinkManager::read()
 {
     QByteArray ret = m_rdBuf;
 
@@ -144,7 +138,7 @@ QByteArray ConsoleProcess::read()
     return ret;
 }
 
-bool ConsoleProcess::readUntilExpected(const QByteArray &expected, QByteArray &received, int timeout)
+bool JLinkManager::readUntilExpected(const QByteArray &expected, QByteArray &received, int timeout)
 {
     received.clear();
 
@@ -173,7 +167,7 @@ bool ConsoleProcess::readUntilExpected(const QByteArray &expected, QByteArray &r
     return false;
 }
 
-bool ConsoleProcess::skipUntilExpected(const QByteArray &expected, int timeout)
+bool JLinkManager::skipUntilExpected(const QByteArray &expected, int timeout)
 {
     do {
         QCoreApplication::processEvents();
@@ -197,12 +191,12 @@ bool ConsoleProcess::skipUntilExpected(const QByteArray &expected, int timeout)
     return false;
 }
 
-void ConsoleProcess::clear()
+void JLinkManager::clear()
 {
     m_rdBuf.clear();
 }
 
-bool ConsoleProcess::readUntilFinished(QByteArray &received, int timeout)
+bool JLinkManager::readUntilFinished(QByteArray &received, int timeout)
 {
     if (m_proc.state() != QProcess::Running)
         return false;
@@ -216,7 +210,7 @@ bool ConsoleProcess::readUntilFinished(QByteArray &received, int timeout)
     return ret;
 }
 
-bool ConsoleProcess::skipUntilFinished(int timeout)
+bool JLinkManager::skipUntilFinished(int timeout)
 {
     if (m_proc.state() != QProcess::Running)
         return true;

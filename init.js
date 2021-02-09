@@ -1,1 +1,2 @@
-var JlinksList = []
+var JlinksList = [];
+var currentJLinkIndex = 0;
