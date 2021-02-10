@@ -23,6 +23,16 @@ void JLinkManager::setLogger(const QSharedPointer<Logger> &logger)
     _logger = logger;
 }
 
+void JLinkManager::setSN(const QString &serialNumber)
+{
+    _SN = serialNumber;
+}
+
+QString JLinkManager::getSN() const
+{
+    return _SN;
+}
+
 bool JLinkManager::start(const QString &path, const QStringList &args, int timeout)
 {
     stop();
@@ -35,7 +45,7 @@ bool JLinkManager::start(const QString &path, const QStringList &args, int timeo
 
         return false;
     }
-
+    m_proc.write("\r");
     return true;
 }
 
@@ -43,23 +53,26 @@ bool JLinkManager::startJLinkScript(const QString &scriptFileName)
 {
     QStringList args;
 
+    args.append("-USB");
+    args.append(_SN);
     args.append("-CommanderScript");
     args.append(_settings->value("workDirectory").toString() + scriptFileName);
-    //_logger->logInfo("Running JLink Commander script " + _settings->value("workDirectory").toString() + scriptFileName + "...");
+    _logger->logInfo("Running JLink Commander script " + _settings->value("workDirectory").toString() + scriptFileName + "...");
     if (!start(_settings->value("JLink/path", "JLink.exe").toString(), args))
     {
-        //_logger->logError("Cannot start JLink Commander!");
+        _logger->logError("Cannot start JLink Commander!");
         return false;
     }
 
     if (!skipUntilFinished())
     {
+        stop();
         return false;
     }
 
     if (exitCode())
     {
-        //_logger->logInfo("JLink Commander script failed!.");
+        _logger->logInfo("JLink Commander script failed!.");
         return false;
     }
 

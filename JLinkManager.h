@@ -15,6 +15,8 @@ class JLinkManager : public QObject
         ~JLinkManager() Q_DECL_OVERRIDE;
 
         void setLogger(const QSharedPointer<Logger>& logger);
+        void setSN(const QString& serialNumber);
+        QString getSN() const;
 
 public slots:
         bool start(const QString &path, const QStringList &args = QStringList(), int timeout = 30000);
@@ -42,8 +44,9 @@ signals:
 
 private:
 
-        QSharedPointer<QSettings> _settings;
-        QSharedPointer<Logger> _logger;
-        QProcess m_proc;
-        QByteArray m_rdBuf;
+    QString _SN; // JLink serial number
+    QSharedPointer<QSettings> _settings;
+    QSharedPointer<Logger> _logger;
+    QProcess m_proc;
+    QByteArray m_rdBuf;
 };

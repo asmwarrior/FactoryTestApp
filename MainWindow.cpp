@@ -35,17 +35,16 @@ MainWindow::MainWindow(QWidget *parent)
     {
         auto newThread = new QThread(this);
         _threads.push_back(newThread);
-        //_JLinkList[i]->moveToThread(newThread);
-        //newThread->start();
     }
 
     // Creating objects for controlling JLinks
     for (int i = 0; i < 5; i++)
     {
         auto newJlink = new JLinkManager(_settings);
+        newJlink->setSN(_settings->value(QString("JLink/SN" + QString().setNum(i + 1))).toString());
         newJlink->setLogger(_logger);
         _JLinkList.push_back(newJlink);
-        _JLinkList[i]->moveToThread(_threads[i]);
+        //_JLinkList[i]->moveToThread(_threads[i]);
         _threads[i]->start();
         QJSValue jlink = _scriptEngine->newQObject(newJlink);
         _scriptEngine->globalObject().property("JlinksList").setProperty(i, jlink);
@@ -120,8 +119,6 @@ MainWindow::MainWindow(QWidget *parent)
     _startFullCycleTestingButton->setFixedSize(148, 40);
     startTestingButtonsLayout->addWidget(_startFullCycleTestingButton);
     //connect(_startFullCycleTestingButton, SIGNAL(clicked()), this, SLOT(startFullCycleTesting()));
-//    connect(_startFullCycleTestingButton, SIGNAL(clicked()), _JLinkList[0], SLOT(startJLinkScript()));
-//    connect(_startFullCycleTestingButton, SIGNAL(clicked()), _JLinkList[1], SLOT(startJLinkScript()));
 
     _startSelectedTestButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/checked")), tr("Start Selected Test"), this);
     _startSelectedTestButton->setFixedSize(148, 40);
