@@ -55,7 +55,8 @@ bool JLinkManager::startJLinkScript(const QString &scriptFileName)
 
     args.append("-USB");
     args.append(_SN);
-    args.append("-CommanderScript");
+//    args.append("-CommanderScript");
+    args.append("-CommandFile");
     args.append(_settings->value("workDirectory").toString() + scriptFileName);
     _logger->logInfo("Running JLink Commander script " + _settings->value("workDirectory").toString() + scriptFileName + "...");
     if (!start(_settings->value("JLink/path", "JLink.exe").toString(), args))

@@ -17,6 +17,7 @@
 #include "TestSequence.h"
 #include "Logger.h"
 #include "RailtestClient.h"
+#include "TestFixtureWidget.h"
 
 class MainWindow : public QWidget
 {
@@ -62,6 +63,7 @@ private:
     QPushButton* _startFullCycleTestingButton;
     QPushButton* _startSelectedTestButton;
     QSharedPointer<QListWidget> _logWidget;
+    TestFixtureWidget* _testFixtureWidget;
 
 //    QThread* thr1;
 //    QList<TestObject1*> _obj;

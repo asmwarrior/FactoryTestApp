@@ -21,6 +21,8 @@ set(SOURCES
     JLinkManager.cpp
     Logger.cpp
     RailtestClient.cpp
+    TestFixtureWidget.cpp
+    DutButton.cpp
 )
 
 

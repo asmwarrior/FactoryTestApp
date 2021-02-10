@@ -55,8 +55,6 @@ MainWindow::MainWindow(QWidget *parent)
     QJSValue rail = _scriptEngine->newQObject(_rail);
     _scriptEngine->globalObject().setProperty("rail", rail);
 
-
-
 //--- GUI ---
     QVBoxLayout* mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
@@ -71,10 +69,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     QVBoxLayout* leftPanelLayout = new QVBoxLayout;
     panelsLayout->addLayout(leftPanelLayout);
-    panelsLayout->addStretch();
 
     QVBoxLayout* rightPanelLayout = new QVBoxLayout;
     panelsLayout->addLayout(rightPanelLayout);
+    panelsLayout->addStretch();
 
     QHBoxLayout* logLayout = new QHBoxLayout;
     mainLayout->addLayout(logLayout);
@@ -126,6 +124,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_startSelectedTestButton, &QPushButton::clicked, [=](){
         _testSequenceManager->runTestFunction(_testFunctionsListWidget->currentItem()->text());
     });
+
+    //Test fixture representation widget
+    _testFixtureWidget = new TestFixtureWidget;
+    rightPanelLayout->addWidget(_testFixtureWidget);
 
     //Log widget
     _logWidget = QSharedPointer<QListWidget>::create();
