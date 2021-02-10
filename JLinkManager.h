@@ -16,8 +16,8 @@ class JLinkManager : public QObject
 
         void setLogger(const QSharedPointer<Logger>& logger);
 
-        Q_INVOKABLE bool start(const QString &path, const QStringList &args = QStringList(), int timeout = 30000);
-        Q_INVOKABLE bool startJLinkScript(const QString& scriptFileName);
+public slots:
+        bool start(const QString &path, const QStringList &args = QStringList(), int timeout = 30000);
         void stop();
         bool isRunning();
         int exitCode();
@@ -33,8 +33,10 @@ class JLinkManager : public QObject
 private slots:
     void readStandardOutput();
     void logError(QProcess::ProcessError error);
+    bool startJLinkScript(const QString& scriptFileName);
 
 signals:
+    void startScript(const QString& scriptName);
     void error(QString message);
     void log(QStringList lines);
 

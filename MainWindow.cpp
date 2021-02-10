@@ -119,7 +119,9 @@ MainWindow::MainWindow(QWidget *parent)
     _startFullCycleTestingButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/autoDownload")), tr("Start full cycle testing"), this);
     _startFullCycleTestingButton->setFixedSize(148, 40);
     startTestingButtonsLayout->addWidget(_startFullCycleTestingButton);
-    connect(_startFullCycleTestingButton, SIGNAL(clicked()), this, SLOT(startFullCycleTesting()));
+    //connect(_startFullCycleTestingButton, SIGNAL(clicked()), this, SLOT(startFullCycleTesting()));
+//    connect(_startFullCycleTestingButton, SIGNAL(clicked()), _JLinkList[0], SLOT(startJLinkScript()));
+//    connect(_startFullCycleTestingButton, SIGNAL(clicked()), _JLinkList[1], SLOT(startJLinkScript()));
 
     _startSelectedTestButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/checked")), tr("Start Selected Test"), this);
     _startSelectedTestButton->setFixedSize(148, 40);

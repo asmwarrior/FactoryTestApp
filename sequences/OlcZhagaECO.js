@@ -4,7 +4,8 @@ ZhagaECO =
 {
     downloadRailtest: function ()
     {
-        JlinksList[currentJLinkIndex].startJLinkScript("/sequences/OlcZhagaECO/olc_zhaga_railtest.jlink");
+        JlinksList[currentJLinkIndex].startScript("/sequences/OlcZhagaECO/olc_zhaga_railtest.jlink");
+        JlinksList[1].startScript("/sequences/OlcZhagaECO/olc_zhaga_railtest.jlink");
     },
 
     downloadSoftware: function ()

@@ -8,9 +8,9 @@
 JLinkManager::JLinkManager(const QSharedPointer<QSettings> &settings, QObject *parent)
     : QObject(parent), _settings(settings)/*, m_proc(this)*/
 {
-
     connect(&m_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
     connect(&m_proc, &QProcess::errorOccurred, this, &JLinkManager::logError);
+    connect(this, SIGNAL(startScript(const QString&)), this, SLOT(startJLinkScript(const QString&)), Qt::ConnectionType::QueuedConnection);
 }
 
 JLinkManager::~JLinkManager()
@@ -45,10 +45,10 @@ bool JLinkManager::startJLinkScript(const QString &scriptFileName)
 
     args.append("-CommanderScript");
     args.append(_settings->value("workDirectory").toString() + scriptFileName);
-    _logger->logInfo("Running JLink Commander script " + _settings->value("workDirectory").toString() + scriptFileName + "...");
+    //_logger->logInfo("Running JLink Commander script " + _settings->value("workDirectory").toString() + scriptFileName + "...");
     if (!start(_settings->value("JLink/path", "JLink.exe").toString(), args))
     {
-        _logger->logError("Cannot start JLink Commander!");
+        //_logger->logError("Cannot start JLink Commander!");
         return false;
     }
 
@@ -59,7 +59,7 @@ bool JLinkManager::startJLinkScript(const QString &scriptFileName)
 
     if (exitCode())
     {
-        _logger->logInfo("JLink Commander script failed!.");
+        //_logger->logInfo("JLink Commander script failed!.");
         return false;
     }
 
