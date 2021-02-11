@@ -5,12 +5,14 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGroupBox>
+#include <QButtonGroup>
 
 TestFixtureWidget::TestFixtureWidget(QWidget *parent) : QWidget(parent)
 {
     QVBoxLayout* mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
 
+    _buttonGroup = new QButtonGroup;
     for(int i = 1; i < 6; i++)
     {
         QGroupBox* testPanelBox = new QGroupBox("Test Panel " + QString().setNum(i));
@@ -22,6 +24,8 @@ TestFixtureWidget::TestFixtureWidget(QWidget *parent) : QWidget(parent)
         for(int j = 1; j < 4; j++)
         {
             DutButton* button = new DutButton(i, j);
+            _buttonGroup->addButton(button);
+            _buttonGroup->setExclusive(true);
             boxLayout->addWidget(button);
         }
     }

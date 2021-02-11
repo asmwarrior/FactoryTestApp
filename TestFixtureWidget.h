@@ -13,4 +13,5 @@ public:
 private:
 
     QList<DutButton*> _buttons;
+    QButtonGroup* _buttonGroup;
 };

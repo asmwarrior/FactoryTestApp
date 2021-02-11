@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include <QPushButton>
+#include <QMap>
 
 class DutButton : public QPushButton
 {
@@ -9,10 +10,11 @@ class DutButton : public QPushButton
 
 public:
 
+    enum State {unavaliable, inactive, untested, tested, warning};
+
     explicit DutButton(int panelNo, int pos, QWidget *parent = nullptr);
 
     void setChecked(bool checked = true);
-    void setAlert(bool state = true);
     void setTestPanelNo(int No);
     void setPos(int pos);
 
@@ -21,11 +23,14 @@ signals:
 
 public slots:
 
-    void changeButtonState();
+    void setButtonState(State state);
+    void onToggled(bool state);
+    void onClicked(bool state);
 
 private:
 
-    QString buttonStyle_;
+    State _state;
+    QMap<int, QString> _stateStyles;
     int _testPanelNo;
     int _pos;
 
