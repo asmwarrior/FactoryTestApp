@@ -1,8 +1,8 @@
-testSequenceManager.addSequence("OLC Nema");
+//testSequenceManager.addSequence("OLC Nema");
 
-testSequenceManager.addTestFunction("test Nema1", testNema1);
-testSequenceManager.addTestFunction("test Nema2", testNema2);
-testSequenceManager.addTestFunction("test Nema3", testNema3);
+//testSequenceManager.addTestFunction("test Nema1", testNema1);
+//testSequenceManager.addTestFunction("test Nema2", testNema2);
+//testSequenceManager.addTestFunction("test Nema3", testNema3);
 
 function testNema1()
 {

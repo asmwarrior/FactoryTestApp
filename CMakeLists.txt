@@ -23,6 +23,8 @@ set(SOURCES
     RailtestClient.cpp
     TestFixtureWidget.cpp
     DutButton.cpp
+    SessionInfoWidget.cpp
+    DutInfoWidget.cpp
 )
 
 

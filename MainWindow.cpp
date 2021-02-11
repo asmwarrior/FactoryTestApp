@@ -55,7 +55,7 @@ MainWindow::MainWindow(QWidget *parent)
     QJSValue rail = _scriptEngine->newQObject(_rail);
     _scriptEngine->globalObject().setProperty("rail", rail);
 
-//--- GUI ---
+//--- GUI Layouts---
     QVBoxLayout* mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
 
@@ -69,10 +69,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     QVBoxLayout* leftPanelLayout = new QVBoxLayout;
     panelsLayout->addLayout(leftPanelLayout);
+    panelsLayout->addStretch();
+
+    QVBoxLayout* middlePanelLayout = new QVBoxLayout;
+    panelsLayout->addLayout(middlePanelLayout);
+    panelsLayout->addStretch();
 
     QVBoxLayout* rightPanelLayout = new QVBoxLayout;
     panelsLayout->addLayout(rightPanelLayout);
-    panelsLayout->addStretch();
 
     QHBoxLayout* logLayout = new QHBoxLayout;
     mainLayout->addLayout(logLayout);
@@ -80,13 +84,15 @@ MainWindow::MainWindow(QWidget *parent)
     //Header info
 
     headerLayout->addStretch();
-    headerLayout->addWidget(new QLabel("HERE WE PLACE HEADER INFO"));
+    _headerLabel = new QLabel("HERE WE PLACE HEADER INFO");
+    _headerLabel->setStyleSheet("color: #595959; font-size:10pt; font-weight: bold;");
+    headerLayout->addWidget(_headerLabel);
     headerLayout->addStretch();
 
     //Choose sequence box
     QLabel* selectSequenceBoxLabel = new QLabel("Step 1. Choose test sequence", this);
     _selectSequenceBox = new QComboBox(this);
-    _selectSequenceBox->setFixedSize(300, 30);
+    _selectSequenceBox->setFixedSize(350, 30);
     _selectSequenceBox->addItems(_testSequenceManager->avaliableSequencesNames());
     _testSequenceManager->setCurrentSequence(_selectSequenceBox->currentText());
     connect(_selectSequenceBox, SIGNAL(currentTextChanged(const QString&)), _testSequenceManager, SLOT(setCurrentSequence(const QString&)));
@@ -102,7 +108,7 @@ MainWindow::MainWindow(QWidget *parent)
     //Test functions list widget
     QLabel* testFunctionsListLabel = new QLabel("Avaliable testing steps:", this);
     _testFunctionsListWidget = new QListWidget(this);
-    _testFunctionsListWidget->setFixedWidth(300);
+    _testFunctionsListWidget->setFixedWidth(350);
     _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
 
     leftPanelLayout->addWidget(testFunctionsListLabel);
@@ -114,12 +120,12 @@ MainWindow::MainWindow(QWidget *parent)
     leftPanelLayout->addLayout(startTestingButtonsLayout);
 
     _startFullCycleTestingButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/autoDownload")), tr("Start full cycle testing"), this);
-    _startFullCycleTestingButton->setFixedSize(148, 40);
+    _startFullCycleTestingButton->setFixedSize(160, 40);
     startTestingButtonsLayout->addWidget(_startFullCycleTestingButton);
     //connect(_startFullCycleTestingButton, SIGNAL(clicked()), this, SLOT(startFullCycleTesting()));
 
     _startSelectedTestButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/checked")), tr("Start Selected Test"), this);
-    _startSelectedTestButton->setFixedSize(148, 40);
+    _startSelectedTestButton->setFixedSize(160, 40);
     startTestingButtonsLayout->addWidget(_startSelectedTestButton);
     connect(_startSelectedTestButton, &QPushButton::clicked, [=](){
         _testSequenceManager->runTestFunction(_testFunctionsListWidget->currentItem()->text());
@@ -127,7 +133,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     //Test fixture representation widget
     _testFixtureWidget = new TestFixtureWidget;
-    rightPanelLayout->addWidget(_testFixtureWidget);
+    middlePanelLayout->addWidget(_testFixtureWidget);
+
+    //Info widgets
+    _sessionInfoWidget = new SessionInfoWidget;
+    rightPanelLayout->addWidget(_sessionInfoWidget);
+
+    _dutInfoWidget = new DutInfoWidget;
+    rightPanelLayout->addWidget(_dutInfoWidget);
+    rightPanelLayout->addStretch();
 
     //Log widget
     _logWidget = QSharedPointer<QListWidget>::create();

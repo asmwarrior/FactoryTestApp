@@ -18,6 +18,8 @@
 #include "Logger.h"
 #include "RailtestClient.h"
 #include "TestFixtureWidget.h"
+#include "SessionInfoWidget.h"
+#include "DutInfoWidget.h"
 
 class MainWindow : public QWidget
 {
@@ -58,15 +60,16 @@ private:
     QSharedPointer<Logger> _logger;
 
     //--- GUI Elements ------------------------------------------------
+
+    QLabel* _headerLabel;
     QComboBox* _selectSequenceBox;
     QListWidget* _testFunctionsListWidget;
     QPushButton* _startFullCycleTestingButton;
     QPushButton* _startSelectedTestButton;
     QSharedPointer<QListWidget> _logWidget;
     TestFixtureWidget* _testFixtureWidget;
-
-//    QThread* thr1;
-//    QList<TestObject1*> _obj;
+    SessionInfoWidget* _sessionInfoWidget;
+    DutInfoWidget* _dutInfoWidget;
 };
 
 #endif // MAINWINDOW_H

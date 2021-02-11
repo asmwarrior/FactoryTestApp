@@ -16,7 +16,8 @@ TestFixtureWidget::TestFixtureWidget(QWidget *parent) : QWidget(parent)
     for(int i = 1; i < 6; i++)
     {
         QGroupBox* testPanelBox = new QGroupBox("Test Panel " + QString().setNum(i));
-        testPanelBox->setFixedWidth(200);
+        testPanelBox->setStyleSheet("QGroupBox{color: #595959; font-size:10pt; font-weight: bold;}");
+        testPanelBox->setFixedWidth(250);
         testPanelBox->setCheckable(true);
         QHBoxLayout* boxLayout = new QHBoxLayout;
         testPanelBox->setLayout(boxLayout);
