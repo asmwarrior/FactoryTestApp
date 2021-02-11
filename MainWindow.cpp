@@ -133,8 +133,9 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     //Test fixture representation widget
-    _testFixtureWidget = new TestFixtureWidget;
+    _testFixtureWidget = new TestFixtureWidget(_session);
     middlePanelLayout->addWidget(_testFixtureWidget);
+    middlePanelLayout->addStretch();
 
     //Info widgets
     _sessionInfoWidget = new SessionInfoWidget;

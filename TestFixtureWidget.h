@@ -3,6 +3,9 @@
 #include <QWidget>
 #include <QGroupBox>
 #include <QButtonGroup>
+#include <QSharedPointer>
+
+#include "Session.h"
 #include "DutButton.h"
 
 class TestFixtureWidget : public QWidget
@@ -10,15 +13,17 @@ class TestFixtureWidget : public QWidget
 
 public:
 
-    TestFixtureWidget(QWidget* parent = nullptr);
+    TestFixtureWidget(const QSharedPointer<Session> &session, QWidget* parent = nullptr);
 
 private slots:
 
-    void setDutButtonsState(bool toggled);
+//    void setDutButtonsState(bool toggled);
 
 private:
 
+    QSharedPointer<Session> _session;
+
     QList<DutButton*> _buttons;
-    QMap<int, QGroupBox*> _panelGroupBoxes;
+    QGroupBox* _groupBox;
     QButtonGroup* _buttonGroup;
 };
