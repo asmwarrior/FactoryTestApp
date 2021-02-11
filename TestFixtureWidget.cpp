@@ -34,6 +34,12 @@ TestFixtureWidget::TestFixtureWidget(QWidget *parent) : QWidget(parent)
             boxLayout->addWidget(button);
         }
     }
+
+//    _buttons[1]->setButtonState(DutButton::tested);
+//    _buttons[2]->setButtonState(DutButton::tested);
+//    _buttons[3]->setButtonState(DutButton::tested);
+//    _buttons[4]->setButtonState(DutButton::tested);
+//    _buttons[5]->setButtonState(DutButton::warning);
 }
 
 void TestFixtureWidget::setDutButtonsState(bool toggled)

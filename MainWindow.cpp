@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
     //_workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
     _workDirectory = "../..";
 
+    _session = QSharedPointer<Session>::create();
     _settings = QSharedPointer<QSettings>::create(_workDirectory + "/settings.ini", QSettings::IniFormat);
     _settings->setValue("workDirectory", QDir(_workDirectory).absolutePath()); //Make name of work directory avaliable for other classes that use settings
 

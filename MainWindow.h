@@ -20,6 +20,7 @@
 #include "TestFixtureWidget.h"
 #include "SessionInfoWidget.h"
 #include "DutInfoWidget.h"
+#include "Session.h"
 
 class MainWindow : public QWidget
 {
@@ -41,6 +42,8 @@ private:
 
     void setCurrentJLinkIndex(int index);
     int getCurrentJLinkIndex();
+
+    QSharedPointer<Session> _session;
 
     QSharedPointer<QJSEngine> _scriptEngine;
 
