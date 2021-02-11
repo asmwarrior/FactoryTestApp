@@ -17,6 +17,8 @@ public:
     void setChecked(bool checked = true);
     void setTestPanelNo(int No);
     void setPos(int pos);
+    int getTestPanelNo();
+    int getPos();
 
 signals:
     void clicked(bool checked);

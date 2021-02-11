@@ -44,6 +44,16 @@ void DutButton::setPos(int pos)
     _pos = pos;
 }
 
+int DutButton::getTestPanelNo()
+{
+    return _testPanelNo;
+}
+
+int DutButton::getPos()
+{
+    return _pos;
+}
+
 void DutButton::setButtonState(State state)
 {
     _state = state;
