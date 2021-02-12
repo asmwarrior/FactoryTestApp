@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include <QGroupBox>
+#include <QPushButton>
 #include <QButtonGroup>
 #include <QSharedPointer>
 
@@ -10,14 +11,15 @@
 
 class TestFixtureWidget : public QWidget
 {
+    Q_OBJECT
 
 public:
 
     TestFixtureWidget(const QSharedPointer<Session> &session, QWidget* parent = nullptr);
 
-private slots:
+signals:
 
-//    void setDutButtonsState(bool toggled);
+    void dutStateChanged();
 
 private:
 
@@ -26,4 +28,7 @@ private:
     QList<DutButton*> _buttons;
     QGroupBox* _groupBox;
     QButtonGroup* _buttonGroup;
+
+    QPushButton* _selectAllButton;
+    QPushButton* _reverseSelectionButton;
 };

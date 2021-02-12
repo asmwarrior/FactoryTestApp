@@ -8,9 +8,14 @@
 class SessionInfoWidget : public QWidget
 {
 
+    Q_OBJECT
+
 public:
 
     SessionInfoWidget(QWidget* parent = nullptr);
+
+public slots:
+
 
 private:
 

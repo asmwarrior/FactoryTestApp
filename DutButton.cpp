@@ -22,7 +22,7 @@ DutButton::DutButton(int no, int panelNo, int pos, QWidget *parent) : QPushButto
 
     setCheckable(true);
     setChecked(false);
-    setButtonState(warning);
+    setButtonState(untested);
     setFixedSize(44, 44);
     setText(QString().setNum(_no));
 }
@@ -40,6 +40,11 @@ void DutButton::setTestPanelNo(int No)
 void DutButton::setPos(int pos)
 {
     _pos = pos;
+}
+
+int DutButton::getNo()
+{
+    return _no;
 }
 
 int DutButton::getTestPanelNo()

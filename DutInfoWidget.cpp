@@ -7,12 +7,12 @@
 #include <QGroupBox>
 #include <QButtonGroup>
 
-DutInfoWidget::DutInfoWidget(QWidget *parent) : QWidget(parent)
+DutInfoWidget::DutInfoWidget(const QSharedPointer<Session> &session, QWidget *parent) : QWidget(parent), _session(session)
 {
     QVBoxLayout* mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
 
-    QGroupBox* widgetBox = new QGroupBox("Selected DUT information");
+    QGroupBox* widgetBox = new QGroupBox("DUT information");
     widgetBox->setFixedSize(350, 200);
     mainLayout->addWidget(widgetBox);
     mainLayout->addStretch();
@@ -24,21 +24,73 @@ DutInfoWidget::DutInfoWidget(QWidget *parent) : QWidget(parent)
 
     setStyleSheet("QLabel{color: #595959;}");
 
-    _testPanel = new QLabel;
-    _testPanel->setText(_testPanelTemplate.arg(1));
-    labelsLayout->addWidget(_testPanel);
 
     _slot = new QLabel;
-    _slot->setText(_slotTemplate.arg(2));
+    _slot->setText(_slotTemplate.arg(""));
     labelsLayout->addWidget(_slot);
 
     _id = new QLabel;
-    _id->setText(_idTemplate.arg("34567844"));
+    _id->setText(_idTemplate.arg(""));
     labelsLayout->addWidget(_id);
 
     _status = new QLabel;
-    _status->setText(_statusTemplate.arg("success"));
+    _status->setText(_statusTemplate.arg(""));
     labelsLayout->addWidget(_status);
 
+    _errorDesc = new QLabel;
+    labelsLayout->addWidget(_errorDesc);
+
+    _checkState = new QLabel;
+    labelsLayout->addWidget(_checkState);
+
     labelsLayout->addStretch();
+}
+
+void DutInfoWidget::showDutInfo(int no)
+{
+    _slot->setText(_slotTemplate.arg(no));
+    _id->setText(_idTemplate.arg(_session->duts[no - 1].id));
+
+    QString stateDescription;
+    switch (_session->duts[no - 1].state)
+    {
+        case Dut::unavaliable:
+        stateDescription = "The device is not avaliable now.";
+        break;
+
+        case Dut::untested:
+        stateDescription = "The device is not tested yet.</p>";
+        break;
+
+        case Dut::tested:
+        stateDescription = "The device passes testing successfully.";
+        break;
+
+        case Dut::warning:
+        stateDescription = "An error occures during the testing.";
+        break;
+    }
+
+
+    _status->setText(_statusTemplate.arg(stateDescription));
+
+    if(!_session->duts[no - 1].lastErrorDescription.isEmpty())
+    {
+        _errorDesc->setText(_errorDescTemplate.arg(_session->duts[no - 1].lastErrorDescription));
+    }
+
+    else
+    {
+        _errorDesc->setText("");
+    }
+
+    if(_session->duts[no - 1].checked)
+    {
+        _checkState->setText("CHECKED for a further testing.");
+    }
+
+    else
+    {
+        _checkState->setText("NOT CHECKED for a further testing.");
+    }
 }

@@ -17,6 +17,7 @@ public:
     void setChecked(bool checked = true);
     void setTestPanelNo(int No);
     void setPos(int pos);
+    int getNo();
     int getTestPanelNo();
     int getPos();
 

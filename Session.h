@@ -12,6 +12,7 @@ struct Dut
     int no;
     int testPanel;
     int pos;
+    QString lastErrorDescription;
     bool checked = true;
 
     Dut(int no, int testPanel, int pos) {this->no = no; this->testPanel = testPanel; this->pos = pos;}
@@ -23,6 +24,8 @@ struct Session
     int totalTested;
     int success;
     int failtures;
+
+    int currentDut;
 
     QList<Dut> duts =
     {

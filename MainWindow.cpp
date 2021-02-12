@@ -119,6 +119,7 @@ MainWindow::MainWindow(QWidget *parent)
     //Start testing buttons
     QHBoxLayout* startTestingButtonsLayout = new QHBoxLayout;
     leftPanelLayout->addLayout(startTestingButtonsLayout);
+    leftPanelLayout->addSpacing(9);
 
     _startFullCycleTestingButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/autoDownload")), tr("Start full cycle testing"), this);
     _startFullCycleTestingButton->setFixedSize(160, 40);
@@ -141,8 +142,12 @@ MainWindow::MainWindow(QWidget *parent)
     _sessionInfoWidget = new SessionInfoWidget;
     rightPanelLayout->addWidget(_sessionInfoWidget);
 
-    _dutInfoWidget = new DutInfoWidget;
+    _dutInfoWidget = new DutInfoWidget(_session);
     rightPanelLayout->addWidget(_dutInfoWidget);
+    connect(_testFixtureWidget, &TestFixtureWidget::dutStateChanged, [=]()
+    {
+        _dutInfoWidget->showDutInfo(_session->currentDut);
+    });
     rightPanelLayout->addStretch();
 
     //Log widget
@@ -155,6 +160,7 @@ MainWindow::MainWindow(QWidget *parent)
     _db = new DataBase(_settings, this);
     _db->connectToDataBase();
     //_db->insertIntoTable("test", QDateTime::currentDateTime().toString());
+
 }
 
 MainWindow::~MainWindow()

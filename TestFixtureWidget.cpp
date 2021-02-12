@@ -18,6 +18,7 @@ TestFixtureWidget::TestFixtureWidget(const QSharedPointer<Session> &session, QWi
     QGridLayout* boxLayout = new QGridLayout;
     _groupBox->setLayout(boxLayout);
     mainLayout->addWidget(_groupBox);
+    mainLayout->addSpacing(50);
 
     _buttonGroup = new QButtonGroup;
     _buttonGroup->setExclusive(false);
@@ -39,42 +40,42 @@ TestFixtureWidget::TestFixtureWidget(const QSharedPointer<Session> &session, QWi
         }
     }
 
-//    for(int i = 1; i < 6; i++)
-//    {
+    connect(_buttonGroup, &QButtonGroup::idClicked, [=](int id)
+    {
+        _session->currentDut = id;
+        emit dutStateChanged();
+    });
+    connect(_buttonGroup, QOverload<QAbstractButton *, bool>::of(&QButtonGroup::buttonToggled), [=](QAbstractButton *button, bool checked)
+    {
+        _session->duts[(dynamic_cast<DutButton*>(button))->getNo() - 1].checked = checked;
+    });
 
-//        QGroupBox* testPanelBox = new QGroupBox("Test Panel " + QString().setNum(i));
-//        _panelGroupBoxes.insert(i, testPanelBox);
-//        testPanelBox->setStyleSheet("QGroupBox{color: #595959; font-size:10pt; font-weight: bold;}");
-//        testPanelBox->setFixedWidth(250);
-//        testPanelBox->setCheckable(true);
-//        QHBoxLayout* boxLayout = new QHBoxLayout;
-//        testPanelBox->setLayout(boxLayout);
-//        mainLayout->addWidget(testPanelBox);
 
-//        connect(testPanelBox, &QGroupBox::toggled, this, &TestFixtureWidget::setDutButtonsState);
+    QHBoxLayout* selectionButtonsLayout = new QHBoxLayout;
+    mainLayout->addLayout(selectionButtonsLayout);
 
-//        for(int j = 1; j < 4; j++)
-//        {
-//            DutButton* button = new DutButton(i, j);
-//            _buttons.push_back(button);
-//            _buttonGroup->addButton(button);
-//            _buttonGroup->setExclusive(true);
-//            boxLayout->addWidget(button);
-//        }
-//    }
+    _selectAllButton = new QPushButton("Select all DUTs");
+    _selectAllButton->setFixedHeight(40);
+    selectionButtonsLayout->addWidget(_selectAllButton);
+    connect(_selectAllButton, &QPushButton::clicked, [=]()
+    {
+        for (auto & button : _buttons)
+        {
+            button->setChecked(true);
+        }
+        emit dutStateChanged();
+    });
+
+    _reverseSelectionButton = new QPushButton("Reverse Selection");
+    _reverseSelectionButton->setFixedHeight(40);
+    selectionButtonsLayout->addWidget(_reverseSelectionButton);
+
+    connect(_reverseSelectionButton, &QPushButton::clicked, [=]()
+    {
+        for (auto & button : _buttons)
+        {
+            button->setChecked(!button->isChecked());
+        }
+        emit dutStateChanged();
+    });
 }
-
-//void TestFixtureWidget::setDutButtonsState(bool toggled)
-//{
-//    auto panelNo = _panelGroupBoxes.key(dynamic_cast<QGroupBox*>(sender()));
-//    for(auto & button : _buttons)
-//    {
-//        if(button->getTestPanelNo() == panelNo)
-//        {
-//            if(toggled)
-//                button->setButtonState(DutButton::untested);
-//            else
-//                button->setButtonState(DutButton::inactive);
-//        }
-//    }
-//}
