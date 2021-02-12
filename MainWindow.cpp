@@ -101,6 +101,10 @@ MainWindow::MainWindow(QWidget *parent)
     {
         _testFunctionsListWidget->clear();
         _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
+        if(_testFunctionsListWidget->count() > 0)
+        {
+            _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
+        }
     });
 
     leftPanelLayout->addWidget(selectSequenceBoxLabel);
@@ -111,6 +115,10 @@ MainWindow::MainWindow(QWidget *parent)
     _testFunctionsListWidget = new QListWidget(this);
     _testFunctionsListWidget->setFixedWidth(350);
     _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
+    if(_testFunctionsListWidget->count() > 0)
+    {
+        _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
+    }
 
     leftPanelLayout->addWidget(testFunctionsListLabel);
     leftPanelLayout->addWidget(_testFunctionsListWidget);
@@ -129,8 +137,12 @@ MainWindow::MainWindow(QWidget *parent)
     _startSelectedTestButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/checked")), tr("Start Selected Test"), this);
     _startSelectedTestButton->setFixedSize(160, 40);
     startTestingButtonsLayout->addWidget(_startSelectedTestButton);
-    connect(_startSelectedTestButton, &QPushButton::clicked, [=](){
-        _testSequenceManager->runTestFunction(_testFunctionsListWidget->currentItem()->text());
+    connect(_startSelectedTestButton, &QPushButton::clicked, [=]()
+    {
+        if(_testFunctionsListWidget->currentItem())
+        {
+            _testSequenceManager->runTestFunction(_testFunctionsListWidget->currentItem()->text());
+        }
     });
 
     //Test fixture representation widget
@@ -160,7 +172,6 @@ MainWindow::MainWindow(QWidget *parent)
     _db = new DataBase(_settings, this);
     _db->connectToDataBase();
     //_db->insertIntoTable("test", QDateTime::currentDateTime().toString());
-
 }
 
 MainWindow::~MainWindow()

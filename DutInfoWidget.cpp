@@ -48,6 +48,9 @@ DutInfoWidget::DutInfoWidget(const QSharedPointer<Session> &session, QWidget *pa
 
 void DutInfoWidget::showDutInfo(int no)
 {
+    if(no < 1)
+        return;
+
     _slot->setText(_slotTemplate.arg(no));
     _id->setText(_idTemplate.arg(_session->duts[no - 1].id));
 
