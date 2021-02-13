@@ -11,7 +11,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
     //_workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
-    _workDirectory = "../..";
+    //_workDirectory = "./"; //For test version
+    _workDirectory = "../.."; //For development
 
     _session = QSharedPointer<Session>::create();
     _settings = QSharedPointer<QSettings>::create(_workDirectory + "/settings.ini", QSettings::IniFormat);
@@ -38,23 +39,27 @@ MainWindow::MainWindow(QWidget *parent)
         _threads.push_back(newThread);
     }
 
-    // Creating objects for controlling JLinks
+    // Creating objects for controlling JLinks and Rail Test clients
     for (int i = 0; i < 5; i++)
     {
         auto newJlink = new JLinkManager(_settings);
         newJlink->setSN(_settings->value(QString("JLink/SN" + QString().setNum(i + 1))).toString());
         newJlink->setLogger(_logger);
-        _JLinkList.push_back(newJlink);
+        _JLinksList.push_back(newJlink);
         //_JLinkList[i]->moveToThread(_threads[i]);
-        _threads[i]->start();
         QJSValue jlink = _scriptEngine->newQObject(newJlink);
         _scriptEngine->globalObject().property("JlinksList").setProperty(i, jlink);
-    }
 
-    _rail = new RailtestClient(_settings, this);
-    _rail->setLogger(_logger);
-    QJSValue rail = _scriptEngine->newQObject(_rail);
-    _scriptEngine->globalObject().setProperty("rail", rail);
+        auto railClient = new RailtestClient(_settings, this);
+        railClient->setLogger(_logger);
+        railClient->open(_settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
+        _railTestClientsList.push_back(railClient);
+        //_railTestClientsList[i]->moveToThread(_threads[i]);
+        QJSValue rail = _scriptEngine->newQObject(railClient);
+        _scriptEngine->globalObject().property("railTestClientsList").setProperty(i, rail);
+
+        _threads[i]->start();
+    }
 
 //--- GUI Layouts---
     QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -181,13 +186,17 @@ MainWindow::~MainWindow()
         thread->quit();
     }
 
-    for(auto & jlink : _JLinkList)
+    for(auto & jlink : _JLinksList)
     {
         delete jlink;
     }
 
+    for(auto & rail : _railTestClientsList)
+    {
+        delete rail;
+    }
+
     delete _testSequenceManager;
-    delete _rail;
 }
 
 void MainWindow::startFullCycleTesting()

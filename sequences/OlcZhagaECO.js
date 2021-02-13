@@ -4,17 +4,19 @@ ZhagaECO =
 {
     downloadRailtest: function ()
     {
-        JlinksList[currentJLinkIndex].startScript("/sequences/OlcZhagaECO/olc_zhaga_railtest.jlink");
-        JlinksList[1].startScript("/sequences/OlcZhagaECO/olc_zhaga_railtest.jlink");
+        let jlink = JlinksList[currentJLinkIndex];
+        jlink.startScript("/sequences/OlcZhagaECO/olc_zhaga_railtest.jlink");
     },
 
     downloadSoftware: function ()
     {
-        JlinksList[currentJLinkIndex].startJLinkScript("/sequences/OlcZhagaECO/olc_zhaga_software.jlink");
+        let jlink = JlinksList[currentJLinkIndex];
+        jlink.startJLinkScript("/sequences/OlcZhagaECO/olc_zhaga_software.jlink");
     },
 
     openRailTestClient: function ()
     {
+        let rail = railTestClientsList[currentRailTestClientIndex];
         if (!rail.open())
         {
             logger.logError("Cannot open RAILTEST serial port!");
@@ -28,6 +30,7 @@ ZhagaECO =
 
     readChipID: function ()
     {
+        let rail = railTestClientsList[currentRailTestClientIndex];
         let id = rail.readChipId();
 
         if(id == "")
@@ -43,6 +46,7 @@ ZhagaECO =
 
     initDali: function ()
     {
+        let rail = railTestClientsList[currentRailTestClientIndex];
         rail.syncCommand("dlpw", "1", 1000);
         rail.syncCommand("dali", "0xFE80 16 0 0", 1000);
         rail.syncCommand("dali", "0xFF90 16 0 1000000", 2000);
@@ -50,26 +54,31 @@ ZhagaECO =
 
     testRadio: function ()
     {
+        let rail = railTestClientsList[currentRailTestClientIndex];
         rail.testRadio();
     },
 
     testAccelerometer: function ()
     {
+        let rail = railTestClientsList[currentRailTestClientIndex];
         rail.testAccelerometer();
     },
 
     testLightSensor: function ()
     {
+        let rail = railTestClientsList[currentRailTestClientIndex];
         rail.testLightSensor();
     },
 
     testDALI: function ()
     {
+        let rail = railTestClientsList[currentRailTestClientIndex];
         rail.testDALI();
     },
 
     testGNSS: function ()
     {
+        let rail = railTestClientsList[currentRailTestClientIndex];
         rail.testGNSS();
     }
 }

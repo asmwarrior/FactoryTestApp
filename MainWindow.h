@@ -48,9 +48,10 @@ private:
     QSharedPointer<QJSEngine> _scriptEngine;
 
     QList<QThread*> _threads;
-    QList<JLinkManager*> _JLinkList;
+    QList<JLinkManager*> _JLinksList;
+    QList<RailtestClient*> _railTestClientsList;
 
-    RailtestClient* _rail;
+    //RailtestClient* _rail;
 
     QString _workDirectory;
     TestSequenceManager* _testSequenceManager;
