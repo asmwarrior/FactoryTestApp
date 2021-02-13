@@ -2,6 +2,7 @@
 
 #include <QString>
 #include <QList>
+#include <QObject>
 
 struct Dut
 {
@@ -18,8 +19,24 @@ struct Dut
     Dut(int no, int testPanel, int pos) {this->no = no; this->testPanel = testPanel; this->pos = pos;}
 };
 
-struct Session
+class Session : public QObject
 {
+    Q_OBJECT
+
+    Q_PROPERTY(QString operatorName WRITE setOperatorName READ getOperatorName)
+    Q_PROPERTY(int currentDut WRITE setCurrentDut READ getCurrentDut)
+
+public:
+
+    QString getOperatorName() const {return operatorName;}
+    void setOperatorName(const QString& name) {operatorName = name;}
+
+    int getCurrentDut() const {return currentDut;}
+    void setCurrentDut(int index) {currentDut = index;}
+
+
+private:
+
     QString operatorName;
     int totalTested;
     int success;
@@ -49,4 +66,6 @@ struct Session
         {14, 5, 2},
         {15, 5, 3},
     };
+
+
 };
