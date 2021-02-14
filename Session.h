@@ -29,28 +29,39 @@ class Session : public QObject
 
 public:
 
-    explicit Session(QObject* parent = nullptr);
+    explicit Session(QObject* parent = nullptr) : QObject(parent) {}
 
-//public slots:
+    QString getOperatorName() const
+    {
+        return m_operatorName;
+    }
 
-    QString getOperatorName() const;
-    void setOperatorName(const QString& name);
+    QList<Dut> getDutsList() const
+    {
+        return m_duts;
+    }
 
-    int getCurrentDut() const;
-    void setCurrentDut(int index);
+    int getCurrentDut() const
+    {
+        return m_currentDut;
+    }
 
-    QList<Dut>& getDutsList();
+public slots:
+    void setOperatorName(QString operatorName)
+    {
+        m_operatorName = operatorName;
+    }
+
+    void setCurrentDut(int currentDut)
+    {
+        m_currentDut = currentDut;
+    }
 
 private:
 
-    QString operatorName = "Andrey Sokolov";
-    int totalTested;
-    int success;
-    int failtures;
-
-    int currentDut;
-
-    QList<Dut> duts =
+    QString m_operatorName = "Andrey Sokolov";
+    int m_currentDut;
+    QList<Dut> m_duts =
     {
         {1, 1, 1},
         {2, 1, 2},
@@ -72,15 +83,4 @@ private:
         {14, 5, 2},
         {15, 5, 3},
     };
-
-};
-
-class TestClass : public QObject
-{
-    Q_OBJECT
-
-public:
-
-    explicit TestClass(QObject* parent = nullptr) {}
-
 };

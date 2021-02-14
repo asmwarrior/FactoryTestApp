@@ -15,7 +15,7 @@ class TestFixtureWidget : public QWidget
 
 public:
 
-    TestFixtureWidget(const QSharedPointer<Session> &session, QWidget* parent = nullptr);
+    TestFixtureWidget(Session *session, QWidget* parent = nullptr);
 
 signals:
 
@@ -23,7 +23,8 @@ signals:
 
 private:
 
-    QSharedPointer<Session> _session;
+    //QSharedPointer<Session> _session;
+    Session* _session;
 
     QList<DutButton*> _buttons;
     QGroupBox* _groupBox;

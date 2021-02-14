@@ -25,13 +25,9 @@ MainWindow::MainWindow(QWidget *parent)
     QJSValue logger = _scriptEngine.newQObject(_logger.get());
     _scriptEngine.globalObject().setProperty("logger", logger);
 
-    _session = QSharedPointer<Session>::create();
-//    QJSValue session = _scriptEngine.newQObject(_session.get());
-//    _scriptEngine.globalObject().setProperty("session", session);
-
-    test = QSharedPointer<TestClass>::create();
-    QJSValue testjs = _scriptEngine.newQObject(test.get());
-    _scriptEngine.globalObject().setProperty("session", testjs);
+    _session = new Session(this);
+    QJSValue session = _scriptEngine.newQObject(_session);
+    _scriptEngine.globalObject().setProperty("session", session);
 
     _testSequenceManager = new TestSequenceManager();
     _testSequenceManager->setLogger(_logger);

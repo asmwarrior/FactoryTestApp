@@ -6,7 +6,7 @@
 #include <QHBoxLayout>
 #include <QGridLayout>
 
-TestFixtureWidget::TestFixtureWidget(const QSharedPointer<Session> &session, QWidget *parent) : QWidget(parent), _session(session)
+TestFixtureWidget::TestFixtureWidget(Session *session, QWidget *parent) : QWidget(parent), _session(session)
 {
 
     QVBoxLayout* mainLayout = new QVBoxLayout;

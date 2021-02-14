@@ -43,9 +43,9 @@ private:
     void setCurrentJLinkIndex(int index);
     int getCurrentJLinkIndex();
 
-    QSharedPointer<Session> _session;
+    //QSharedPointer<Session> _session;
+    Session* _session;
 
-    //QSharedPointer<QJSEngine> _scriptEngine;
     QJSEngine _scriptEngine;
 
     QList<QThread*> _threads;
@@ -73,8 +73,6 @@ private:
     TestFixtureWidget* _testFixtureWidget;
     SessionInfoWidget* _sessionInfoWidget;
     DutInfoWidget* _dutInfoWidget;
-
-    QSharedPointer<TestClass> test;
 };
 
 #endif // MAINWINDOW_H

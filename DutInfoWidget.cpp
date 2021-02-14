@@ -7,7 +7,7 @@
 #include <QGroupBox>
 #include <QButtonGroup>
 
-DutInfoWidget::DutInfoWidget(const QSharedPointer<Session> &session, QWidget *parent) : QWidget(parent), _session(session)
+DutInfoWidget::DutInfoWidget(Session *session, QWidget *parent) : QWidget(parent), _session(session)
 {
     QVBoxLayout* mainLayout = new QVBoxLayout;
     setLayout(mainLayout);

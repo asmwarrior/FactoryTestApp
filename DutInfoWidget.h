@@ -14,7 +14,7 @@ class DutInfoWidget : public QWidget
 
 public:
 
-    DutInfoWidget(const QSharedPointer<Session> &session, QWidget* parent = nullptr);
+    DutInfoWidget(Session *session, QWidget* parent = nullptr);
 
 public slots:
 
@@ -22,7 +22,8 @@ public slots:
 
 private:
 
-    QSharedPointer<Session> _session;
+    //QSharedPointer<Session> _session;
+    Session* _session;
 
     QLabel* _slot;
     QString _slotTemplate = "<b>Slot:</b> %1";
