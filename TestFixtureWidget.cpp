@@ -23,7 +23,7 @@ TestFixtureWidget::TestFixtureWidget(const QSharedPointer<Session> &session, QWi
     _buttonGroup = new QButtonGroup;
     _buttonGroup->setExclusive(false);
 
-    for(auto & dut : _session->duts)
+    for(auto & dut : _session->getDutsList())
     {
         DutButton* button = new DutButton(dut.no, dut.testPanel, dut.pos);
         _buttons.push_back(button);
@@ -42,12 +42,12 @@ TestFixtureWidget::TestFixtureWidget(const QSharedPointer<Session> &session, QWi
 
     connect(_buttonGroup, &QButtonGroup::idClicked, [=](int id)
     {
-        _session->currentDut = id;
+        _session->setCurrentDut(id);
         emit dutStateChanged();
     });
     connect(_buttonGroup, QOverload<QAbstractButton *, bool>::of(&QButtonGroup::buttonToggled), [=](QAbstractButton *button, bool checked)
     {
-        _session->duts[(dynamic_cast<DutButton*>(button))->getNo() - 1].checked = checked;
+        _session->getDutsList()[(dynamic_cast<DutButton*>(button))->getNo() - 1].checked = checked;
     });
 
 

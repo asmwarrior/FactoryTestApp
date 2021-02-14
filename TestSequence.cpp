@@ -2,7 +2,7 @@
 
 #include <QDebug>
 
-TestSequenceManager::TestSequenceManager(const QSharedPointer<QJSEngine> &scriptEngine, QObject *parent) : QObject(parent), _scriptEngine(scriptEngine)
+TestSequenceManager::TestSequenceManager(QObject *parent) : QObject(parent)
 {
 }
 

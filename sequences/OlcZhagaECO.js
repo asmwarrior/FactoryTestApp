@@ -4,6 +4,7 @@ ZhagaECO =
 {
     downloadRailtest: function ()
     {
+        console.log(session.operatorName)
         let jlink = JlinksList[currentJLinkIndex];
         jlink.startScript("/sequences/OlcZhagaECO/olc_zhaga_railtest.jlink");
     },

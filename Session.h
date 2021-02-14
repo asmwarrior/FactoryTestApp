@@ -25,19 +25,25 @@ class Session : public QObject
 
     Q_PROPERTY(QString operatorName WRITE setOperatorName READ getOperatorName)
     Q_PROPERTY(int currentDut WRITE setCurrentDut READ getCurrentDut)
+    Q_PROPERTY(QList<Dut> duts READ getDutsList)
 
 public:
 
-    QString getOperatorName() const {return operatorName;}
-    void setOperatorName(const QString& name) {operatorName = name;}
+    explicit Session(QObject* parent = nullptr);
 
-    int getCurrentDut() const {return currentDut;}
-    void setCurrentDut(int index) {currentDut = index;}
+//public slots:
 
+    QString getOperatorName() const;
+    void setOperatorName(const QString& name);
+
+    int getCurrentDut() const;
+    void setCurrentDut(int index);
+
+    QList<Dut>& getDutsList();
 
 private:
 
-    QString operatorName;
+    QString operatorName = "Andrey Sokolov";
     int totalTested;
     int success;
     int failtures;
@@ -67,5 +73,14 @@ private:
         {15, 5, 3},
     };
 
+};
+
+class TestClass : public QObject
+{
+    Q_OBJECT
+
+public:
+
+    explicit TestClass(QObject* parent = nullptr) {}
 
 };

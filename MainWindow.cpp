@@ -14,21 +14,29 @@ MainWindow::MainWindow(QWidget *parent)
     //_workDirectory = "./"; //For test version
     _workDirectory = "../.."; //For development
 
-    _session = QSharedPointer<Session>::create();
+
     _settings = QSharedPointer<QSettings>::create(_workDirectory + "/settings.ini", QSettings::IniFormat);
     _settings->setValue("workDirectory", QDir(_workDirectory).absolutePath()); //Make name of work directory avaliable for other classes that use settings
 
-    _scriptEngine = QSharedPointer<QJSEngine>::create(this);
-    _scriptEngine->installExtensions(QJSEngine::ConsoleExtension);
+    //_scriptEngine = QSharedPointer<QJSEngine>::create();
+    _scriptEngine.installExtensions(QJSEngine::ConsoleExtension);
 
-    _logger = QSharedPointer<Logger>::create(this);
-    QJSValue logger = _scriptEngine->newQObject(_logger.get());
-    _scriptEngine->globalObject().setProperty("logger", logger);
+    _logger = QSharedPointer<Logger>::create();
+    QJSValue logger = _scriptEngine.newQObject(_logger.get());
+    _scriptEngine.globalObject().setProperty("logger", logger);
 
-    _testSequenceManager = new TestSequenceManager(_scriptEngine, this);
+    _session = QSharedPointer<Session>::create();
+//    QJSValue session = _scriptEngine.newQObject(_session.get());
+//    _scriptEngine.globalObject().setProperty("session", session);
+
+    test = QSharedPointer<TestClass>::create();
+    QJSValue testjs = _scriptEngine.newQObject(test.get());
+    _scriptEngine.globalObject().setProperty("session", testjs);
+
+    _testSequenceManager = new TestSequenceManager();
     _testSequenceManager->setLogger(_logger);
-    QJSValue testSequenceManager = _scriptEngine->newQObject(_testSequenceManager);
-    _scriptEngine->globalObject().setProperty("testSequenceManager", testSequenceManager);
+    QJSValue testSequenceManager = _scriptEngine.newQObject(_testSequenceManager);
+    _scriptEngine.globalObject().setProperty("testSequenceManager", testSequenceManager);
     evaluateScriptFromFile(_workDirectory + "/init.js");
     evaluateScriptsFromDirectory(_workDirectory + "/sequences");
 
@@ -47,16 +55,16 @@ MainWindow::MainWindow(QWidget *parent)
         newJlink->setLogger(_logger);
         _JLinksList.push_back(newJlink);
         //_JLinkList[i]->moveToThread(_threads[i]);
-        QJSValue jlink = _scriptEngine->newQObject(newJlink);
-        _scriptEngine->globalObject().property("JlinksList").setProperty(i, jlink);
+        QJSValue jlink = _scriptEngine.newQObject(newJlink);
+        _scriptEngine.globalObject().property("JlinksList").setProperty(i, jlink);
 
         auto railClient = new RailtestClient(_settings, this);
         railClient->setLogger(_logger);
         railClient->open(_settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
         _railTestClientsList.push_back(railClient);
         //_railTestClientsList[i]->moveToThread(_threads[i]);
-        QJSValue rail = _scriptEngine->newQObject(railClient);
-        _scriptEngine->globalObject().property("railTestClientsList").setProperty(i, rail);
+        QJSValue rail = _scriptEngine.newQObject(railClient);
+        _scriptEngine.globalObject().property("railTestClientsList").setProperty(i, rail);
 
         _threads[i]->start();
     }
@@ -163,7 +171,7 @@ MainWindow::MainWindow(QWidget *parent)
     rightPanelLayout->addWidget(_dutInfoWidget);
     connect(_testFixtureWidget, &TestFixtureWidget::dutStateChanged, [=]()
     {
-        _dutInfoWidget->showDutInfo(_session->currentDut);
+        _dutInfoWidget->showDutInfo(_session->getCurrentDut());
     });
     rightPanelLayout->addStretch();
 
@@ -213,7 +221,7 @@ QJSValue MainWindow::evaluateScriptFromFile(const QString &scriptFileName)
     scriptFile.open(QIODevice::ReadOnly | QIODevice::Text);
     QTextStream in(&scriptFile);
     in.setCodec("Utf-8");
-    QJSValue scriptResult = _scriptEngine->evaluate(QString(in.readAll()));
+    QJSValue scriptResult = _scriptEngine.evaluate(QString(in.readAll()));
     scriptFile.close();
     return scriptResult;
 }
@@ -234,15 +242,15 @@ QList<QJSValue> MainWindow::evaluateScriptsFromDirectory(const QString& director
 
 QJSValue MainWindow::runScript(const QString& scriptName, const QJSValueList& args)
 {
-    return _scriptEngine->globalObject().property(scriptName).call(args);
+    return _scriptEngine.globalObject().property(scriptName).call(args);
 }
 
 void MainWindow::setCurrentJLinkIndex(int index)
 {
-    _scriptEngine->globalObject().setProperty("currentJLinkIndex", index);
+    _scriptEngine.globalObject().setProperty("currentJLinkIndex", index);
 }
 
 int MainWindow::getCurrentJLinkIndex()
 {
-    return _scriptEngine->globalObject().property("currentJLinkIndex").toInt();
+    return _scriptEngine.globalObject().property("currentJLinkIndex").toInt();
 }

@@ -45,13 +45,12 @@ private:
 
     QSharedPointer<Session> _session;
 
-    QSharedPointer<QJSEngine> _scriptEngine;
+    //QSharedPointer<QJSEngine> _scriptEngine;
+    QJSEngine _scriptEngine;
 
     QList<QThread*> _threads;
     QList<JLinkManager*> _JLinksList;
     QList<RailtestClient*> _railTestClientsList;
-
-    //RailtestClient* _rail;
 
     QString _workDirectory;
     TestSequenceManager* _testSequenceManager;
@@ -74,6 +73,8 @@ private:
     TestFixtureWidget* _testFixtureWidget;
     SessionInfoWidget* _sessionInfoWidget;
     DutInfoWidget* _dutInfoWidget;
+
+    QSharedPointer<TestClass> test;
 };
 
 #endif // MAINWINDOW_H

@@ -22,7 +22,7 @@ public:
     };
 
 
-    TestSequenceManager(const QSharedPointer<QJSEngine>& scriptEngine, QObject *parent = nullptr);
+    TestSequenceManager(QObject *parent = nullptr);
 
     void setLogger(const QSharedPointer<Logger>& logger);
 
@@ -37,7 +37,6 @@ public slots:
 
 private:
 
-    QSharedPointer<QJSEngine> _scriptEngine;
     QSharedPointer<Logger> _logger;
     QString _currentSequence;
     QMap<QString, QList<TestFunction>> _sequences;
