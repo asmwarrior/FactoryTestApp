@@ -15,10 +15,10 @@ class RailtestClient : public QObject
     Q_OBJECT
 
 public:
-    explicit RailtestClient(const QSharedPointer<QSettings>& settings, QObject *parent = Q_NULLPTR);
+    explicit RailtestClient(QSettings* settings, QObject *parent = Q_NULLPTR);
     virtual ~RailtestClient();
 
-    void setLogger(const QSharedPointer<Logger>& logger);
+    void setLogger(Logger* logger);
 
     bool open(const QString &portName);
     Q_INVOKABLE bool open();
@@ -47,8 +47,8 @@ signals:
     void replyReceived(QString id, QVariantMap params);
 
 private:
-    QSharedPointer<QSettings> _settings;
-    QSharedPointer<Logger> _logger;
+    QSettings* _settings;
+    Logger* _logger;
     QSerialPort m_serial;
     QByteArray
     m_recvBuffer,

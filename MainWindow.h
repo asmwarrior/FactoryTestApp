@@ -12,6 +12,7 @@
 #include <QSqlTableModel>
 #include <QModelIndex>
 
+#include "AppComponent.h"
 #include "JLinkManager.h"
 #include "Database.h"
 #include "TestSequence.h"
@@ -22,7 +23,7 @@
 #include "DutInfoWidget.h"
 #include "Session.h"
 
-class MainWindow : public QWidget
+class MainWindow : public QWidget, public AppComponent
 {
     Q_OBJECT
 
@@ -36,31 +37,31 @@ public slots:
 
 private:
 
-    QJSValue evaluateScriptFromFile(const QString& scriptFileName);
-    QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
-    QJSValue runScript(const QString& scriptName, const QJSValueList& args);
+//    QJSValue evaluateScriptFromFile(const QString& scriptFileName);
+//    QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
+//    QJSValue runScript(const QString& scriptName, const QJSValueList& args);
 
     void setCurrentJLinkIndex(int index);
     int getCurrentJLinkIndex();
 
     //QSharedPointer<Session> _session;
-    Session* _session;
+//    Session* _session;
 
-    QJSEngine _scriptEngine;
+//    QJSEngine _scriptEngine;
 
     QList<QThread*> _threads;
     QList<JLinkManager*> _JLinksList;
     QList<RailtestClient*> _railTestClientsList;
 
-    QString _workDirectory;
-    TestSequenceManager* _testSequenceManager;
+//    QString _workDirectory;
+//    TestSequenceManager* _testSequenceManager;
 
 
-    QSharedPointer<QSettings> _settings;
+//    QSharedPointer<QSettings> _settings;
     DataBase *_db;
     QSqlTableModel  *model;
 
-    QSharedPointer<Logger> _logger;
+//    QSharedPointer<Logger> _logger;
 
     //--- GUI Elements ------------------------------------------------
 
@@ -69,7 +70,7 @@ private:
     QListWidget* _testFunctionsListWidget;
     QPushButton* _startFullCycleTestingButton;
     QPushButton* _startSelectedTestButton;
-    QSharedPointer<QListWidget> _logWidget;
+    QListWidget* _logWidget;
     TestFixtureWidget* _testFixtureWidget;
     SessionInfoWidget* _sessionInfoWidget;
     DutInfoWidget* _dutInfoWidget;

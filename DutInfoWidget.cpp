@@ -7,7 +7,7 @@
 #include <QGroupBox>
 #include <QButtonGroup>
 
-DutInfoWidget::DutInfoWidget(Session *session, QWidget *parent) : QWidget(parent), _session(session)
+DutInfoWidget::DutInfoWidget(QWidget *parent) : QWidget(parent)
 {
     QVBoxLayout* mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
@@ -52,10 +52,10 @@ void DutInfoWidget::showDutInfo(int no)
         return;
 
     _slot->setText(_slotTemplate.arg(no));
-    _id->setText(_idTemplate.arg(_session->getDutsList()[no - 1].id));
+    _id->setText(_idTemplate.arg(dutList[no - 1]->id));
 
     QString stateDescription;
-    switch (_session->getDutsList()[no - 1].state)
+    switch (dutList[no - 1]->state)
     {
         case Dut::unavaliable:
         stateDescription = "The device is not avaliable now.";
@@ -77,9 +77,9 @@ void DutInfoWidget::showDutInfo(int no)
 
     _status->setText(_statusTemplate.arg(stateDescription));
 
-    if(!_session->getDutsList()[no - 1].lastErrorDescription.isEmpty())
+    if(dutList[no - 1]->lastErrorDescription.isEmpty())
     {
-        _errorDesc->setText(_errorDescTemplate.arg(_session->getDutsList()[no - 1].lastErrorDescription));
+        _errorDesc->setText(_errorDescTemplate.arg(dutList[no - 1]->lastErrorDescription));
     }
 
     else
@@ -87,7 +87,7 @@ void DutInfoWidget::showDutInfo(int no)
         _errorDesc->setText("");
     }
 
-    if(_session->getDutsList()[no - 1].checked)
+    if(dutList[no - 1]->checked)
     {
         _checkState->setText("CHECKED for a further testing.");
     }

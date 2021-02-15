@@ -21,7 +21,7 @@ class DataBase : public QObject
 
 public:
 
-    explicit DataBase(const QSharedPointer<QSettings>& settings, QObject *parent = nullptr);
+    explicit DataBase(QSettings* settings, QObject *parent = nullptr);
     ~DataBase();
 
     void connectToDataBase();
@@ -39,5 +39,5 @@ private:
     bool createTable();
 
     QSqlDatabase _db;
-    QSharedPointer<QSettings> _settings;
+    QSettings* _settings;
 };

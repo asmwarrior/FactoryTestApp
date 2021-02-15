@@ -6,7 +6,7 @@
 #include <QTime>
 #include <QThread>
 
-RailtestClient::RailtestClient(const QSharedPointer<QSettings> &settings, QObject *parent)
+RailtestClient::RailtestClient(QSettings *settings, QObject *parent)
     : QObject(parent), _settings(settings)
 {
     connect(&m_serial, &QSerialPort::readyRead, this, &RailtestClient::onSerialPortReadyRead);
@@ -18,7 +18,7 @@ RailtestClient::~RailtestClient()
     close();
 }
 
-void RailtestClient::setLogger(const QSharedPointer<Logger> &logger)
+void RailtestClient::setLogger(Logger *logger)
 {
     _logger = logger;
 }

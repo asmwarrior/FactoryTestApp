@@ -1,5 +1,8 @@
-var JlinksList = [];
+var dutList = [];
+var currentDutIndex = 0;
+
+var JlinkList = [];
 var currentJLinkIndex = 0;
 
-var railTestClientsList = [];
-var currentRailTestClientIndex = 0
+var railTestClientList = [];
+var currentRailTestClientIndex = 0;

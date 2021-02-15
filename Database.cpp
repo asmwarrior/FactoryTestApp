@@ -1,6 +1,6 @@
 #include "Database.h"
 
-DataBase::DataBase(const QSharedPointer<QSettings> &settings, QObject *parent) : QObject(parent), _settings(settings)
+DataBase::DataBase(QSettings *settings, QObject *parent) : QObject(parent), _settings(settings)
 {
 
 }

@@ -12,29 +12,29 @@ MainWindow::MainWindow(QWidget *parent)
 {
     //_workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
     //_workDirectory = "./"; //For test version
-    _workDirectory = "../.."; //For development
+//    _workDirectory = "../.."; //For development
 
 
-    _settings = QSharedPointer<QSettings>::create(_workDirectory + "/settings.ini", QSettings::IniFormat);
-    _settings->setValue("workDirectory", QDir(_workDirectory).absolutePath()); //Make name of work directory avaliable for other classes that use settings
+//    _settings = QSharedPointer<QSettings>::create(_workDirectory + "/settings.ini", QSettings::IniFormat);
+//    _settings->setValue("workDirectory", QDir(_workDirectory).absolutePath()); //Make name of work directory avaliable for other classes that use settings
 
-    //_scriptEngine = QSharedPointer<QJSEngine>::create();
-    _scriptEngine.installExtensions(QJSEngine::ConsoleExtension);
+//    //_scriptEngine = QSharedPointer<QJSEngine>::create();
+//    _scriptEngine.installExtensions(QJSEngine::ConsoleExtension);
 
-    _logger = QSharedPointer<Logger>::create();
-    QJSValue logger = _scriptEngine.newQObject(_logger.get());
-    _scriptEngine.globalObject().setProperty("logger", logger);
+//    _logger = QSharedPointer<Logger>::create();
+//    QJSValue logger = _scriptEngine.newQObject(_logger.get());
+//    _scriptEngine.globalObject().setProperty("logger", logger);
 
-    _session = new Session(this);
-    QJSValue session = _scriptEngine.newQObject(_session);
-    _scriptEngine.globalObject().setProperty("session", session);
+//    _session = new Session(this);
+//    QJSValue session = _scriptEngine.newQObject(_session);
+//    _scriptEngine.globalObject().setProperty("session", session);
 
-    _testSequenceManager = new TestSequenceManager();
-    _testSequenceManager->setLogger(_logger);
-    QJSValue testSequenceManager = _scriptEngine.newQObject(_testSequenceManager);
-    _scriptEngine.globalObject().setProperty("testSequenceManager", testSequenceManager);
-    evaluateScriptFromFile(_workDirectory + "/init.js");
-    evaluateScriptsFromDirectory(_workDirectory + "/sequences");
+//    _testSequenceManager = new TestSequenceManager();
+//    _testSequenceManager->setLogger(_logger);
+//    QJSValue testSequenceManager = _scriptEngine.newQObject(_testSequenceManager);
+//    _scriptEngine.globalObject().setProperty("testSequenceManager", testSequenceManager);
+//    evaluateScriptFromFile(_workDirectory + "/init.js");
+//    evaluateScriptsFromDirectory(_workDirectory + "/sequences");
 
     // Creating threads for run the tests for each test panel
     for (int i = 0; i < 5; i++)
@@ -46,21 +46,21 @@ MainWindow::MainWindow(QWidget *parent)
     // Creating objects for controlling JLinks and Rail Test clients
     for (int i = 0; i < 5; i++)
     {
-        auto newJlink = new JLinkManager(_settings);
-        newJlink->setSN(_settings->value(QString("JLink/SN" + QString().setNum(i + 1))).toString());
-        newJlink->setLogger(_logger);
+        auto newJlink = new JLinkManager(settings);
+        newJlink->setSN(settings->value(QString("JLink/SN" + QString().setNum(i + 1))).toString());
+        newJlink->setLogger(logger);
         _JLinksList.push_back(newJlink);
         //_JLinkList[i]->moveToThread(_threads[i]);
-        QJSValue jlink = _scriptEngine.newQObject(newJlink);
-        _scriptEngine.globalObject().property("JlinksList").setProperty(i, jlink);
+        QJSValue jlink = scriptEngine->newQObject(newJlink);
+        scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
 
-        auto railClient = new RailtestClient(_settings, this);
-        railClient->setLogger(_logger);
-        railClient->open(_settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
+        auto railClient = new RailtestClient(settings, this);
+        railClient->setLogger(logger);
+        railClient->open(settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
         _railTestClientsList.push_back(railClient);
         //_railTestClientsList[i]->moveToThread(_threads[i]);
-        QJSValue rail = _scriptEngine.newQObject(railClient);
-        _scriptEngine.globalObject().property("railTestClientsList").setProperty(i, rail);
+        QJSValue rail = scriptEngine->newQObject(railClient);
+        scriptEngine->globalObject().property("railTestClientList").setProperty(i, rail);
 
         _threads[i]->start();
     }
@@ -103,13 +103,13 @@ MainWindow::MainWindow(QWidget *parent)
     QLabel* selectSequenceBoxLabel = new QLabel("Step 1. Choose test sequence", this);
     _selectSequenceBox = new QComboBox(this);
     _selectSequenceBox->setFixedSize(350, 30);
-    _selectSequenceBox->addItems(_testSequenceManager->avaliableSequencesNames());
-    _testSequenceManager->setCurrentSequence(_selectSequenceBox->currentText());
-    connect(_selectSequenceBox, SIGNAL(currentTextChanged(const QString&)), _testSequenceManager, SLOT(setCurrentSequence(const QString&)));
+    _selectSequenceBox->addItems(testSequenceManager->avaliableSequencesNames());
+    testSequenceManager->setCurrentSequence(_selectSequenceBox->currentText());
+    connect(_selectSequenceBox, SIGNAL(currentTextChanged(const QString&)), testSequenceManager, SLOT(setCurrentSequence(const QString&)));
     connect(_selectSequenceBox, &QComboBox::currentTextChanged, [=]()
     {
         _testFunctionsListWidget->clear();
-        _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
+        _testFunctionsListWidget->addItems(testSequenceManager->currentSequenceFunctionNames());
         if(_testFunctionsListWidget->count() > 0)
         {
             _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
@@ -123,7 +123,7 @@ MainWindow::MainWindow(QWidget *parent)
     QLabel* testFunctionsListLabel = new QLabel("Avaliable testing steps:", this);
     _testFunctionsListWidget = new QListWidget(this);
     _testFunctionsListWidget->setFixedWidth(350);
-    _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
+    _testFunctionsListWidget->addItems(testSequenceManager->currentSequenceFunctionNames());
     if(_testFunctionsListWidget->count() > 0)
     {
         _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
@@ -150,12 +150,12 @@ MainWindow::MainWindow(QWidget *parent)
     {
         if(_testFunctionsListWidget->currentItem())
         {
-            _testSequenceManager->runTestFunction(_testFunctionsListWidget->currentItem()->text());
+            testSequenceManager->runTestFunction(_testFunctionsListWidget->currentItem()->text());
         }
     });
 
     //Test fixture representation widget
-    _testFixtureWidget = new TestFixtureWidget(_session);
+    _testFixtureWidget = new TestFixtureWidget();
     middlePanelLayout->addWidget(_testFixtureWidget);
     middlePanelLayout->addStretch();
 
@@ -163,22 +163,22 @@ MainWindow::MainWindow(QWidget *parent)
     _sessionInfoWidget = new SessionInfoWidget;
     rightPanelLayout->addWidget(_sessionInfoWidget);
 
-    _dutInfoWidget = new DutInfoWidget(_session);
+    _dutInfoWidget = new DutInfoWidget();
     rightPanelLayout->addWidget(_dutInfoWidget);
     connect(_testFixtureWidget, &TestFixtureWidget::dutStateChanged, [=]()
     {
-        _dutInfoWidget->showDutInfo(_session->getCurrentDut());
+        _dutInfoWidget->showDutInfo(session->getCurrentDut());
     });
     rightPanelLayout->addStretch();
 
     //Log widget
-    _logWidget = QSharedPointer<QListWidget>::create();
+    _logWidget = new QListWidget(this);
     _logWidget->setFixedHeight(200);
-    logLayout->addWidget(_logWidget.get());
-    _logger->setLogWidget(_logWidget);
+    logLayout->addWidget(_logWidget);
+    logger->setLogWidget(_logWidget);
 
     //Database
-    _db = new DataBase(_settings, this);
+    _db = new DataBase(settings, this);
     _db->connectToDataBase();
     //_db->insertIntoTable("test", QDateTime::currentDateTime().toString());
 }
@@ -199,54 +199,22 @@ MainWindow::~MainWindow()
     {
         delete rail;
     }
-
-    delete _testSequenceManager;
 }
 
 void MainWindow::startFullCycleTesting()
 {
-    for (auto & funcName : _testSequenceManager->currentSequenceFunctionNames())
+    for (auto & funcName : testSequenceManager->currentSequenceFunctionNames())
     {
-        _testSequenceManager->runTestFunction(funcName);
+        testSequenceManager->runTestFunction(funcName);
     }
-}
-
-QJSValue MainWindow::evaluateScriptFromFile(const QString &scriptFileName)
-{
-    QFile scriptFile(scriptFileName);
-    scriptFile.open(QIODevice::ReadOnly | QIODevice::Text);
-    QTextStream in(&scriptFile);
-    in.setCodec("Utf-8");
-    QJSValue scriptResult = _scriptEngine.evaluate(QString(in.readAll()));
-    scriptFile.close();
-    return scriptResult;
-}
-
-QList<QJSValue> MainWindow::evaluateScriptsFromDirectory(const QString& directoryName)
-{
-    QDir scriptsDir = QDir(directoryName, "*.js", QDir::Name, QDir::Files);
-    QStringList fileNames = scriptsDir.entryList();
-    QList<QJSValue> results;
-
-    for (auto & i : fileNames)
-    {
-        results.push_back(evaluateScriptFromFile(scriptsDir.absoluteFilePath(i)));
-    }
-
-    return results;
-}
-
-QJSValue MainWindow::runScript(const QString& scriptName, const QJSValueList& args)
-{
-    return _scriptEngine.globalObject().property(scriptName).call(args);
 }
 
 void MainWindow::setCurrentJLinkIndex(int index)
 {
-    _scriptEngine.globalObject().setProperty("currentJLinkIndex", index);
+    scriptEngine->globalObject().setProperty("currentJLinkIndex", index);
 }
 
 int MainWindow::getCurrentJLinkIndex()
 {
-    return _scriptEngine.globalObject().property("currentJLinkIndex").toInt();
+    return scriptEngine->globalObject().property("currentJLinkIndex").toInt();
 }

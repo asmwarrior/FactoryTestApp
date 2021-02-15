@@ -15,6 +15,7 @@ find_package(Qt5 COMPONENTS Widgets Qml Sql Network SerialPort REQUIRED)
 
 set(SOURCES
     main.cpp
+    AppComponent.cpp
     MainWindow.cpp
     Session.h
     Database.cpp

@@ -1,8 +1,6 @@
 #pragma once
 
 #include <QListWidget>
-#include <QSharedPointer>
-
 
 class Logger : public QObject
 {
@@ -12,7 +10,7 @@ public:
 
     explicit Logger(QObject *parent = nullptr);
 
-    void setLogWidget(const QSharedPointer<QListWidget>& widget);
+    void setLogWidget(QListWidget* widget);
 
 public slots:
 
@@ -22,6 +20,5 @@ public slots:
 
 private:
 
-    QSharedPointer<QListWidget> _logWidget;
-
+    QListWidget* _logWidget;
 };

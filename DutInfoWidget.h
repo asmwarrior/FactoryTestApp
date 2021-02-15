@@ -4,26 +4,23 @@
 #include <QLabel>
 #include <QSharedPointer>
 
-#include "Session.h"
+#include "AppComponent.h"
 #include "DutButton.h"
 
-class DutInfoWidget : public QWidget
+class DutInfoWidget : public QWidget, public AppComponent
 {
 
     Q_OBJECT
 
 public:
 
-    DutInfoWidget(Session *session, QWidget* parent = nullptr);
+    DutInfoWidget(QWidget* parent = nullptr);
 
 public slots:
 
     void showDutInfo(int no);
 
 private:
-
-    //QSharedPointer<Session> _session;
-    Session* _session;
 
     QLabel* _slot;
     QString _slotTemplate = "<b>Slot:</b> %1";

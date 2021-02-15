@@ -6,7 +6,7 @@
 #include <QHBoxLayout>
 #include <QGridLayout>
 
-TestFixtureWidget::TestFixtureWidget(Session *session, QWidget *parent) : QWidget(parent), _session(session)
+TestFixtureWidget::TestFixtureWidget(QWidget *parent) : QWidget(parent)
 {
 
     QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -23,11 +23,11 @@ TestFixtureWidget::TestFixtureWidget(Session *session, QWidget *parent) : QWidge
     _buttonGroup = new QButtonGroup;
     _buttonGroup->setExclusive(false);
 
-    for(auto & dut : _session->getDutsList())
+    for(auto & dut : dutList)
     {
-        DutButton* button = new DutButton(dut.no, dut.testPanel, dut.pos);
+        DutButton* button = new DutButton(dut->no, dut->testPanel, dut->pos);
         _buttons.push_back(button);
-        _buttonGroup->addButton(button, dut.no);
+        _buttonGroup->addButton(button, dut->no);
     }
 
     int counter = 0;
@@ -42,12 +42,12 @@ TestFixtureWidget::TestFixtureWidget(Session *session, QWidget *parent) : QWidge
 
     connect(_buttonGroup, &QButtonGroup::idClicked, [=](int id)
     {
-        _session->setCurrentDut(id);
+        session->setCurrentDut(id);
         emit dutStateChanged();
     });
     connect(_buttonGroup, QOverload<QAbstractButton *, bool>::of(&QButtonGroup::buttonToggled), [=](QAbstractButton *button, bool checked)
     {
-        _session->getDutsList()[(dynamic_cast<DutButton*>(button))->getNo() - 1].checked = checked;
+        dutList[(dynamic_cast<DutButton*>(button))->getNo() - 1]->checked = checked;
     });
 
 

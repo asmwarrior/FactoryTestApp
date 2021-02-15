@@ -5,7 +5,7 @@
 #include <QThread>
 #include <QCoreApplication>
 
-JLinkManager::JLinkManager(const QSharedPointer<QSettings> &settings, QObject *parent)
+JLinkManager::JLinkManager(QSettings *settings, QObject *parent)
     : QObject(parent), _settings(settings)/*, m_proc(this)*/
 {
     connect(&m_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
@@ -18,7 +18,7 @@ JLinkManager::~JLinkManager()
     stop();
 }
 
-void JLinkManager::setLogger(const QSharedPointer<Logger> &logger)
+void JLinkManager::setLogger(Logger *logger)
 {
     _logger = logger;
 }

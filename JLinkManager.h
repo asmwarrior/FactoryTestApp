@@ -11,10 +11,10 @@ class JLinkManager : public QObject
     Q_OBJECT
 
     public:
-        explicit JLinkManager(const QSharedPointer<QSettings> &settings, QObject *parent = Q_NULLPTR);
+        explicit JLinkManager(QSettings *settings, QObject *parent = Q_NULLPTR);
         ~JLinkManager() Q_DECL_OVERRIDE;
 
-        void setLogger(const QSharedPointer<Logger>& logger);
+        void setLogger(Logger* logger);
         void setSN(const QString& serialNumber);
         QString getSN() const;
 
@@ -45,8 +45,8 @@ signals:
 private:
 
     QString _SN; // JLink serial number
-    QSharedPointer<QSettings> _settings;
-    QSharedPointer<Logger> _logger;
+    QSettings* _settings;
+    Logger* _logger;
     QProcess m_proc;
     QByteArray m_rdBuf;
 };

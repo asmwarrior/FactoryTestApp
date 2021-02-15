@@ -7,14 +7,14 @@ Logger::Logger(QObject *parent) : QObject(parent)
 
 }
 
-void Logger::setLogWidget(const QSharedPointer<QListWidget> &widget)
+void Logger::setLogWidget(QListWidget *widget)
 {
     _logWidget = widget;
 }
 
 void Logger::logInfo(const QString &message)
 {
-    if(_logWidget.isNull())
+    if(!_logWidget)
         return;
 
     _logWidget->addItem(message);
@@ -24,7 +24,7 @@ void Logger::logInfo(const QString &message)
 
 void Logger::logError(const QString &message)
 {
-    if(_logWidget.isNull())
+    if(!_logWidget)
         return;
 
     QListWidgetItem *item = new QListWidgetItem(message);
@@ -38,7 +38,7 @@ void Logger::logError(const QString &message)
 
 void Logger::logSuccess(const QString &message)
 {
-    if(_logWidget.isNull())
+    if(!_logWidget)
         return;
 
     QListWidgetItem *item = new QListWidgetItem(message);
