@@ -4,8 +4,9 @@
 #include <QLabel>
 
 #include "DutButton.h"
+#include "AppComponent.h"
 
-class SessionInfoWidget : public QWidget
+class SessionInfoWidget : public QWidget, public AppComponent
 {
 
     Q_OBJECT
@@ -16,11 +17,19 @@ public:
 
 public slots:
 
+    void update();
+
 
 private:
 
+    QLabel* _startTime;
+    QString _startTimeTemplate = "<b>Started at:</b> %1";
+
     QLabel* _operatorName;
     QString _operatorNameTemplate = "<b>Operator name:</b> %1";
+
+    QLabel* _batchNumber;
+    QString _batchNumberTemplate = "<b>Batch number:</b> %1";
 
     QLabel* _totalTested;
     QString _totalTestedTemplate = "<b>Total tested:</b> %1";
@@ -30,4 +39,6 @@ private:
 
     QLabel* _failtures;
     QString _failturesTemplate = "<b>Failtures:</b> %1";
+
+    QLabel* _batchInfo;
 };

@@ -11,5 +11,6 @@
         <file alias="autoDiscovery">Resources/news_find24_h.png</file>
         <file alias="testOnly">Resources/verify_document_24_h.png</file>
         <file alias="checked">Resources/Checked.png</file>
+        <file alias="finish">Resources/finishflag.png</file>
     </qresource>
 </RCC>

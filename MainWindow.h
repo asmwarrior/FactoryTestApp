@@ -2,12 +2,11 @@
 #define MAINWINDOW_H
 
 #include <QThread>
-#include <QJSEngine>
-#include <QSettings>
 #include <QComboBox>
 #include <QListWidget>
 #include <QLabel>
 #include <QPushButton>
+#include <QLineEdit>
 
 #include <QSqlTableModel>
 #include <QModelIndex>
@@ -15,13 +14,10 @@
 #include "AppComponent.h"
 #include "JLinkManager.h"
 #include "Database.h"
-#include "TestSequence.h"
-#include "Logger.h"
 #include "RailtestClient.h"
 #include "TestFixtureWidget.h"
 #include "SessionInfoWidget.h"
 #include "DutInfoWidget.h"
-#include "Session.h"
 
 class MainWindow : public QWidget, public AppComponent
 {
@@ -37,36 +33,25 @@ public slots:
 
 private:
 
-//    QJSValue evaluateScriptFromFile(const QString& scriptFileName);
-//    QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
-//    QJSValue runScript(const QString& scriptName, const QJSValueList& args);
-
     void setCurrentJLinkIndex(int index);
     int getCurrentJLinkIndex();
-
-    //QSharedPointer<Session> _session;
-//    Session* _session;
-
-//    QJSEngine _scriptEngine;
 
     QList<QThread*> _threads;
     QList<JLinkManager*> _JLinksList;
     QList<RailtestClient*> _railTestClientsList;
 
-//    QString _workDirectory;
-//    TestSequenceManager* _testSequenceManager;
-
-
-//    QSharedPointer<QSettings> _settings;
     DataBase *_db;
     QSqlTableModel  *model;
-
-//    QSharedPointer<Logger> _logger;
 
     //--- GUI Elements ------------------------------------------------
 
     QLabel* _headerLabel;
-    QComboBox* _selectSequenceBox;
+    QLineEdit* _operatorNameEdit;
+    QLineEdit* _batchNumberEdit;
+    QLineEdit* _batchInfoEdit;
+    QPushButton* _newSessionButton;
+    QPushButton* _finishSessionButton;
+    QComboBox* _selectMetodBox;
     QListWidget* _testFunctionsListWidget;
     QPushButton* _startFullCycleTestingButton;
     QPushButton* _startSelectedTestButton;
@@ -74,6 +59,10 @@ private:
     TestFixtureWidget* _testFixtureWidget;
     SessionInfoWidget* _sessionInfoWidget;
     DutInfoWidget* _dutInfoWidget;
+
+    QLabel* _actionHintLabel;
+    QString _actionHintStartText = "NEXT ACTION: Place DUTs into the test fixture, enter information for the Step 1 and start test session";
+    QString _actionHintChooseMethod = "NEXT ACTION: Choose a test method (Step 2), select DUTs and run full cycle testing (or single step testing) for the selected DUTs";
 };
 
 #endif // MAINWINDOW_H
