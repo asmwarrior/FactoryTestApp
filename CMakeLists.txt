@@ -27,6 +27,7 @@ set(SOURCES
     DutButton.cpp
     SessionInfoWidget.cpp
     DutInfoWidget.cpp
+    ActionHintWidget.cpp
 )
 
 

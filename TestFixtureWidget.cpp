@@ -12,9 +12,9 @@ TestFixtureWidget::TestFixtureWidget(QWidget *parent) : QWidget(parent)
     QVBoxLayout* mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
 
-    _groupBox = new QGroupBox("DUTs position");
-    _groupBox->setStyleSheet("QGroupBox{color: #595959; font-size:10pt; font-weight: bold;}");
-    _groupBox->setFixedSize(250, 500);
+    _groupBox = new QGroupBox("Step 3. Select DUTs");
+    _groupBox->setStyleSheet("QGroupBox{font-weight: bold;}");
+    _groupBox->setFixedSize(250, 466);
     QGridLayout* boxLayout = new QGridLayout;
     _groupBox->setLayout(boxLayout);
     mainLayout->addWidget(_groupBox);

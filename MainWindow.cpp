@@ -11,7 +11,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
-    setStyleSheet("color: #727272; font-size:10pt;");
+    setStyleSheet("color: #424242; font-size:10pt;");
 
     // Creating threads for run the tests for each test panel
     for (int i = 0; i < 5; i++)
@@ -76,9 +76,9 @@ MainWindow::MainWindow(QWidget *parent)
     headerLayout->addStretch();
 
     //Next action hint
-    _actionHintLabel = new QLabel(_actionHintStartText);
-    _actionHintLabel->setStyleSheet("color: #689F38; font-size:10pt; font-weight: bold;");
-    mainLayout->addWidget(_actionHintLabel);
+    _actionHintWidget = new ActionHintWidget(this);
+    _actionHintWidget->showNormalHint(HINT_START);
+    mainLayout->addWidget(_actionHintWidget);
 
     //Input session info and start session widgets
     QLabel* sessionInfoLabel = new QLabel("<b>Step 1.</b> Enter session information", this);
@@ -246,7 +246,7 @@ MainWindow::MainWindow(QWidget *parent)
         _testFixtureWidget->setEnabled(true);
         _finishSessionButton->setEnabled(true);
 
-        _actionHintLabel->setText(_actionHintChooseMethod);
+        _actionHintWidget->showNormalHint(HINT_CHOOSE_METHOD);
         _sessionInfoWidget->update();
     });
 
@@ -269,7 +269,7 @@ MainWindow::MainWindow(QWidget *parent)
         _batchNumberEdit->clear();
         _batchInfoEdit->clear();
 
-        _actionHintLabel->setText(_actionHintStartText);
+        _actionHintWidget->showNormalHint(HINT_START);
         _sessionInfoWidget->update();
     });
 }

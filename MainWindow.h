@@ -18,6 +18,7 @@
 #include "TestFixtureWidget.h"
 #include "SessionInfoWidget.h"
 #include "DutInfoWidget.h"
+#include "ActionHintWidget.h"
 
 class MainWindow : public QWidget, public AppComponent
 {
@@ -60,9 +61,9 @@ private:
     SessionInfoWidget* _sessionInfoWidget;
     DutInfoWidget* _dutInfoWidget;
 
-    QLabel* _actionHintLabel;
-    QString _actionHintStartText = "NEXT ACTION: Place DUTs into the test fixture, enter information for the Step 1 and start test session";
-    QString _actionHintChooseMethod = "NEXT ACTION: Choose a test method (Step 2), select DUTs and run full cycle testing (or single step testing) for the selected DUTs";
+    ActionHintWidget* _actionHintWidget;
+    const QString HINT_START = "Place DUTs into the test fixture, enter information for the Step 1 and start test session";
+    const QString HINT_CHOOSE_METHOD = "Choose a test method (Step 2), select DUTs (Step 3) and run full cycle testing (or single step testing) for the selected DUTs";
 };
 
 #endif // MAINWINDOW_H
