@@ -5,6 +5,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
+#include <QLabel>
 
 TestFixtureWidget::TestFixtureWidget(QWidget *parent) : QWidget(parent)
 {
@@ -12,9 +13,11 @@ TestFixtureWidget::TestFixtureWidget(QWidget *parent) : QWidget(parent)
     QVBoxLayout* mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
 
-    _groupBox = new QGroupBox("Step 3. Select DUTs");
+    QLabel* _title = new QLabel("<b>Step 3.</b> Select DUTs");
+    mainLayout->addWidget(_title);
+    _groupBox = new QGroupBox();
     _groupBox->setStyleSheet("QGroupBox{font-weight: bold;}");
-    _groupBox->setFixedSize(250, 466);
+    _groupBox->setFixedSize(250, 450);
     QGridLayout* boxLayout = new QGridLayout;
     _groupBox->setLayout(boxLayout);
     mainLayout->addWidget(_groupBox);

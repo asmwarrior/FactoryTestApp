@@ -6,7 +6,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
-#include <QThread>
+#include <QCompleter>
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -81,12 +81,17 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->addWidget(_actionHintWidget);
 
     //Input session info and start session widgets
+    leftPanelLayout->addSpacing(10);
     QLabel* sessionInfoLabel = new QLabel("<b>Step 1.</b> Enter session information", this);
     leftPanelLayout->addWidget(sessionInfoLabel);
 
     QFormLayout* sessionInfoLayout = new QFormLayout;
     _operatorNameEdit = new QLineEdit;
     _operatorNameEdit->setPlaceholderText("Enter Operator Name here");
+    _operatorList = settings->value("operatorList").toString().split("|");
+    _operatorNameEdit->setCompleter(new QCompleter(_operatorList, this));
+    _operatorNameEdit->completer()->setCaseSensitivity(Qt::CaseInsensitive);
+
     _batchNumberEdit = new QLineEdit;
     _batchNumberEdit->setPlaceholderText("Enter Batch number here");
     _batchInfoEdit = new QLineEdit;
@@ -175,7 +180,7 @@ MainWindow::MainWindow(QWidget *parent)
     logger->setLogWidget(_logWidget);
 
     //Database
-    _db = new DataBase(settings, this);
+    _db = new DataBase(this);
     _db->connectToDataBase();
     //_db->insertIntoTable("test", QDateTime::currentDateTime().toString());
 
@@ -233,7 +238,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_newSessionButton, &QPushButton::clicked, [=]()
     {
         session->setStarted(true);
-        session->setOperatorName(_operatorNameEdit->text());
+        session->setOperatorName(_operatorNameEdit->text().simplified());
         session->setStartTime(QDateTime::currentDateTime().toString());
         session->setBatchNumber(_batchNumberEdit->text());
         session->setBatchInfo(_batchInfoEdit->text());
@@ -248,6 +253,11 @@ MainWindow::MainWindow(QWidget *parent)
 
         _actionHintWidget->showNormalHint(HINT_CHOOSE_METHOD);
         _sessionInfoWidget->update();
+
+        if(!_operatorList.contains(session->getOperatorName(), Qt::CaseInsensitive))
+        {
+            _operatorList.push_back(session->getOperatorName());
+        }
     });
 
     connect(_finishSessionButton, &QPushButton::clicked, [=]()
@@ -290,6 +300,8 @@ MainWindow::~MainWindow()
     {
         delete rail;
     }
+
+    settings->setValue("operatorList", _operatorList.join("|"));
 }
 
 void MainWindow::startFullCycleTesting()

@@ -1,6 +1,6 @@
 #include "Database.h"
 
-DataBase::DataBase(QSettings *settings, QObject *parent) : QObject(parent), _settings(settings)
+DataBase::DataBase(QObject *parent) : QObject(parent)
 {
 
 }
@@ -34,9 +34,9 @@ bool DataBase::openDataBase()
     _db = QSqlDatabase::addDatabase("QPSQL");
     //_db.setHostName("localhost");
     //_db.setPort(5432);
-    _db.setUserName(_settings->value("Database/userName").toString());
-    _db.setPassword(_settings->value("Database/password").toString());
-    _db.setDatabaseName(_settings->value("Database/name").toString());
+    _db.setUserName(settings->value("Database/userName").toString());
+    _db.setPassword(settings->value("Database/password").toString());
+    _db.setDatabaseName(settings->value("Database/name").toString());
     if(_db.open())
     {
         return true;

@@ -41,6 +41,8 @@ private:
     QList<JLinkManager*> _JLinksList;
     QList<RailtestClient*> _railTestClientsList;
 
+    QStringList _operatorList;
+
     DataBase *_db;
     QSqlTableModel  *model;
 
