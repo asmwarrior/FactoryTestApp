@@ -20,13 +20,13 @@ MainWindow::MainWindow(QWidget *parent)
         _threads.push_back(newThread);
     }
 
-    // Creating objects for controlling JLinks and Rail Test clients
+    // Creating objects for controlling JLinks, Rail Test & Slip clients
     for (int i = 0; i < 5; i++)
     {
         auto newJlink = new JLinkManager(settings);
         newJlink->setSN(settings->value(QString("JLink/SN" + QString().setNum(i + 1))).toString());
         newJlink->setLogger(logger);
-        _JLinksList.push_back(newJlink);
+        _JLinkList.push_back(newJlink);
         //_JLinkList[i]->moveToThread(_threads[i]);
         QJSValue jlink = scriptEngine->newQObject(newJlink);
         scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
@@ -34,10 +34,18 @@ MainWindow::MainWindow(QWidget *parent)
         auto railClient = new RailtestClient(settings, this);
         railClient->setLogger(logger);
         railClient->open(settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
-        _railTestClientsList.push_back(railClient);
+        _railTestClientList.push_back(railClient);
         //_railTestClientsList[i]->moveToThread(_threads[i]);
         QJSValue rail = scriptEngine->newQObject(railClient);
         scriptEngine->globalObject().property("railTestClientList").setProperty(i, rail);
+
+        auto slipClient = new SlipClient(this);
+        //slipClient->setLogger(logger);
+        //slipClient->open(settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
+        _slipClientList.push_back(slipClient);
+        //_railTestClientsList[i]->moveToThread(_threads[i]);
+        QJSValue slip = scriptEngine->newQObject(slipClient);
+        scriptEngine->globalObject().property("slipClientList").setProperty(i, slip);
 
         _threads[i]->start();
     }
@@ -70,7 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //Header info
     headerLayout->addStretch();
-    _headerLabel = new QLabel("HERE WE PLACE HEADER INFO");
+    _headerLabel = new QLabel("HERE WE PLACE HEADER INFO", this);
     _headerLabel->setStyleSheet("font-size:10pt; font-weight: bold;");
     headerLayout->addWidget(_headerLabel);
     headerLayout->addStretch();
@@ -86,15 +94,15 @@ MainWindow::MainWindow(QWidget *parent)
     leftPanelLayout->addWidget(sessionInfoLabel);
 
     QFormLayout* sessionInfoLayout = new QFormLayout;
-    _operatorNameEdit = new QLineEdit;
+    _operatorNameEdit = new QLineEdit(this);
     _operatorNameEdit->setPlaceholderText("Enter Operator Name here");
     _operatorList = settings->value("operatorList").toString().split("|");
     _operatorNameEdit->setCompleter(new QCompleter(_operatorList, this));
     _operatorNameEdit->completer()->setCaseSensitivity(Qt::CaseInsensitive);
 
-    _batchNumberEdit = new QLineEdit;
+    _batchNumberEdit = new QLineEdit(this);
     _batchNumberEdit->setPlaceholderText("Enter Batch number here");
-    _batchInfoEdit = new QLineEdit;
+    _batchInfoEdit = new QLineEdit(this);
     _batchInfoEdit->setPlaceholderText("Enter Batch info here");
     sessionInfoLayout->addRow("Operator name", _operatorNameEdit);
     sessionInfoLayout->addRow("Batch number", _batchNumberEdit);
@@ -160,7 +168,7 @@ MainWindow::MainWindow(QWidget *parent)
     startTestingButtonsLayout->addWidget(_startSelectedTestButton);
 
     //Test fixture representation widget
-    _testFixtureWidget = new TestFixtureWidget();
+    _testFixtureWidget = new TestFixtureWidget(this);
     _testFixtureWidget->setEnabled(false);
     middlePanelLayout->addWidget(_testFixtureWidget);
     middlePanelLayout->addStretch();
@@ -169,7 +177,7 @@ MainWindow::MainWindow(QWidget *parent)
     _sessionInfoWidget = new SessionInfoWidget;
     rightPanelLayout->addWidget(_sessionInfoWidget);
 
-    _dutInfoWidget = new DutInfoWidget();
+    _dutInfoWidget = new DutInfoWidget(this);
     rightPanelLayout->addWidget(_dutInfoWidget);
     rightPanelLayout->addStretch();
 
@@ -291,14 +299,19 @@ MainWindow::~MainWindow()
         thread->quit();
     }
 
-    for(auto & jlink : _JLinksList)
+    for(auto & jlink : _JLinkList)
     {
         delete jlink;
     }
 
-    for(auto & rail : _railTestClientsList)
+    for(auto & rail : _railTestClientList)
     {
         delete rail;
+    }
+
+    for(auto & slip : _slipClientList)
+    {
+        delete slip;
     }
 
     settings->setValue("operatorList", _operatorList.join("|"));

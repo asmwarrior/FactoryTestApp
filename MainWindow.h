@@ -15,6 +15,7 @@
 #include "JLinkManager.h"
 #include "Database.h"
 #include "RailtestClient.h"
+#include "SlipClient.h"
 #include "TestFixtureWidget.h"
 #include "SessionInfoWidget.h"
 #include "DutInfoWidget.h"
@@ -38,8 +39,9 @@ private:
     int getCurrentJLinkIndex();
 
     QList<QThread*> _threads;
-    QList<JLinkManager*> _JLinksList;
-    QList<RailtestClient*> _railTestClientsList;
+    QList<JLinkManager*> _JLinkList;
+    QList<RailtestClient*> _railTestClientList;
+    QList<SlipClient*> _slipClientList;
 
     QStringList _operatorList;
 
