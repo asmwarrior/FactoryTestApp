@@ -7,8 +7,9 @@
 #include <QMutex>
 
 #include "SlipProtocol.h"
+#include "AppComponent.h"
 
-class SlipClient : public QObject
+class SlipClient : public QObject, public AppComponent
 {
     Q_OBJECT
 

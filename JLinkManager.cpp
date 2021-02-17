@@ -5,8 +5,8 @@
 #include <QThread>
 #include <QCoreApplication>
 
-JLinkManager::JLinkManager(QSettings *settings, QObject *parent)
-    : QObject(parent), _settings(settings)/*, m_proc(this)*/
+JLinkManager::JLinkManager(QObject *parent)
+    : QObject(parent)/*, m_proc(this)*/
 {
     connect(&m_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
     connect(&m_proc, &QProcess::errorOccurred, this, &JLinkManager::logError);
@@ -16,11 +16,6 @@ JLinkManager::JLinkManager(QSettings *settings, QObject *parent)
 JLinkManager::~JLinkManager()
 {
     stop();
-}
-
-void JLinkManager::setLogger(Logger *logger)
-{
-    _logger = logger;
 }
 
 void JLinkManager::setSN(const QString &serialNumber)
@@ -57,11 +52,11 @@ bool JLinkManager::startJLinkScript(const QString &scriptFileName)
     args.append(_SN);
 //    args.append("-CommanderScript");
     args.append("-CommandFile");
-    args.append(_settings->value("workDirectory").toString() + scriptFileName);
-    _logger->logInfo("Running JLink Commander script " + _settings->value("workDirectory").toString() + scriptFileName + "...");
-    if (!start(_settings->value("JLink/path", "JLink.exe").toString(), args))
+    args.append(settings->value("workDirectory").toString() + scriptFileName);
+    logger->logInfo("Running JLink Commander script " + settings->value("workDirectory").toString() + scriptFileName + "...");
+    if (!start(settings->value("JLink/path", "JLink.exe").toString(), args))
     {
-        _logger->logError("Cannot start JLink Commander!");
+        logger->logError("Cannot start JLink Commander!");
         return false;
     }
 
@@ -73,11 +68,11 @@ bool JLinkManager::startJLinkScript(const QString &scriptFileName)
 
     if (exitCode())
     {
-        _logger->logInfo("JLink Commander script failed!.");
+        logger->logInfo("JLink Commander script failed!.");
         return false;
     }
 
-    _logger->logInfo("JLink Commander script completed.");
+    logger->logInfo("JLink Commander script completed.");
 
     return true;
 }
@@ -113,7 +108,7 @@ void JLinkManager::readStandardOutput()
         for(auto & line : lines)
         {
             if(!line.isEmpty())
-                _logger->logInfo(line);
+                logger->logInfo(line);
         }
     }
     m_rdBuf.append(data);

@@ -25,14 +25,12 @@ MainWindow::MainWindow(QWidget *parent)
     {
         auto newJlink = new JLinkManager(settings);
         newJlink->setSN(settings->value(QString("JLink/SN" + QString().setNum(i + 1))).toString());
-        newJlink->setLogger(logger);
         _JLinkList.push_back(newJlink);
         //_JLinkList[i]->moveToThread(_threads[i]);
         QJSValue jlink = scriptEngine->newQObject(newJlink);
         scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
 
-        auto railClient = new RailtestClient(settings, this);
-        railClient->setLogger(logger);
+        auto railClient = new RailtestClient(this);
         railClient->open(settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
         _railTestClientList.push_back(railClient);
         //_railTestClientsList[i]->moveToThread(_threads[i]);
@@ -314,7 +312,11 @@ MainWindow::~MainWindow()
         delete slip;
     }
 
+
     settings->setValue("operatorList", _operatorList.join("|"));
+
+    delete scriptEngine;
+    delete settings;
 }
 
 void MainWindow::startFullCycleTesting()

@@ -8,17 +8,16 @@
 #include <QSharedPointer>
 #include <QSettings>
 
+#include "AppComponent.h"
 #include "Logger.h"
 
-class RailtestClient : public QObject
+class RailtestClient : public QObject, public AppComponent
 {
     Q_OBJECT
 
 public:
-    explicit RailtestClient(QSettings* settings, QObject *parent = Q_NULLPTR);
+    explicit RailtestClient(QObject *parent = Q_NULLPTR);
     virtual ~RailtestClient();
-
-    void setLogger(Logger* logger);
 
     bool open(const QString &portName);
     Q_INVOKABLE bool open();
@@ -47,8 +46,6 @@ signals:
     void replyReceived(QString id, QVariantMap params);
 
 private:
-    QSettings* _settings;
-    Logger* _logger;
     QSerialPort m_serial;
     QByteArray
     m_recvBuffer,

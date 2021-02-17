@@ -1,20 +1,16 @@
 #pragma once
 
 #include <QProcess>
-#include <QSharedPointer>
-#include <QSettings>
+#include "AppComponent.h"
 
-#include "Logger.h"
-
-class JLinkManager : public QObject
+class JLinkManager : public QObject, public AppComponent
 {
     Q_OBJECT
 
     public:
-        explicit JLinkManager(QSettings *settings, QObject *parent = Q_NULLPTR);
+        explicit JLinkManager(QObject *parent = Q_NULLPTR);
         ~JLinkManager() Q_DECL_OVERRIDE;
 
-        void setLogger(Logger* logger);
         void setSN(const QString& serialNumber);
         QString getSN() const;
 
@@ -45,8 +41,6 @@ signals:
 private:
 
     QString _SN; // JLink serial number
-    QSettings* _settings;
-    Logger* _logger;
     QProcess m_proc;
     QByteArray m_rdBuf;
 };
