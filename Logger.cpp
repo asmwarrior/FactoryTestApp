@@ -22,7 +22,12 @@ void Logger::logInfo(const QString &message)
     if(!_logWidget)
         return;
 
-    _logWidget->addItem(message);
+    QListWidgetItem *item = new QListWidgetItem(message);
+
+    item->setBackground(QBrush(QColor("#9E9E9E")));
+    item->setForeground(Qt::white);
+
+    _logWidget->addItem(item);
     _logWidget->scrollToBottom();
     qInfo().noquote() << message;
 }
@@ -34,7 +39,7 @@ void Logger::logError(const QString &message)
 
     QListWidgetItem *item = new QListWidgetItem(message);
 
-    item->setBackground(Qt::darkRed);
+    item->setBackground(QBrush(QColor("#e57373")));
     item->setForeground(Qt::white);
     _logWidget->addItem(item);
     _logWidget->scrollToBottom();
@@ -48,8 +53,8 @@ void Logger::logSuccess(const QString &message)
 
     QListWidgetItem *item = new QListWidgetItem(message);
 
-    item->setBackground(Qt::green);
-    item->setForeground(Qt::black);
+    item->setBackground(QBrush(QColor("#81C784")));
+    item->setForeground(Qt::white);
     _logWidget->addItem(item);
     _logWidget->scrollToBottom();
     qInfo().noquote() << message;

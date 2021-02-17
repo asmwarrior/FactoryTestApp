@@ -4,9 +4,7 @@ ZhagaECO =
 {
     testConnection: function ()
     {
-//        let jlink = JlinkList[currentJLinkIndex];
         JlinkList.forEach(function(item){item.testConnection()});
-//        jlink.testConnection();
     },
 
     downloadRailtest: function ()

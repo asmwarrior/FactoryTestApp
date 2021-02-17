@@ -5,6 +5,7 @@
 #include <QSerialPort>
 #include <QMetaMethod>
 #include <QMutex>
+#include <QtEndian>
 
 #include "SlipProtocol.h"
 #include "AppComponent.h"
@@ -57,6 +58,7 @@ private slots:
     void onSerialPortReadyRead() Q_DECL_NOTHROW;
     void onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode) Q_DECL_NOTHROW;
     void onThreadFinished() Q_DECL_NOTHROW;
+    void onSlipPacketReceived(quint8 channel, QByteArray frame) Q_DECL_NOTHROW;
 
 signals:
     void opened();

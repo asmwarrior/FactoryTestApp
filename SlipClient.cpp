@@ -55,6 +55,7 @@ SlipClient::SlipClient(QObject *parent)
     connect(&m_serialPort, &QSerialPort::readyRead, this, &SlipClient::onSerialPortReadyRead);
     connect(&m_serialPort, &QSerialPort::errorOccurred, this, &SlipClient::onSerialPortErrorOccurred);
     connect(&m_serialPort, &QSerialPort::aboutToClose, this, &SlipClient::aboutToClose);
+    connect(this, &SlipClient::packetReceived, this, &SlipClient::onSlipPacketReceived);
 }
 
 SlipClient::~SlipClient()
@@ -302,4 +303,55 @@ void SlipClient::onThreadFinished() Q_DECL_NOTHROW
     moveToThread(m_origin);
     if (thread() != m_origin)
         moveToThread(QCoreApplication::instance()->thread());
+}
+
+void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
+{
+    switch (channel)
+    {
+        case 0:
+            if (frame.size() >= (int)sizeof(MB_Packet_t))
+            {
+                MB_Packet_t *pkt = (MB_Packet_t*)frame.data();
+
+                pkt->type = qFromBigEndian(pkt->type);
+                switch (pkt->type)
+                {
+                    case MB_STARTUP:
+                        logger->logInfo("Startup event.");
+                        break;
+
+                    case MB_GENERAL_RESULT:
+                        {
+                            MB_GeneralResult_t *gr = (MB_GeneralResult_t*)pkt;
+
+                            gr->errorCode = qFromBigEndian(gr->errorCode);
+                            logger->logInfo(QString("RESULT: cmd=%1, code=%2.").arg(gr->header.sequence).arg(gr->errorCode));
+                        }
+                        break;
+
+                    case MB_ASYNC_EVENT:
+                        {
+                            MB_Event_t *evt = (MB_Event_t*)pkt;
+
+                            evt->eventCode = qFromBigEndian(evt->eventCode);
+                            logger->logInfo(QString("EVENT: code=%2.").arg(evt->eventCode));
+                        }
+                        break;
+                }
+            }
+            break;
+
+        case 1:
+            logger->logInfo(frame);
+            break;
+
+        case 2:
+            logger->logInfo(frame);
+            break;
+
+        case 3:
+            logger->logInfo(frame);
+            break;
+    }
 }

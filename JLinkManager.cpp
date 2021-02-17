@@ -149,7 +149,7 @@ void JLinkManager::processOutput()
         else
         {
             _state = unknown;
-            logger->logError("No connection to JLink with S/N: " + _SN);
+            logger->logError("No connection to JLink with S/N " + _SN);
         }
         break;
     }

@@ -106,12 +106,6 @@ AppComponent::~AppComponent()
         logger = nullptr;
     }
 
-//    if(settings)
-//    {
-//        delete settings;
-//        settings = nullptr;
-//    }
-
     if(!dutList.isEmpty())
     {
         for(auto & dut : dutList)
@@ -121,12 +115,6 @@ AppComponent::~AppComponent()
 
         dutList.clear();
     }
-
-//    if(scriptEngine)
-//    {
-//        delete scriptEngine;
-//        scriptEngine = nullptr;
-//    }
 }
 
 QJSValue AppComponent::evaluateScriptFromFile(const QString &scriptFileName)

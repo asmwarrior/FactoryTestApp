@@ -128,8 +128,6 @@ MainWindow::MainWindow(QWidget *parent)
     _selectMetodBox = new QComboBox(this);
     _selectMetodBox->setEnabled(false);
     _selectMetodBox->setFixedSize(350, 30);
-    _selectMetodBox->addItems(testSequenceManager->avaliableSequencesNames());
-    testSequenceManager->setCurrentSequence(_selectMetodBox->currentText());
 
     leftPanelLayout->addWidget(selectSequenceBoxLabel);
     leftPanelLayout->addWidget(_selectMetodBox);
@@ -139,11 +137,6 @@ MainWindow::MainWindow(QWidget *parent)
     _testFunctionsListWidget = new QListWidget(this);
     _testFunctionsListWidget->setEnabled(false);
     _testFunctionsListWidget->setFixedWidth(350);
-    _testFunctionsListWidget->addItems(testSequenceManager->currentSequenceFunctionNames());
-    if(_testFunctionsListWidget->count() > 0)
-    {
-        _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
-    }
 
     leftPanelLayout->addWidget(testFunctionsListLabel);
     leftPanelLayout->addWidget(_testFunctionsListWidget);
@@ -256,7 +249,18 @@ MainWindow::MainWindow(QWidget *parent)
         session->setBatchInfo(_batchInfoEdit->text());
 
         _selectMetodBox->setEnabled(true);
+        _selectMetodBox->clear();
+        _selectMetodBox->addItems(testSequenceManager->avaliableSequencesNames());
+
+        testSequenceManager->setCurrentSequence(_selectMetodBox->currentText());
+
         _testFunctionsListWidget->setEnabled(true);
+        _testFunctionsListWidget->addItems(testSequenceManager->currentSequenceFunctionNames());
+        if(_testFunctionsListWidget->count() > 0)
+        {
+            _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
+        }
+
         _startFullCycleTestingButton->setEnabled(true);
         _startSelectedTestButton->setEnabled(true);
         _newSessionButton->setEnabled(false);
@@ -280,8 +284,12 @@ MainWindow::MainWindow(QWidget *parent)
         session->setBatchNumber("");
         session->setBatchInfo("");
 
+        _selectMetodBox->clear();
         _selectMetodBox->setEnabled(false);
+
+        _testFunctionsListWidget->clear();
         _testFunctionsListWidget->setEnabled(false);
+
         _startFullCycleTestingButton->setEnabled(false);
         _startSelectedTestButton->setEnabled(false);
         _newSessionButton->setEnabled(false);
@@ -290,10 +298,28 @@ MainWindow::MainWindow(QWidget *parent)
         _operatorNameEdit->clear();
         _batchNumberEdit->clear();
         _batchInfoEdit->clear();
+        _logWidget->clear();
+        _childProcessOutputLogWidget->clear();
 
         _actionHintWidget->showNormalHint(HINT_START);
         _sessionInfoWidget->update();
     });
+
+    _slipClientList[0]->setPort("COM9");
+    _slipClientList[0]->open();
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_3V);
+    pkt.h.sequence = 15;
+    pkt.h.dataLen = 0;
+    _slipClientList[0]->sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 MainWindow::~MainWindow()
