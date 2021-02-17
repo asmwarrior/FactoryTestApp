@@ -185,6 +185,12 @@ MainWindow::MainWindow(QWidget *parent)
     logLayout->addWidget(_logWidget);
     logger->setLogWidget(_logWidget);
 
+    //Widget for logging output of child processes
+    _childProcessOutputLogWidget = new QListWidget(this);
+    _childProcessOutputLogWidget->setFixedHeight(200);
+    logLayout->addWidget(_childProcessOutputLogWidget);
+    logger->setChildProcessLogWidget(_childProcessOutputLogWidget);
+
     //Database
     _db = new DataBase(this);
     _db->connectToDataBase();

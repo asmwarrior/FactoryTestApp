@@ -11,6 +11,7 @@ public:
     explicit Logger(QObject *parent = nullptr);
 
     void setLogWidget(QListWidget* widget);
+    void setChildProcessLogWidget(QListWidget* widget);
 
 public slots:
 
@@ -18,7 +19,10 @@ public slots:
     void logError(const QString &message);
     void logSuccess(const QString &message);
 
+    void logChildProcessOutput(const QString &message);
+
 private:
 
     QListWidget* _logWidget;
+    QListWidget* _childProcessLogWidget;
 };

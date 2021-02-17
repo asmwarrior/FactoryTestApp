@@ -8,6 +8,9 @@ class JLinkManager : public QObject, public AppComponent
     Q_OBJECT
 
     public:
+
+    enum State {unknown, waitingTestResponse, connectionTested};
+
         explicit JLinkManager(QObject *parent = Q_NULLPTR);
         ~JLinkManager() Q_DECL_OVERRIDE;
 
@@ -20,6 +23,7 @@ public slots:
         bool isRunning();
         int exitCode();
 
+        bool testConnection();
         bool write(const QByteArray &data);
         QByteArray read();
         bool readUntilExpected(const QByteArray &expected, QByteArray &received, int timeout = 30000);
@@ -30,6 +34,7 @@ public slots:
 
 private slots:
     void readStandardOutput();
+    void processOutput();
     void logError(QProcess::ProcessError error);
     bool startJLinkScript(const QString& scriptFileName);
 
@@ -40,6 +45,8 @@ signals:
 
 private:
 
+    State _state = unknown;
+    static QString _jlinkExecutable;
     QString _SN; // JLink serial number
     QProcess m_proc;
     QByteArray m_rdBuf;

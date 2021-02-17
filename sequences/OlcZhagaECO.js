@@ -2,9 +2,15 @@ testSequenceManager.addSequence("OLC Zhaga ECO");
 
 ZhagaECO =
 {
+    testConnection: function ()
+    {
+//        let jlink = JlinkList[currentJLinkIndex];
+        JlinkList.forEach(function(item){item.testConnection()});
+//        jlink.testConnection();
+    },
+
     downloadRailtest: function ()
     {
-        console.log(session.operatorName)
         let jlink = JlinkList[currentJLinkIndex];
         jlink.startScript("/sequences/OlcZhagaECO/olc_zhaga_railtest.jlink");
     },
@@ -84,6 +90,7 @@ ZhagaECO =
     }
 }
 
+testSequenceManager.addTestFunction("Test connection to JLink", ZhagaECO.testConnection);
 testSequenceManager.addTestFunction("Download Railtest", ZhagaECO.downloadRailtest);
 testSequenceManager.addTestFunction("Open and check Railtest Client", ZhagaECO.openRailTestClient);
 testSequenceManager.addTestFunction("Read unique device identifier (ID)", ZhagaECO.readChipID);

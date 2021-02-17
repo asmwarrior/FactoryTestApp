@@ -12,6 +12,11 @@ void Logger::setLogWidget(QListWidget *widget)
     _logWidget = widget;
 }
 
+void Logger::setChildProcessLogWidget(QListWidget *widget)
+{
+    _childProcessLogWidget = widget;
+}
+
 void Logger::logInfo(const QString &message)
 {
     if(!_logWidget)
@@ -47,5 +52,15 @@ void Logger::logSuccess(const QString &message)
     item->setForeground(Qt::black);
     _logWidget->addItem(item);
     _logWidget->scrollToBottom();
+    qInfo().noquote() << message;
+}
+
+void Logger::logChildProcessOutput(const QString &message)
+{
+    if(!_childProcessLogWidget)
+        return;
+
+    _childProcessLogWidget->addItem(message);
+    _childProcessLogWidget->scrollToBottom();
     qInfo().noquote() << message;
 }

@@ -61,6 +61,7 @@ private:
     QPushButton* _startFullCycleTestingButton;
     QPushButton* _startSelectedTestButton;
     QListWidget* _logWidget;
+    QListWidget* _childProcessOutputLogWidget;
     TestFixtureWidget* _testFixtureWidget;
     SessionInfoWidget* _sessionInfoWidget;
     DutInfoWidget* _dutInfoWidget;

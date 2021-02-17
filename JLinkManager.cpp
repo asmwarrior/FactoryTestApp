@@ -5,10 +5,14 @@
 #include <QThread>
 #include <QCoreApplication>
 
+QString JLinkManager::_jlinkExecutable;
+
 JLinkManager::JLinkManager(QObject *parent)
     : QObject(parent)/*, m_proc(this)*/
 {
+    _jlinkExecutable = settings->value("JLink/path", "JLink.exe").toString();
     connect(&m_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
+    connect(&m_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(processOutput()));
     connect(&m_proc, &QProcess::errorOccurred, this, &JLinkManager::logError);
     connect(this, SIGNAL(startScript(const QString&)), this, SLOT(startJLinkScript(const QString&)), Qt::ConnectionType::QueuedConnection);
 }
@@ -50,11 +54,10 @@ bool JLinkManager::startJLinkScript(const QString &scriptFileName)
 
     args.append("-USB");
     args.append(_SN);
-//    args.append("-CommanderScript");
     args.append("-CommandFile");
-    args.append(settings->value("workDirectory").toString() + scriptFileName);
-    logger->logInfo("Running JLink Commander script " + settings->value("workDirectory").toString() + scriptFileName + "...");
-    if (!start(settings->value("JLink/path", "JLink.exe").toString(), args))
+    args.append(workDirectory + scriptFileName);
+    logger->logInfo("Running JLink Commander script " + workDirectory + scriptFileName + "...");
+    if (!start(_jlinkExecutable, args))
     {
         logger->logError("Cannot start JLink Commander!");
         return false;
@@ -96,6 +99,24 @@ int JLinkManager::exitCode()
     return m_proc.exitStatus() == QProcess::NormalExit ? m_proc.exitCode() : 0x7FFFFFFFL;
 }
 
+bool JLinkManager::testConnection()
+{
+    _state = waitingTestResponse;
+    stop();
+    m_proc.setInputChannelMode(QProcess::ManagedInputChannel);
+    m_proc.setProcessChannelMode(QProcess::MergedChannels);
+    m_proc.start(_jlinkExecutable, {"-USB", _SN});
+    if (!m_proc.waitForStarted(3000))
+    {
+        logger->logError(tr("Cannot start JLink executable!"));
+
+        return false;
+    }
+
+    m_proc.write("q\n");
+    return true;
+}
+
 void JLinkManager::readStandardOutput()
 {
     QByteArray data = m_proc.readAllStandardOutput();
@@ -108,10 +129,32 @@ void JLinkManager::readStandardOutput()
         for(auto & line : lines)
         {
             if(!line.isEmpty())
-                logger->logInfo(line);
+                logger->logChildProcessOutput(line);
         }
     }
     m_rdBuf.append(data);
+}
+
+void JLinkManager::processOutput()
+{
+    switch (_state)
+    {
+    case waitingTestResponse:
+        if (QString(m_rdBuf).contains(_SN))
+        {
+            _state = connectionTested;
+            logger->logSuccess("JLink with S/N: " + _SN + " connected");
+        }
+
+        else
+        {
+            _state = unknown;
+            logger->logError("No connection to JLink with S/N: " + _SN);
+        }
+        break;
+    }
+
+    m_rdBuf.clear();
 }
 
 void JLinkManager::logError(QProcess::ProcessError error)

@@ -11,8 +11,8 @@ TestSequenceManager* AppComponent::testSequenceManager = nullptr;
 Logger* AppComponent::logger = nullptr;
 
 //QString AppComponent::workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
-//QString AppComponent::workDirectory = "."; //For test version
-QString AppComponent::workDirectory = "../.."; //For development
+//QString AppComponent::workDirectory = QDir(".").absolutePath();; //For test version
+QString AppComponent::workDirectory = QDir("../..").absolutePath(); //For development
 
 QSettings* AppComponent::settings = nullptr;
 QJSEngine* AppComponent::scriptEngine = nullptr;
@@ -37,7 +37,7 @@ AppComponent::AppComponent()
     if(!settings)
     {
         settings = new QSettings(workDirectory + "/settings.ini", QSettings::IniFormat);
-        settings->setValue("workDirectory", QDir(workDirectory).absolutePath()); //Make name of work directory avaliable for other classes that use settings
+        settings->setValue("workDirectory", workDirectory); //Make name of the work directory avaliable for other classes that use settings
     }
 
     if(!scriptEngine)
