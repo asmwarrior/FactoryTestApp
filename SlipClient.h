@@ -67,7 +67,7 @@ public slots:
     void clearDOUT(int DUT, int DOUT);
     void readCSA(int gain);
     void readAIN(int DUT, int AIN, int gain);
-    void configDebugSerial(int DUT, int baudRate, unsigned char bits, unsigned char parity, unsigned char stopBits);
+    void configDebugSerial(int DUT, int baudRate = QSerialPort::Baud115200, unsigned char bits = QSerialPort::Data8, unsigned char parity = QSerialPort::NoParity, unsigned char stopBits = QSerialPort::OneStop);
     void DaliOn();
     void DaliOff();
     void readDaliADC();

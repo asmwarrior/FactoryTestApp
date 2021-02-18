@@ -322,21 +322,19 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_clearLogWidgetButton, &QPushButton::clicked, _logWidget, &QListWidget::clear);
     connect(_clearLogWidgetButton, &QPushButton::clicked, _childProcessOutputLogWidget, &QListWidget::clear);
 
-//    _slipClientList[0]->setPort("COM9");
+//    _slipClientList[0]->setPort("COM4");
 //    _slipClientList[0]->open();
-//#pragma pack (push, 1)
-//    struct Pkt
-//    {
-//        MB_Packet_t h;
-//    };
-//#pragma pack (pop)
-
-//    Pkt pkt;
-
-//    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_3V);
-//    pkt.h.sequence = 15;
-//    pkt.h.dataLen = 0;
-//    _slipClientList[0]->sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+//    _slipClientList[1]->setPort("COM5");
+//    _slipClientList[1]->open();
+    _slipClientList[2]->setPort("COM6");
+    _slipClientList[2]->open();
+    _slipClientList[2]->readCSA(1);
+    _slipClientList[3]->setPort("COM7");
+    _slipClientList[3]->open();
+    _slipClientList[3]->readCSA(1);
+    _slipClientList[4]->setPort("COM8");
+    _slipClientList[4]->open();
+    _slipClientList[4]->readCSA(1);
 }
 
 MainWindow::~MainWindow()

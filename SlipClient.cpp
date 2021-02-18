@@ -1,6 +1,7 @@
 #include "SlipClient.h"
 
 #include <QCoreApplication>
+#include <QDebug>
 
 static constexpr char
     END_SLIP_OCTET  = 0xC0,
