@@ -15,6 +15,7 @@ class SlipClient : public QObject, public AppComponent
     Q_OBJECT
 
 public:
+
     explicit SlipClient(QObject *parent = Q_NULLPTR);
     ~SlipClient() Q_DECL_OVERRIDE;
 
@@ -38,6 +39,7 @@ public:
     void sendPacket(quint8 channel, const QByteArray &frame) Q_DECL_NOTHROW;
 
 private:
+
     QThread m_thread;
     QThread *m_origin;
     QSerialPort m_serialPort;
@@ -53,7 +55,29 @@ private:
     void cleanup() Q_DECL_NOTHROW;
     void decodeFrame() Q_DECL_NOTHROW;
 
+public slots:
+
+    void sendDubugString(int channel, const QByteArray& string);
+    void reset();
+    void switchSWD(int DUT);
+    void powerOn(int DUT);
+    void powerOff(int DUT);
+    void readDIN(int DUT, int DIN);
+    void setDOUT(int DUT, int DOUT);
+    void clearDOUT(int DUT, int DOUT);
+    void readCSA(int gain);
+    void readAIN(int DUT, int AIN, int gain);
+    void configDebugSerial(int DUT, int baudRate, unsigned char bits, unsigned char parity, unsigned char stopBits);
+    void DaliOn();
+    void DaliOff();
+    void readDaliADC();
+    void readDinADC(int DUT, int DIN);
+    void read24V();
+    void read3V();
+    void readTemperature();
+
 private slots:
+
     void sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW;
     void onSerialPortReadyRead() Q_DECL_NOTHROW;
     void onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode) Q_DECL_NOTHROW;
@@ -61,6 +85,7 @@ private slots:
     void onSlipPacketReceived(quint8 channel, QByteArray frame) Q_DECL_NOTHROW;
 
 signals:
+
     void opened();
     void aboutToClose();
     void packetReceived(quint8 channel, QByteArray frame);

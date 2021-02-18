@@ -12,5 +12,7 @@
         <file alias="testOnly">Resources/verify_document_24_h.png</file>
         <file alias="checked">Resources/Checked.png</file>
         <file alias="finish">Resources/finishflag.png</file>
+        <file alias="clear">Resources/editclear.png</file>
+        <file alias="copy">Resources/copy.png</file>
     </qresource>
 </RCC>

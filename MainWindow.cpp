@@ -178,6 +178,20 @@ MainWindow::MainWindow(QWidget *parent)
     logLayout->addWidget(_logWidget);
     logger->setLogWidget(_logWidget);
 
+    QVBoxLayout* logWidgetControlsLayout = new QVBoxLayout;
+    logLayout->addLayout(logWidgetControlsLayout);
+
+    _clearLogWidgetButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/clear")), "", this);
+    _clearLogWidgetButton->setFixedSize(32, 32);
+    _clearLogWidgetButton->setToolTip("Clear log output");
+    logWidgetControlsLayout->addWidget(_clearLogWidgetButton);
+
+    _copyLogWidgetButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/copy")), "", this);
+    _copyLogWidgetButton->setFixedSize(32, 32);
+    _copyLogWidgetButton->setToolTip("Copy log output");
+    logWidgetControlsLayout->addWidget(_copyLogWidgetButton);
+    logWidgetControlsLayout->addStretch();
+
     //Widget for logging output of child processes
     _childProcessOutputLogWidget = new QListWidget(this);
     _childProcessOutputLogWidget->setFixedHeight(200);
@@ -305,21 +319,24 @@ MainWindow::MainWindow(QWidget *parent)
         _sessionInfoWidget->update();
     });
 
-    _slipClientList[0]->setPort("COM9");
-    _slipClientList[0]->open();
-#pragma pack (push, 1)
-    struct Pkt
-    {
-        MB_Packet_t h;
-    };
-#pragma pack (pop)
+    connect(_clearLogWidgetButton, &QPushButton::clicked, _logWidget, &QListWidget::clear);
+    connect(_clearLogWidgetButton, &QPushButton::clicked, _childProcessOutputLogWidget, &QListWidget::clear);
 
-    Pkt pkt;
+//    _slipClientList[0]->setPort("COM9");
+//    _slipClientList[0]->open();
+//#pragma pack (push, 1)
+//    struct Pkt
+//    {
+//        MB_Packet_t h;
+//    };
+//#pragma pack (pop)
 
-    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_3V);
-    pkt.h.sequence = 15;
-    pkt.h.dataLen = 0;
-    _slipClientList[0]->sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+//    Pkt pkt;
+
+//    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_3V);
+//    pkt.h.sequence = 15;
+//    pkt.h.dataLen = 0;
+//    _slipClientList[0]->sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 MainWindow::~MainWindow()

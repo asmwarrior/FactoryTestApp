@@ -68,10 +68,10 @@ void SlipClient::setPort(const QString &name, qint32 baudRate, QSerialPort::Data
     QSerialPort::FlowControl flowControl)
 {
     if (m_thread.isRunning())
-        /*throw SerialPortError(QSerialPort::PermissionError, "SLIP serial port already opened")*/;
+        logger->logError("SLIP serial port already opened");
 
     if (thread() != QThread::currentThread())
-        /*throw SerialPortError(QSerialPort::UnsupportedOperationError, "cannot change SLIP serial port parameters from different thread")*/;
+        logger->logError("Cannot change SLIP serial port parameters from different thread");
 
     if (m_serialPort.isOpen())
         m_serialPort.close();
@@ -84,22 +84,22 @@ void SlipClient::setPort(const QString &name, qint32 baudRate, QSerialPort::Data
         && m_serialPort.setFlowControl(flowControl);
 
     if (!res)
-        /*throw SerialPortError(m_serialPort.error(), m_serialPort.errorString())*/;
+        logger->logError(m_serialPort.errorString());
 }
 
 void SlipClient::open()
 {
     if (m_thread.isRunning())
-        /*throw SerialPortError(QSerialPort::PermissionError, "SLIP serial port already opened")*/;
+        logger->logError("SLIP serial port already opened");
 
     if (thread() != QThread::currentThread())
-        /*throw SerialPortError(QSerialPort::UnsupportedOperationError, "cannot open SLIP serial port from different thread")*/;
+        logger->logError("Cannot open SLIP serial port from different thread");
 
     if (m_serialPort.isOpen())
         m_serialPort.close();
     cleanup();
     if (!m_serialPort.open(QSerialPort::ReadWrite))
-        /*throw SerialPortError(m_serialPort.error(), m_serialPort.errorString())*/;
+        logger->logError(m_serialPort.errorString());
 
     m_origin = thread();
     moveToThread(&m_thread);
@@ -203,8 +203,7 @@ void SlipClient::decodeFrame() Q_DECL_NOTHROW
             ++i;
             if (i >= m_recvBuffer.size())
             {
-                /*emit error(new SlipError("unfinished escape sequence", m_recvBuffer))*/;
-
+                logger->logError("SLIP. Decode frame. Unfinished escape sequence.");
                 return;
             }
             switch (m_recvBuffer.at(i))
@@ -218,8 +217,7 @@ void SlipClient::decodeFrame() Q_DECL_NOTHROW
                     break;
 
                 default:
-                    /*emit error(new SlipError("invalid escape sequence", m_recvBuffer))*/;
-
+                    logger->logError("SLIP. Decode frame. Invalid escape sequence.");
                     return;
             }
         }
@@ -228,8 +226,7 @@ void SlipClient::decodeFrame() Q_DECL_NOTHROW
     }
     if (decodedBuffer.size() < MIN_FRAME_SIZE)
     {
-        /*emit error(new SlipError("Frame too short", decodedBuffer))*/;
-
+        logger->logError("SLIP. Decode frame. Frame too short.");
         return;
     }
 
@@ -249,13 +246,346 @@ void SlipClient::decodeFrame() Q_DECL_NOTHROW
     // Check CRC.
     if (frameCrc != bufferCrc)
     {
-        /*emit error(new SlipError("invalid Frame CRC", decodedBuffer))*/;
-
+        logger->logError("SLIP. Decode frame. Invalid Frame CRC.");
         return;
     }
 
     // Frame received successfully.
     emit packetReceived(decodedBuffer.at(0), decodedBuffer.mid(1, frameSize - 1));
+}
+
+void SlipClient::sendDubugString(int channel, const QByteArray &string)
+{
+    sendPacket(channel, string + "\r\n");
+}
+
+void SlipClient::reset()
+{
+    MB_Packet_t pkt;
+
+    pkt.type = qToBigEndian<uint16_t>(MB_SYSTEM_RESET);
+    pkt.sequence = MB_SYSTEM_RESET;
+    pkt.dataLen = 0;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::switchSWD(int DUT)
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+        uint8_t dut;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_SWITCH_SWD);
+    pkt.h.sequence = 1;
+    pkt.h.dataLen = 1;
+    pkt.dut = DUT;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::powerOn(int DUT)
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+        uint8_t
+                dut,
+                state;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_SWITCH_POWER);
+    pkt.h.sequence = 2;
+    pkt.h.dataLen = 2;
+    pkt.dut = DUT;
+    pkt.state = 1;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::powerOff(int DUT)
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+        uint8_t
+                dut,
+                state;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_SWITCH_POWER);
+    pkt.h.sequence = 3;
+    pkt.h.dataLen = 2;
+    pkt.dut = DUT;
+    pkt.state = 0;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::readDIN(int DUT, int DIN)
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+        uint8_t
+                dut,
+                din;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_DIN);
+    pkt.h.sequence = 4;
+    pkt.h.dataLen = 2;
+    pkt.dut = DUT;
+    pkt.din = DIN;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::setDOUT(int DUT, int DOUT)
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+        uint8_t
+                dut,
+                dout,
+                state;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_WRITE_DOUT);
+    pkt.h.sequence = 5;
+    pkt.h.dataLen = 3;
+    pkt.dut = DUT;
+    pkt.dout = DOUT;
+    pkt.state = 1;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::clearDOUT(int DUT, int DOUT)
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+        uint8_t
+                dut,
+                dout,
+                state;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_WRITE_DOUT);
+    pkt.h.sequence = 6;
+    pkt.h.dataLen = 3;
+    pkt.dut = DUT;
+    pkt.dout = DOUT;
+    pkt.state = 0;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::readCSA(int gain)
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+        uint8_t gain;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_CSA);
+    pkt.h.sequence = 7;
+    pkt.h.dataLen = 1;
+    pkt.gain = gain;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::readAIN(int DUT, int AIN, int gain)
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+        uint8_t
+                dut,
+                ain,
+                gain;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ANALOG);
+    pkt.h.sequence = 8;
+    pkt.h.dataLen = 3;
+    pkt.dut = DUT;
+    pkt.ain = AIN;
+    pkt.gain = gain;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::configDebugSerial(int DUT, int baudRate, unsigned char bits, unsigned char parity, unsigned char stopBits)
+{
+    MB_ConfigDutDebug_t pkt;
+
+    pkt.header.type = qToBigEndian<uint16_t>(MB_CONFIG_DUT_DEBUG);
+    pkt.header.sequence = 9;
+    pkt.header.dataLen = sizeof(MB_ConfigDutDebug_t) - sizeof(MB_Packet_t);
+    pkt.dutIndex = DUT;
+    pkt.baudRate = qToBigEndian(baudRate);
+    pkt.bits = bits;
+    pkt.parity = parity;
+    pkt.stopBits = stopBits;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::DaliOn()
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+        uint8_t state;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_SWITCH_DALI);
+    pkt.h.sequence = 10;
+    pkt.h.dataLen = 1;
+    pkt.state = 1;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::DaliOff()
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+        uint8_t state;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_SWITCH_DALI);
+    pkt.h.sequence = 11;
+    pkt.h.dataLen = 1;
+    pkt.state = 0;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::readDaliADC()
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_DALI_ADC);
+    pkt.h.sequence = 12;
+    pkt.h.dataLen = 0;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::readDinADC(int DUT, int DIN)
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+        uint8_t
+                dut,
+                din;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_DIN_ADC);
+    pkt.h.sequence = 13;
+    pkt.h.dataLen = 2;
+    pkt.dut = DUT;
+    pkt.din = DIN;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::read24V()
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_24V);
+    pkt.h.sequence = 14;
+    pkt.h.dataLen = 0;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::read3V()
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_3V);
+    pkt.h.sequence = 15;
+    pkt.h.dataLen = 0;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
+}
+
+void SlipClient::readTemperature()
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_TEMP);
+    pkt.h.sequence = 16;
+    pkt.h.dataLen = 0;
+    sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void SlipClient::onSerialPortReadyRead() Q_DECL_NOTHROW
@@ -289,7 +619,7 @@ void SlipClient::onSerialPortReadyRead() Q_DECL_NOTHROW
 void SlipClient::onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode) Q_DECL_NOTHROW
 {
     if (errorCode != QSerialPort::NoError)
-        /*emit error(new SerialPortError(errorCode, m_serialPort.errorString()))*/;
+        logger->logError("SLIP. Serial port error occurred.");
 }
 
 void SlipClient::onThreadFinished() Q_DECL_NOTHROW
