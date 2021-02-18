@@ -328,13 +328,13 @@ MainWindow::MainWindow(QWidget *parent)
 //    _slipClientList[1]->open();
     _slipClientList[2]->setPort("COM6");
     _slipClientList[2]->open();
-    _slipClientList[2]->readCSA(1);
+    _slipClientList[2]->readCSA(0);
     _slipClientList[3]->setPort("COM7");
     _slipClientList[3]->open();
-    _slipClientList[3]->readCSA(1);
+    _slipClientList[3]->readCSA(0);
     _slipClientList[4]->setPort("COM8");
     _slipClientList[4]->open();
-    _slipClientList[4]->readCSA(1);
+    _slipClientList[4]->readCSA(0);
 }
 
 MainWindow::~MainWindow()

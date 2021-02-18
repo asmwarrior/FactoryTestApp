@@ -11,8 +11,8 @@ TestSequenceManager* AppComponent::testSequenceManager = nullptr;
 Logger* AppComponent::logger = nullptr;
 
 //QString AppComponent::workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
-QString AppComponent::workDirectory = QDir(".").absolutePath();; //For test version
-//QString AppComponent::workDirectory = QDir("../..").absolutePath(); //For development
+//QString AppComponent::workDirectory = QDir(".").absolutePath();; //For test version
+QString AppComponent::workDirectory = QDir("../..").absolutePath(); //For development
 
 QSettings* AppComponent::settings = nullptr;
 QJSEngine* AppComponent::scriptEngine = nullptr;

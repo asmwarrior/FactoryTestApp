@@ -53,7 +53,7 @@ struct MB_Packet_t
   uint16_t type;
   uint8_t sequence;
   uint8_t dataLen;
-  uint8_t* data;
+  //uint8_t* data;
 };
 #pragma pack (pop)
 
