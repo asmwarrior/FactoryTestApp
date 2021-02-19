@@ -44,15 +44,8 @@ static const quint16 _crc_ccitt_lut[] = {
 };
 
 SlipClient::SlipClient(QObject *parent)
-    : QObject(), m_thread(parent), m_serialPort(this), m_frameCnt(0)
+    : QObject(parent), m_serialPort(this), m_frameCnt(0)
 {
-    const QMetaObject* const mo = metaObject();
-
-    m_sendMethod = mo->method(mo->indexOfSlot("sendFrame(int,QByteArray)"));
-
-    connect(&m_thread, &QThread::started, this, &SlipClient::opened);
-    connect(&m_thread, &QThread::finished, this, &SlipClient::onThreadFinished);
-
     connect(&m_serialPort, &QSerialPort::readyRead, this, &SlipClient::onSerialPortReadyRead);
     connect(&m_serialPort, &QSerialPort::errorOccurred, this, &SlipClient::onSerialPortErrorOccurred);
     connect(&m_serialPort, &QSerialPort::aboutToClose, this, &SlipClient::aboutToClose);
@@ -68,12 +61,6 @@ void SlipClient::setPort(const QString &name, qint32 baudRate, QSerialPort::Data
     QSerialPort::Parity parity, QSerialPort::StopBits stopBits,
     QSerialPort::FlowControl flowControl)
 {
-    if (m_thread.isRunning())
-        logger->logError("SLIP serial port already opened");
-
-    if (thread() != QThread::currentThread())
-        logger->logError("Cannot change SLIP serial port parameters from different thread");
-
     if (m_serialPort.isOpen())
         m_serialPort.close();
     m_serialPort.setPortName(name);
@@ -90,27 +77,21 @@ void SlipClient::setPort(const QString &name, qint32 baudRate, QSerialPort::Data
 
 void SlipClient::open()
 {
-    if (m_thread.isRunning())
-        logger->logError("SLIP serial port already opened");
-
-    if (thread() != QThread::currentThread())
-        logger->logError("Cannot open SLIP serial port from different thread");
-
     if (m_serialPort.isOpen())
         m_serialPort.close();
     cleanup();
     if (!m_serialPort.open(QSerialPort::ReadWrite))
         logger->logError(m_serialPort.errorString());
-
-    m_origin = thread();
-    moveToThread(&m_thread);
-    m_thread.start(QThread::HighestPriority);
 }
 
 void SlipClient::close() Q_DECL_NOTHROW
 {
-    m_thread.quit();
-    m_thread.wait();
+    if (m_serialPort.isOpen())
+    {
+        m_serialPort.flush();
+        m_serialPort.close();
+    }
+    cleanup();
 }
 
 static inline void _encodeSymbol(QByteArray &buffer, char ch) Q_DECL_NOTHROW
@@ -134,8 +115,6 @@ static inline void _encodeSymbol(QByteArray &buffer, char ch) Q_DECL_NOTHROW
 
 quint8 SlipClient::nextFrameId() Q_DECL_NOTHROW
 {
-    QMutexLocker lock(&m_attrLock);
-
     ++m_frameCnt;
     if (!m_frameCnt)
         m_frameCnt = 1;
@@ -145,7 +124,7 @@ quint8 SlipClient::nextFrameId() Q_DECL_NOTHROW
 
 void SlipClient::sendPacket(quint8 channel, const QByteArray &frame) Q_DECL_NOTHROW
 {
-    m_sendMethod.invoke(this, Qt::QueuedConnection, Q_ARG(quint8, channel), Q_ARG(QByteArray, frame));
+    sendFrame(channel, frame);
 }
 
 void SlipClient::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
@@ -621,19 +600,6 @@ void SlipClient::onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCod
 {
     if (errorCode != QSerialPort::NoError)
         logger->logError("SLIP. Serial port error occurred.");
-}
-
-void SlipClient::onThreadFinished() Q_DECL_NOTHROW
-{
-    if (m_serialPort.isOpen())
-    {
-        m_serialPort.flush();
-        m_serialPort.close();
-    }
-    cleanup();
-    moveToThread(m_origin);
-    if (thread() != m_origin)
-        moveToThread(QCoreApplication::instance()->thread());
 }
 
 void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
