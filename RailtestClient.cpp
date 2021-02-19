@@ -18,23 +18,20 @@ RailtestClient::~RailtestClient()
     close();
 }
 
-bool RailtestClient::open(const QString &portName)
+void RailtestClient::setPort(const QString &portName)
 {
-    close();
     m_serial.setPortName(portName);
     m_serial.setBaudRate(QSerialPort::Baud115200);
     m_serial.setDataBits(QSerialPort::Data8);
     m_serial.setParity(QSerialPort::NoParity);
     m_serial.setStopBits(QSerialPort::OneStop);
     m_serial.setFlowControl(QSerialPort::NoFlowControl);
-
-    return m_serial.open(QSerialPort::ReadWrite);
 }
 
 bool RailtestClient::open()
 {
-    QString portName = settings->value("Railtest/serial", "COM1").toString();
-    return open(portName);
+    close();
+    return m_serial.open(QSerialPort::ReadWrite);
 }
 
 void RailtestClient::close()
@@ -127,7 +124,8 @@ void RailtestClient::testRadio()
     RailtestClient rf(this);
 
     connect(&rf, &RailtestClient::replyReceived, this, &RailtestClient::onRfReplyReceived);
-    if (!rf.open(settings->value("Serial", "COM2").toString()))
+    rf.setPort(settings->value("Serial", "COM2").toString());
+    if (!rf.open())
     {
         logger->logError("Cannot open serial port for reference radio module!");
     }

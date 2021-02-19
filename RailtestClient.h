@@ -19,9 +19,9 @@ public:
     explicit RailtestClient(QObject *parent = Q_NULLPTR);
     virtual ~RailtestClient();
 
-    bool open(const QString &portName);
+    void setPort(const QString &portName);
     Q_INVOKABLE bool open();
-    void close();
+    Q_INVOKABLE void close();
 
     Q_INVOKABLE bool waitCommandPrompt(int timeout = 1000);
     Q_INVOKABLE QVariantList syncCommand(const QByteArray &cmd, const QByteArray &args = QByteArray(), int timeout = 5000);

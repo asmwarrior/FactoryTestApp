@@ -84,6 +84,13 @@ void SlipClient::open()
         logger->logError(m_serialPort.errorString());
 }
 
+void SlipClient::open(const QSerialPortInfo &portInfo)
+{
+    m_serialPort.setPort(portInfo);
+    if (!m_serialPort.open(QSerialPort::ReadWrite))
+        logger->logError(m_serialPort.errorString());
+}
+
 void SlipClient::close() Q_DECL_NOTHROW
 {
     if (m_serialPort.isOpen())

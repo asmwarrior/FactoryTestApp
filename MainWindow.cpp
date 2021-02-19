@@ -31,17 +31,16 @@ MainWindow::MainWindow(QWidget *parent)
         scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
 
         auto railClient = new RailtestClient(this);
-        railClient->open(settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
+        railClient->setPort(settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
         _railTestClientList.push_back(railClient);
         //_railTestClientsList[i]->moveToThread(_threads[i]);
         QJSValue rail = scriptEngine->newQObject(railClient);
         scriptEngine->globalObject().property("railTestClientList").setProperty(i, rail);
 
         auto slipClient = new SlipClient(this);
-        //slipClient->setLogger(logger);
-        //slipClient->open(settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
+        slipClient->setPort(settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
         _slipClientList.push_back(slipClient);
-        //_railTestClientsList[i]->moveToThread(_threads[i]);
+        //_slipClientList[i]->moveToThread(_threads[i]);
         QJSValue slip = scriptEngine->newQObject(slipClient);
         scriptEngine->globalObject().property("slipClientList").setProperty(i, slip);
 
@@ -322,19 +321,27 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_clearLogWidgetButton, &QPushButton::clicked, _logWidget, &QListWidget::clear);
     connect(_clearLogWidgetButton, &QPushButton::clicked, _childProcessOutputLogWidget, &QListWidget::clear);
 
-//    _slipClientList[0]->setPort("COM4");
-//    _slipClientList[0]->open();
-//    _slipClientList[1]->setPort("COM5");
-//    _slipClientList[1]->open();
-    _slipClientList[2]->setPort("COM6");
+    _slipClientList[0]->open();
+    _slipClientList[0]->readCSA(0);
+    _slipClientList[1]->open();
+    _slipClientList[1]->readCSA(0);
     _slipClientList[2]->open();
     _slipClientList[2]->readCSA(0);
-    _slipClientList[3]->setPort("COM7");
     _slipClientList[3]->open();
     _slipClientList[3]->readCSA(0);
-    _slipClientList[4]->setPort("COM8");
     _slipClientList[4]->open();
     _slipClientList[4]->readCSA(0);
+
+    int dutNo = 1;
+    for(auto & slip : _slipClientList)
+    {
+        for(int i = 1; i < 4; i++)
+        {
+            logger->logInfo(QString("Reading AIN for DUT %1").arg(dutNo));
+            dutNo++;
+            slip->readAIN(i, 1, 0);
+        }
+    }
 }
 
 MainWindow::~MainWindow()

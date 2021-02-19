@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <QSerialPort>
+#include <QSerialPortInfo>
 #include <QMetaMethod>
 #include <QMutex>
 #include <QtEndian>
@@ -27,6 +28,7 @@ public:
                  QSerialPort::FlowControl flowControl = QSerialPort::NoFlowControl);
 
     void open();
+    void open(const QSerialPortInfo& portInfo);
     void close() Q_DECL_NOTHROW;
 
     quint8 nextFrameId() Q_DECL_NOTHROW;
