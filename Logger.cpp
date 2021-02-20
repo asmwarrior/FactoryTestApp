@@ -19,6 +19,8 @@ void Logger::setChildProcessLogWidget(QListWidget *widget)
 
 void Logger::logInfo(const QString &message)
 {
+    QMutexLocker locker(&_logMutex);
+
     if(!_logWidget)
         return;
 
@@ -34,6 +36,8 @@ void Logger::logInfo(const QString &message)
 
 void Logger::logError(const QString &message)
 {
+    QMutexLocker locker(&_logMutex);
+
     if(!_logWidget)
         return;
 
@@ -48,6 +52,8 @@ void Logger::logError(const QString &message)
 
 void Logger::logSuccess(const QString &message)
 {
+    QMutexLocker locker(&_logMutex);
+
     if(!_logWidget)
         return;
 
@@ -62,6 +68,8 @@ void Logger::logSuccess(const QString &message)
 
 void Logger::logChildProcessOutput(const QString &message)
 {
+    QMutexLocker locker(&_childProcessLogMutex);
+
     if(!_childProcessLogWidget)
         return;
 

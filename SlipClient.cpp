@@ -46,9 +46,9 @@ static const quint16 _crc_ccitt_lut[] = {
 SlipClient::SlipClient(QObject *parent)
     : QObject(parent), m_serialPort(this), m_frameCnt(0)
 {
-    connect(&m_serialPort, &QSerialPort::readyRead, this, &SlipClient::onSerialPortReadyRead);
-    connect(&m_serialPort, &QSerialPort::errorOccurred, this, &SlipClient::onSerialPortErrorOccurred);
-    connect(&m_serialPort, &QSerialPort::aboutToClose, this, &SlipClient::aboutToClose);
+    connect(&m_serialPort, &QSerialPort::readyRead, this, &SlipClient::onSerialPortReadyRead, Qt::QueuedConnection);
+    connect(&m_serialPort, &QSerialPort::errorOccurred, this, &SlipClient::onSerialPortErrorOccurred, Qt::QueuedConnection);
+    connect(&m_serialPort, &QSerialPort::aboutToClose, this, &SlipClient::aboutToClose, Qt::QueuedConnection);
     connect(this, &SlipClient::packetReceived, this, &SlipClient::onSlipPacketReceived);
 }
 

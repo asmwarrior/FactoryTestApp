@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QListWidget>
+#include <QMutexLocker>
 
 class Logger : public QObject
 {
@@ -23,6 +24,8 @@ public slots:
 
 private:
 
+    QMutex _logMutex;
+    QMutex _childProcessLogMutex;
     QListWidget* _logWidget;
     QListWidget* _childProcessLogWidget;
 };

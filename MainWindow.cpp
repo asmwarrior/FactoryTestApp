@@ -11,41 +11,43 @@
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
+    thread()->setObjectName("Main Window thread");
     setStyleSheet("color: #424242; font-size:10pt;");
 
     // Creating threads for run the tests for each test panel
     for (int i = 0; i < 5; i++)
     {
         auto newThread = new QThread(this);
+        newThread->setObjectName(QString("Thread %1").arg(i + 1));
         _threads.push_back(newThread);
     }
 
     // Creating objects for controlling JLinks, Rail Test & Slip clients
     for (int i = 0; i < 5; i++)
     {
-        auto newJlink = new JLinkManager(settings);
+        auto newJlink = new JLinkManager();
         newJlink->setSN(settings->value(QString("JLink/SN" + QString().setNum(i + 1))).toString());
         _JLinkList.push_back(newJlink);
-        //_JLinkList[i]->moveToThread(_threads[i]);
+        _JLinkList[i]->moveToThread(_threads[i]);
         QJSValue jlink = scriptEngine->newQObject(newJlink);
         scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
 
-        auto railClient = new RailtestClient(this);
+        auto railClient = new RailtestClient();
         railClient->setPort(settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
         _railTestClientList.push_back(railClient);
-        //_railTestClientsList[i]->moveToThread(_threads[i]);
+        _railTestClientList[i]->moveToThread(_threads[i]);
         QJSValue rail = scriptEngine->newQObject(railClient);
         scriptEngine->globalObject().property("railTestClientList").setProperty(i, rail);
 
-        auto slipClient = new SlipClient(this);
+        auto slipClient = new SlipClient();
         slipClient->setPort(settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
         _slipClientList.push_back(slipClient);
-        //_slipClientList[i]->moveToThread(_threads[i]);
+        _slipClientList[i]->moveToThread(_threads[i]);
         QJSValue slip = scriptEngine->newQObject(slipClient);
         scriptEngine->globalObject().property("slipClientList").setProperty(i, slip);
 
         _threads[i]->start();
-    }
+    }   
 
 //--- GUI Layouts---
     QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -321,27 +323,58 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_clearLogWidgetButton, &QPushButton::clicked, _logWidget, &QListWidget::clear);
     connect(_clearLogWidgetButton, &QPushButton::clicked, _childProcessOutputLogWidget, &QListWidget::clear);
 
+//    _railTestClientList[0]->open();
+//    _railTestClientList[1]->open();
+//    _railTestClientList[2]->open();
+//    _railTestClientList[3]->open();
+//    _railTestClientList[4]->open();
+
+//    logger->logInfo(_railTestClientList[0]->thread()->objectName());
+//    logger->logInfo(_railTestClientList[1]->thread()->objectName());
+//    logger->logInfo(_railTestClientList[2]->thread()->objectName());
+//    logger->logInfo(_railTestClientList[3]->thread()->objectName());
+//    logger->logInfo(_railTestClientList[4]->thread()->objectName());
+
+//    logger->logInfo(_railTestClientList[0]->readChipId());
+//    logger->logInfo(_railTestClientList[1]->readChipId());
+//    logger->logInfo(_railTestClientList[2]->readChipId());
+//    logger->logInfo(_railTestClientList[3]->readChipId());
+//    logger->logInfo(_railTestClientList[4]->readChipId());
+
+//    qDebug() << _slipClientList[0]->thread()->objectName();
+//    qDebug() << _slipClientList[1]->thread()->objectName();
+//    qDebug() << _slipClientList[2]->thread()->objectName();
+//    qDebug() << _slipClientList[3]->thread()->objectName();
+//    qDebug() << _slipClientList[4]->thread()->objectName();
+
     _slipClientList[0]->open();
-    _slipClientList[0]->readCSA(0);
     _slipClientList[1]->open();
-    _slipClientList[1]->readCSA(0);
     _slipClientList[2]->open();
-    _slipClientList[2]->readCSA(0);
     _slipClientList[3]->open();
-    _slipClientList[3]->readCSA(0);
     _slipClientList[4]->open();
+
+    _slipClientList[0]->readCSA(0);
+    _slipClientList[1]->readCSA(0);
+    _slipClientList[2]->readCSA(0);
+    _slipClientList[3]->readCSA(0);
     _slipClientList[4]->readCSA(0);
 
-    int dutNo = 1;
-    for(auto & slip : _slipClientList)
-    {
-        for(int i = 1; i < 4; i++)
-        {
-            logger->logInfo(QString("Reading AIN for DUT %1").arg(dutNo));
-            dutNo++;
-            slip->readAIN(i, 1, 0);
-        }
-    }
+//    _slipClientList[0]->readDaliADC();
+//    _slipClientList[1]->readDaliADC();
+//    _slipClientList[2]->readDaliADC();
+//    _slipClientList[3]->readDaliADC();
+//    _slipClientList[4]->readDaliADC();
+
+//    int dutNo = 1;
+//    for(auto & slip : _slipClientList)
+//    {
+//        for(int i = 1; i < 4; i++)
+//        {
+//            logger->logInfo(QString("Reading AIN for DUT %1").arg(dutNo));
+//            dutNo++;
+//            slip->readAIN(i, 3, 0);
+//        }
+//    }
 }
 
 MainWindow::~MainWindow()
