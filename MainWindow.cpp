@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
         auto newJlink = new JLinkManager();
         newJlink->setSN(settings->value(QString("JLink/SN" + QString().setNum(i + 1))).toString());
         _JLinkList.push_back(newJlink);
-        _JLinkList[i]->moveToThread(_threads[i]);
+        //_JLinkList[i]->moveToThread(_threads[i]);
         QJSValue jlink = scriptEngine->newQObject(newJlink);
         scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
 
@@ -263,6 +263,9 @@ MainWindow::MainWindow(QWidget *parent)
         session->setBatchNumber(_batchNumberEdit->text());
         session->setBatchInfo(_batchInfoEdit->text());
 
+        resetDutList();
+
+        //------------------------------------------------------------------------------------------
         _selectMetodBox->setEnabled(true);
         _selectMetodBox->clear();
         _selectMetodBox->addItems(testSequenceManager->avaliableSequencesNames());
@@ -288,6 +291,12 @@ MainWindow::MainWindow(QWidget *parent)
         if(!_operatorList.contains(session->getOperatorName(), Qt::CaseInsensitive))
         {
             _operatorList.push_back(session->getOperatorName());
+        }
+
+        //--------------------------------------------------------------------------------------
+        for(auto & jlink : _JLinkList)
+        {
+            jlink->testConnection();
         }
     });
 
@@ -322,55 +331,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(_clearLogWidgetButton, &QPushButton::clicked, _logWidget, &QListWidget::clear);
     connect(_clearLogWidgetButton, &QPushButton::clicked, _childProcessOutputLogWidget, &QListWidget::clear);
-
-    qDebug() << thread();
-    _railTestClientList[0]->open();
-    _railTestClientList[1]->open();
-    _railTestClientList[2]->open();
-    _railTestClientList[3]->open();
-    _railTestClientList[4]->open();
-
-//    logger->logInfo(_railTestClientList[0]->thread()->objectName());
-//    logger->logInfo(_railTestClientList[1]->thread()->objectName());
-//    logger->logInfo(_railTestClientList[2]->thread()->objectName());
-//    logger->logInfo(_railTestClientList[3]->thread()->objectName());
-//    logger->logInfo(_railTestClientList[4]->thread()->objectName());
-
-    _railTestClientList[0]->readChipId();
-    _railTestClientList[1]->readChipId();
-    _railTestClientList[2]->readChipId();
-    _railTestClientList[3]->readChipId();
-    _railTestClientList[4]->readChipId();
-
-    logger->logInfo(_railTestClientList[0]->currentChipId());
-    logger->logInfo(_railTestClientList[1]->currentChipId());
-    logger->logInfo(_railTestClientList[2]->currentChipId());
-    logger->logInfo(_railTestClientList[3]->currentChipId());
-    logger->logInfo(_railTestClientList[4]->currentChipId());
-
-//    qDebug() << _slipClientList[0]->thread()->objectName();
-//    qDebug() << _slipClientList[1]->thread()->objectName();
-//    qDebug() << _slipClientList[2]->thread()->objectName();
-//    qDebug() << _slipClientList[3]->thread()->objectName();
-//    qDebug() << _slipClientList[4]->thread()->objectName();
-
-//    _slipClientList[0]->open();
-//    _slipClientList[1]->open();
-//    _slipClientList[2]->open();
-//    _slipClientList[3]->open();
-//    _slipClientList[4]->open();
-
-//    _slipClientList[0]->readCSA(0);
-//    _slipClientList[1]->readCSA(0);
-//    _slipClientList[2]->readCSA(0);
-//    _slipClientList[3]->readCSA(0);
-//    _slipClientList[4]->readCSA(0);
-
-//    _slipClientList[0]->readDaliADC();
-//    _slipClientList[1]->readDaliADC();
-//    _slipClientList[2]->readDaliADC();
-//    _slipClientList[3]->readDaliADC();
-//    _slipClientList[4]->readDaliADC();
 
 //    int dutNo = 1;
 //    for(auto & slip : _slipClientList)

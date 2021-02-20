@@ -36,7 +36,8 @@ ZhagaECO =
     readChipID: function ()
     {
         let rail = railTestClientList[currentRailTestClientIndex];
-        let id = rail.readChipId();
+        rail.readChipId();
+        let id = rail.currentChipId();
 
         if(id == "")
         {

@@ -11,10 +11,11 @@ JLinkManager::JLinkManager(QObject *parent)
     : QObject(parent), m_proc(this)
 {
     _jlinkExecutable = settings->value("JLink/path", "JLink.exe").toString();
-    connect(&m_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
-    connect(&m_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(processOutput()));
+    connect(&m_proc, &QProcess::readyReadStandardOutput, this,  &JLinkManager::readStandardOutput);
+    connect(&m_proc, &QProcess::readyReadStandardOutput, this,  &JLinkManager::processOutput);
     connect(&m_proc, &QProcess::errorOccurred, this, &JLinkManager::logError);
-    connect(this, SIGNAL(startScript(const QString&)), this, SLOT(startJLinkScript(const QString&)), Qt::ConnectionType::QueuedConnection);
+    connect(this, &JLinkManager::startScript, this, &JLinkManager::startJLinkScript);
+    connect(this, &JLinkManager::testConnection, this, &JLinkManager::on_testConnection);
 }
 
 JLinkManager::~JLinkManager()
@@ -99,8 +100,9 @@ int JLinkManager::exitCode()
     return m_proc.exitStatus() == QProcess::NormalExit ? m_proc.exitCode() : 0x7FFFFFFFL;
 }
 
-bool JLinkManager::testConnection()
+void JLinkManager::on_testConnection()
 {
+    qDebug() << m_proc.thread();
     _state = waitingTestResponse;
     stop();
     m_proc.setInputChannelMode(QProcess::ManagedInputChannel);
@@ -109,12 +111,10 @@ bool JLinkManager::testConnection()
     if (!m_proc.waitForStarted(3000))
     {
         logger->logError(tr("Cannot start JLink executable!"));
-
-        return false;
+        return;
     }
 
     m_proc.write("q\n");
-    return true;
 }
 
 void JLinkManager::readStandardOutput()
@@ -203,7 +203,8 @@ bool JLinkManager::readUntilExpected(const QByteArray &expected, QByteArray &rec
         {
             received.append(m_rdBuf);
             m_rdBuf.clear();
-            QThread::msleep(500);
+            //QThread::msleep(500);
+            this->thread()->sleep(500);
             timeout -= 500;
         }
         else
@@ -229,7 +230,8 @@ bool JLinkManager::skipUntilExpected(const QByteArray &expected, int timeout)
         if (index < 0)
         {
             m_rdBuf.clear();
-            QThread::msleep(500);
+            //QThread::msleep(500);
+            this->thread()->sleep(500);
             timeout -= 500;
         }
         else

@@ -18,12 +18,12 @@ class JLinkManager : public QObject, public AppComponent
         QString getSN() const;
 
 public slots:
+
         bool start(const QString &path, const QStringList &args = QStringList(), int timeout = 30000);
         void stop();
         bool isRunning();
         int exitCode();
 
-        bool testConnection();
         bool write(const QByteArray &data);
         QByteArray read();
         bool readUntilExpected(const QByteArray &expected, QByteArray &received, int timeout = 30000);
@@ -33,12 +33,16 @@ public slots:
         bool skipUntilFinished(int timeout = 30000);
 
 private slots:
+
     void readStandardOutput();
     void processOutput();
     void logError(QProcess::ProcessError error);
+    void on_testConnection();
     bool startJLinkScript(const QString& scriptFileName);
 
 signals:
+
+    bool testConnection();
     void startScript(const QString& scriptName);
     void error(QString message);
     void log(QStringList lines);

@@ -53,36 +53,7 @@ AppComponent::AppComponent()
         scriptEngine->globalObject().setProperty("logger", scriptEngine->newQObject(logger));
     }
 
-    if(dutList.isEmpty())
-    {
-        dutList.push_back(new Dut(1, 1, 1));
-        dutList.push_back(new Dut(2, 1, 2));
-        dutList.push_back(new Dut(3, 1, 3));
-
-        dutList.push_back(new Dut(4, 2, 1));
-        dutList.push_back(new Dut(5, 2, 2));
-        dutList.push_back(new Dut(6, 2, 3));
-
-        dutList.push_back(new Dut(7, 3, 1));
-        dutList.push_back(new Dut(8, 3, 2));
-        dutList.push_back(new Dut(9, 3, 3));
-
-        dutList.push_back(new Dut(10, 4, 1));
-        dutList.push_back(new Dut(11, 4, 2));
-        dutList.push_back(new Dut(12, 4, 3));
-
-        dutList.push_back(new Dut(13, 5, 1));
-        dutList.push_back(new Dut(14, 5, 2));
-        dutList.push_back(new Dut(15, 5, 3));
-
-        int counter = 0;
-        for(auto & dut : dutList)
-        {
-            QJSValue currentDut = scriptEngine->newQObject(dut);
-            scriptEngine->globalObject().property("dutList").setProperty(counter, currentDut);
-            counter++;
-        }
-    }
+    resetDutList();
 }
 
 AppComponent::~AppComponent()
@@ -113,6 +84,44 @@ AppComponent::~AppComponent()
         }
 
         dutList.clear();
+    }
+}
+
+void AppComponent::resetDutList()
+{
+    for(auto & dut : dutList)
+    {
+        delete dut;
+    }
+
+    dutList.clear();
+
+    dutList.push_back(new Dut(1, 1, 1));
+    dutList.push_back(new Dut(2, 1, 2));
+    dutList.push_back(new Dut(3, 1, 3));
+
+    dutList.push_back(new Dut(4, 2, 1));
+    dutList.push_back(new Dut(5, 2, 2));
+    dutList.push_back(new Dut(6, 2, 3));
+
+    dutList.push_back(new Dut(7, 3, 1));
+    dutList.push_back(new Dut(8, 3, 2));
+    dutList.push_back(new Dut(9, 3, 3));
+
+    dutList.push_back(new Dut(10, 4, 1));
+    dutList.push_back(new Dut(11, 4, 2));
+    dutList.push_back(new Dut(12, 4, 3));
+
+    dutList.push_back(new Dut(13, 5, 1));
+    dutList.push_back(new Dut(14, 5, 2));
+    dutList.push_back(new Dut(15, 5, 3));
+
+    int counter = 0;
+    for(auto & dut : dutList)
+    {
+        QJSValue currentDut = scriptEngine->newQObject(dut);
+        scriptEngine->globalObject().property("dutList").setProperty(counter, currentDut);
+        counter++;
     }
 }
 

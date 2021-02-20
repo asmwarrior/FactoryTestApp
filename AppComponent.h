@@ -16,6 +16,8 @@ public:
 
 protected:
 
+    void resetDutList();
+
     QJSValue evaluateScriptFromFile(const QString& scriptFileName);
     QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
     QJSValue runScript(const QString& scriptName, const QJSValueList& args);
