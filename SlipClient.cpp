@@ -50,6 +50,25 @@ SlipClient::SlipClient(QObject *parent)
     connect(&m_serialPort, &QSerialPort::errorOccurred, this, &SlipClient::onSerialPortErrorOccurred, Qt::QueuedConnection);
     connect(&m_serialPort, &QSerialPort::aboutToClose, this, &SlipClient::aboutToClose, Qt::QueuedConnection);
     connect(this, &SlipClient::packetReceived, this, &SlipClient::onSlipPacketReceived);
+
+    connect(this, &SlipClient::sendDubugString, this, &SlipClient::on_sendDubugString);
+    connect(this, &SlipClient::reset, this, &SlipClient::on_reset);
+    connect(this, &SlipClient::switchSWD, this, &SlipClient::on_switchSWD);
+    connect(this, &SlipClient::powerOn, this, &SlipClient::on_powerOn);
+    connect(this, &SlipClient::powerOff, this, &SlipClient::on_powerOff);
+    connect(this, &SlipClient::readDIN, this, &SlipClient::on_readDIN);
+    connect(this, &SlipClient::setDOUT, this, &SlipClient::on_setDOUT);
+    connect(this, &SlipClient::clearDOUT, this, &SlipClient::on_clearDOUT);
+    connect(this, &SlipClient::readCSA, this, &SlipClient::on_readCSA);
+    connect(this, &SlipClient::readAIN, this, &SlipClient::on_readAIN);
+    connect(this, &SlipClient::configDebugSerial, this, &SlipClient::on_configDebugSerial);
+    connect(this, &SlipClient::DaliOn, this, &SlipClient::on_DaliOn);
+    connect(this, &SlipClient::DaliOff, this, &SlipClient::on_DaliOff);
+    connect(this, &SlipClient::readDaliADC, this, &SlipClient::on_readDaliADC);
+    connect(this, &SlipClient::readDinADC, this, &SlipClient::on_readDinADC);
+    connect(this, &SlipClient::read24V, this, &SlipClient::on_read24V);
+    connect(this, &SlipClient::read3V, this, &SlipClient::on_read3V);
+    connect(this, &SlipClient::readTemperature, this, &SlipClient::on_readTemperature);
 }
 
 SlipClient::~SlipClient()
@@ -241,12 +260,12 @@ void SlipClient::decodeFrame() Q_DECL_NOTHROW
     emit packetReceived(decodedBuffer.at(0), decodedBuffer.mid(1, frameSize - 1));
 }
 
-void SlipClient::sendDubugString(int channel, const QByteArray &string)
+void SlipClient::on_sendDubugString(int channel, const QByteArray &string)
 {
     sendPacket(channel, string + "\r\n");
 }
 
-void SlipClient::reset()
+void SlipClient::on_reset()
 {
     MB_Packet_t pkt;
 
@@ -256,7 +275,7 @@ void SlipClient::reset()
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::switchSWD(int DUT)
+void SlipClient::on_switchSWD(int DUT)
 {
 #pragma pack (push, 1)
     struct Pkt
@@ -275,7 +294,7 @@ void SlipClient::switchSWD(int DUT)
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::powerOn(int DUT)
+void SlipClient::on_powerOn(int DUT)
 {
 #pragma pack (push, 1)
     struct Pkt
@@ -297,7 +316,7 @@ void SlipClient::powerOn(int DUT)
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::powerOff(int DUT)
+void SlipClient::on_powerOff(int DUT)
 {
 #pragma pack (push, 1)
     struct Pkt
@@ -319,7 +338,7 @@ void SlipClient::powerOff(int DUT)
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::readDIN(int DUT, int DIN)
+void SlipClient::on_readDIN(int DUT, int DIN)
 {
 #pragma pack (push, 1)
     struct Pkt
@@ -341,7 +360,7 @@ void SlipClient::readDIN(int DUT, int DIN)
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::setDOUT(int DUT, int DOUT)
+void SlipClient::on_setDOUT(int DUT, int DOUT)
 {
 #pragma pack (push, 1)
     struct Pkt
@@ -365,7 +384,7 @@ void SlipClient::setDOUT(int DUT, int DOUT)
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::clearDOUT(int DUT, int DOUT)
+void SlipClient::on_clearDOUT(int DUT, int DOUT)
 {
 #pragma pack (push, 1)
     struct Pkt
@@ -389,7 +408,7 @@ void SlipClient::clearDOUT(int DUT, int DOUT)
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::readCSA(int gain)
+void SlipClient::on_readCSA(int gain)
 {
 #pragma pack (push, 1)
     struct Pkt
@@ -408,7 +427,7 @@ void SlipClient::readCSA(int gain)
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::readAIN(int DUT, int AIN, int gain)
+void SlipClient::on_readAIN(int DUT, int AIN, int gain)
 {
 #pragma pack (push, 1)
     struct Pkt
@@ -432,7 +451,7 @@ void SlipClient::readAIN(int DUT, int AIN, int gain)
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::configDebugSerial(int DUT, int baudRate, unsigned char bits, unsigned char parity, unsigned char stopBits)
+void SlipClient::on_configDebugSerial(int DUT, int baudRate, unsigned char bits, unsigned char parity, unsigned char stopBits)
 {
     MB_ConfigDutDebug_t pkt;
 
@@ -447,7 +466,7 @@ void SlipClient::configDebugSerial(int DUT, int baudRate, unsigned char bits, un
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::DaliOn()
+void SlipClient::on_DaliOn()
 {
 #pragma pack (push, 1)
     struct Pkt
@@ -466,7 +485,7 @@ void SlipClient::DaliOn()
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::DaliOff()
+void SlipClient::on_DaliOff()
 {
 #pragma pack (push, 1)
     struct Pkt
@@ -485,7 +504,7 @@ void SlipClient::DaliOff()
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::readDaliADC()
+void SlipClient::on_readDaliADC()
 {
 #pragma pack (push, 1)
     struct Pkt
@@ -502,7 +521,7 @@ void SlipClient::readDaliADC()
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::readDinADC(int DUT, int DIN)
+void SlipClient::on_readDinADC(int DUT, int DIN)
 {
 #pragma pack (push, 1)
     struct Pkt
@@ -524,7 +543,7 @@ void SlipClient::readDinADC(int DUT, int DIN)
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::read24V()
+void SlipClient::on_read24V()
 {
 #pragma pack (push, 1)
     struct Pkt
@@ -541,7 +560,7 @@ void SlipClient::read24V()
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::read3V()
+void SlipClient::on_read3V()
 {
 #pragma pack (push, 1)
     struct Pkt
@@ -558,7 +577,7 @@ void SlipClient::read3V()
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::readTemperature()
+void SlipClient::on_readTemperature()
 {
 #pragma pack (push, 1)
     struct Pkt

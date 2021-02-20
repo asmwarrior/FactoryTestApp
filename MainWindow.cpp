@@ -323,11 +323,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_clearLogWidgetButton, &QPushButton::clicked, _logWidget, &QListWidget::clear);
     connect(_clearLogWidgetButton, &QPushButton::clicked, _childProcessOutputLogWidget, &QListWidget::clear);
 
-//    _railTestClientList[0]->open();
-//    _railTestClientList[1]->open();
-//    _railTestClientList[2]->open();
-//    _railTestClientList[3]->open();
-//    _railTestClientList[4]->open();
+    qDebug() << thread();
+    _railTestClientList[0]->open();
+    _railTestClientList[1]->open();
+    _railTestClientList[2]->open();
+    _railTestClientList[3]->open();
+    _railTestClientList[4]->open();
 
 //    logger->logInfo(_railTestClientList[0]->thread()->objectName());
 //    logger->logInfo(_railTestClientList[1]->thread()->objectName());
@@ -335,11 +336,17 @@ MainWindow::MainWindow(QWidget *parent)
 //    logger->logInfo(_railTestClientList[3]->thread()->objectName());
 //    logger->logInfo(_railTestClientList[4]->thread()->objectName());
 
-//    logger->logInfo(_railTestClientList[0]->readChipId());
-//    logger->logInfo(_railTestClientList[1]->readChipId());
-//    logger->logInfo(_railTestClientList[2]->readChipId());
-//    logger->logInfo(_railTestClientList[3]->readChipId());
-//    logger->logInfo(_railTestClientList[4]->readChipId());
+    _railTestClientList[0]->readChipId();
+    _railTestClientList[1]->readChipId();
+    _railTestClientList[2]->readChipId();
+    _railTestClientList[3]->readChipId();
+    _railTestClientList[4]->readChipId();
+
+    logger->logInfo(_railTestClientList[0]->currentChipId());
+    logger->logInfo(_railTestClientList[1]->currentChipId());
+    logger->logInfo(_railTestClientList[2]->currentChipId());
+    logger->logInfo(_railTestClientList[3]->currentChipId());
+    logger->logInfo(_railTestClientList[4]->currentChipId());
 
 //    qDebug() << _slipClientList[0]->thread()->objectName();
 //    qDebug() << _slipClientList[1]->thread()->objectName();
@@ -347,17 +354,17 @@ MainWindow::MainWindow(QWidget *parent)
 //    qDebug() << _slipClientList[3]->thread()->objectName();
 //    qDebug() << _slipClientList[4]->thread()->objectName();
 
-    _slipClientList[0]->open();
-    _slipClientList[1]->open();
-    _slipClientList[2]->open();
-    _slipClientList[3]->open();
-    _slipClientList[4]->open();
+//    _slipClientList[0]->open();
+//    _slipClientList[1]->open();
+//    _slipClientList[2]->open();
+//    _slipClientList[3]->open();
+//    _slipClientList[4]->open();
 
-    _slipClientList[0]->readCSA(0);
-    _slipClientList[1]->readCSA(0);
-    _slipClientList[2]->readCSA(0);
-    _slipClientList[3]->readCSA(0);
-    _slipClientList[4]->readCSA(0);
+//    _slipClientList[0]->readCSA(0);
+//    _slipClientList[1]->readCSA(0);
+//    _slipClientList[2]->readCSA(0);
+//    _slipClientList[3]->readCSA(0);
+//    _slipClientList[4]->readCSA(0);
 
 //    _slipClientList[0]->readDaliADC();
 //    _slipClientList[1]->readDaliADC();

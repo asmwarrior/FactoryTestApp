@@ -7,10 +7,19 @@
 #include <QThread>
 
 RailtestClient::RailtestClient(QObject *parent)
-    : QObject(parent)
+    : QObject(parent), m_serial(this)
 {
-    connect(&m_serial, &QSerialPort::readyRead, this, &RailtestClient::onSerialPortReadyRead);
-    connect(&m_serial, &QSerialPort::errorOccurred, this, &RailtestClient::onSerialPortErrorOccurred);
+    connect(&m_serial, &QSerialPort::readyRead, this, &RailtestClient::onSerialPortReadyRead, Qt::QueuedConnection);
+    connect(&m_serial, &QSerialPort::errorOccurred, this, &RailtestClient::onSerialPortErrorOccurred, Qt::QueuedConnection);
+
+    connect(this, &RailtestClient::waitCommandPrompt, this, &RailtestClient::on_waitCommandPrompt);
+    connect(this, &RailtestClient::syncCommand, this, &RailtestClient::on_syncCommand);
+    connect(this, &RailtestClient::readChipId, this, &RailtestClient::on_readChipId);
+    connect(this, &RailtestClient::testRadio, this, &RailtestClient::on_testRadio);
+    connect(this, &RailtestClient::testAccelerometer, this, &RailtestClient::on_testAccelerometer);
+    connect(this, &RailtestClient::testLightSensor, this, &RailtestClient::on_testLightSensor);
+    connect(this, &RailtestClient::testDALI, this, &RailtestClient::on_testDALI);
+    connect(this, &RailtestClient::testGNSS, this, &RailtestClient::on_testGNSS);
 }
 
 RailtestClient::~RailtestClient()
@@ -44,7 +53,7 @@ void RailtestClient::close()
     }
 }
 
-bool RailtestClient::waitCommandPrompt(int timeout)
+bool RailtestClient::on_waitCommandPrompt(int timeout)
 {
     if (!m_serial.isOpen())
         return false;
@@ -64,7 +73,7 @@ bool RailtestClient::waitCommandPrompt(int timeout)
     return false;
 }
 
-QVariantList RailtestClient::syncCommand(const QByteArray &cmd, const QByteArray &args, int timeout)
+QVariantList RailtestClient::on_syncCommand(const QByteArray &cmd, const QByteArray &args, int timeout)
 {
     if (!m_serial.isOpen())
         return QVariantList();
@@ -91,31 +100,40 @@ QVariantList RailtestClient::syncCommand(const QByteArray &cmd, const QByteArray
     return m_syncReplies;
 }
 
-QByteArray RailtestClient::readChipId()
+void RailtestClient::on_readChipId()
 {
-    auto reply = syncCommand("getmemw", "0x0FE081F0 2");
+    auto reply = on_syncCommand("getmemw", "0x0FE081F0 2");
 
     if (reply.size() != 2)
-        return QByteArray();
+    {
+        _currentChipId = {};
+        return;
+    }
 
     auto
         llo = reply.at(0).toList(),
         lhi = reply.at(1).toList();
 
     if (llo.size() != 2 || lhi.size() != 2)
-        return QByteArray();
+    {
+        _currentChipId = {};
+        return;
+    }
 
     auto
        lo = llo.at(1).toByteArray().trimmed(),
        hi = lhi.at(1).toByteArray().trimmed();
 
     if (!(lo.startsWith("0x") && hi.startsWith("0x")))
-        return QByteArray();
+    {
+        _currentChipId = {};
+        return;
+    }
 
-    return (hi.mid(2) + lo.mid(2)).toUpper();
+    _currentChipId = (hi.mid(2) + lo.mid(2)).toUpper();
 }
 
-void RailtestClient::testRadio()
+void RailtestClient::on_testRadio()
 {
     logger->logInfo("Testing Radio Interface...");
 
@@ -130,8 +148,8 @@ void RailtestClient::testRadio()
         logger->logError("Cannot open serial port for reference radio module!");
     }
 
-    rf.syncCommand("reset", "", 3000);
-    if (!rf.waitCommandPrompt())
+    rf.on_syncCommand("reset", "", 3000);
+    if (!rf.on_waitCommandPrompt())
     {
         logger->logError("Timeout waiting reference radio module command prompt!");
     }
@@ -170,11 +188,11 @@ void RailtestClient::testRadio()
     }
 }
 
-void RailtestClient::testAccelerometer()
+void RailtestClient::on_testAccelerometer()
 {
     logger->logInfo("Testing Accelerometer...");
 
-    auto reply = this->syncCommand("accl");
+    auto reply = this->on_syncCommand("accl");
 
     if (reply.isEmpty())
     {
@@ -209,13 +227,13 @@ void RailtestClient::testAccelerometer()
     logger->logInfo("Accelerometer is OK.");
 }
 
-void RailtestClient::testLightSensor()
+void RailtestClient::on_testLightSensor()
 {
     logger->logInfo("Testing Light Sensor...");
     this->syncCommand("lsen");
     QThread::sleep(1);
 
-    auto reply = this->syncCommand("lsen");
+    auto reply = this->on_syncCommand("lsen");
 
     if (reply.isEmpty())
     {
@@ -251,11 +269,11 @@ void RailtestClient::testLightSensor()
     logger->logInfo("Light Sensor is OK.");
 }
 
-void RailtestClient::testDALI()
+void RailtestClient::on_testDALI()
 {
     logger->logInfo("Testing DALI...");
 
-    auto reply = this->syncCommand("dali", "0xFF90 16 0 1000000");
+    auto reply = this->on_syncCommand("dali", "0xFF90 16 0 1000000");
 
     if (reply.isEmpty())
     {
@@ -296,11 +314,11 @@ void RailtestClient::testDALI()
     logger->logInfo("DALI is OK.");
 }
 
-void RailtestClient::testGNSS()
+void RailtestClient::on_testGNSS()
 {
     logger->logInfo("Testing GNSS...");
 
-    auto replies = this->syncCommand("gnrx", "3", 15000);
+    auto replies = this->on_syncCommand("gnrx", "3", 15000);
 
     if (replies.isEmpty())
     {

@@ -8,7 +8,7 @@
 QString JLinkManager::_jlinkExecutable;
 
 JLinkManager::JLinkManager(QObject *parent)
-    : QObject(parent)/*, m_proc(this)*/
+    : QObject(parent), m_proc(this)
 {
     _jlinkExecutable = settings->value("JLink/path", "JLink.exe").toString();
     connect(&m_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
