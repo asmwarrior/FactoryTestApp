@@ -21,16 +21,20 @@ ZhagaECO =
 
     openRailTestClient: function ()
     {
-        let rail = railTestClientList[currentRailTestClientIndex];
-        if (!rail.open())
+        railTestClientList.forEach(function(item)
         {
-            logger.logError("Cannot open RAILTEST serial port!");
-        }
+            var rail = item;
+            if (!rail.open())
+            {
+                logger.logError("Cannot open RAILTEST serial port!");
+            }
 
-        if (!rail.waitCommandPrompt())
-        {
-            logger.logError("Timeout waiting RAILTEST command prompt!");
-        }
+            if (!rail.waitCommandPrompt())
+            {
+                logger.logError("Timeout waiting RAILTEST command prompt!");
+            }
+        });
+
     },
 
     readChipID: function ()

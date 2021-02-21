@@ -12,7 +12,6 @@ JLinkManager::JLinkManager(QObject *parent)
 {
     _jlinkExecutable = settings->value("JLink/path", "JLink.exe").toString();
     connect(&m_proc, &QProcess::readyReadStandardOutput, this,  &JLinkManager::readStandardOutput);
-    connect(&m_proc, &QProcess::readyReadStandardOutput, this,  &JLinkManager::processOutput);
     connect(&m_proc, &QProcess::errorOccurred, this, &JLinkManager::logError);
     connect(this, &JLinkManager::startScript, this, &JLinkManager::startJLinkScript);
     connect(this, &JLinkManager::testConnection, this, &JLinkManager::on_testConnection);
@@ -102,11 +101,18 @@ int JLinkManager::exitCode()
 
 void JLinkManager::on_testConnection()
 {
-    qDebug() << m_proc.thread();
+    if(_SN.isEmpty())
+    {
+        logger->logError("No serial number for the JLink device provided!");
+        return;
+    }
     _state = waitingTestResponse;
     stop();
     m_proc.setInputChannelMode(QProcess::ManagedInputChannel);
     m_proc.setProcessChannelMode(QProcess::MergedChannels);
+
+    m_proc.setProgram(_jlinkExecutable);
+    m_proc.setArguments({"-USB", _SN});
     m_proc.start(_jlinkExecutable, {"-USB", _SN});
     if (!m_proc.waitForStarted(3000))
     {
@@ -133,6 +139,8 @@ void JLinkManager::readStandardOutput()
         }
     }
     m_rdBuf.append(data);
+
+    processOutput();
 }
 
 void JLinkManager::processOutput()

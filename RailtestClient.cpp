@@ -40,6 +40,13 @@ void RailtestClient::setPort(const QString &portName)
 bool RailtestClient::open()
 {
     close();
+
+    if(m_serial.portName().isEmpty())
+    {
+        return false;
+    }
+
+    logger->logInfo(QString("Opening %1 port for RailTest").arg(m_serial.portName()));
     return m_serial.open(QSerialPort::ReadWrite);
 }
 
@@ -62,7 +69,7 @@ bool RailtestClient::on_waitCommandPrompt(int timeout)
 
     QTime expire = QTime::currentTime().addMSecs(timeout);
 
-    m_serial.write("\r\n");
+    m_serial.write(m_syncCommand + "\r\n");
     while (QTime::currentTime() <= expire)
     {
         QCoreApplication::processEvents();

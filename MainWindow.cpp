@@ -7,6 +7,7 @@
 #include <QHBoxLayout>
 #include <QFormLayout>
 #include <QCompleter>
+#include <QtConcurrent/QtConcurrentRun>
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -28,7 +29,6 @@ MainWindow::MainWindow(QWidget *parent)
         auto newJlink = new JLinkManager();
         newJlink->setSN(settings->value(QString("JLink/SN" + QString().setNum(i + 1))).toString());
         _JLinkList.push_back(newJlink);
-        //_JLinkList[i]->moveToThread(_threads[i]);
         QJSValue jlink = scriptEngine->newQObject(newJlink);
         scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
 
@@ -255,6 +255,9 @@ MainWindow::MainWindow(QWidget *parent)
         _dutInfoWidget->showDutInfo(session->getCurrentDut());
     });
 
+    connect(_clearLogWidgetButton, &QPushButton::clicked, _logWidget, &QListWidget::clear);
+    connect(_clearLogWidgetButton, &QPushButton::clicked, _childProcessOutputLogWidget, &QListWidget::clear);
+
     connect(_newSessionButton, &QPushButton::clicked, [=]()
     {
         session->setStarted(true);
@@ -328,9 +331,6 @@ MainWindow::MainWindow(QWidget *parent)
         _actionHintWidget->showNormalHint(HINT_START);
         _sessionInfoWidget->update();
     });
-
-    connect(_clearLogWidgetButton, &QPushButton::clicked, _logWidget, &QListWidget::clear);
-    connect(_clearLogWidgetButton, &QPushButton::clicked, _childProcessOutputLogWidget, &QListWidget::clear);
 
 //    int dutNo = 1;
 //    for(auto & slip : _slipClientList)

@@ -31,13 +31,14 @@ public slots:
         void clear();
         bool readUntilFinished(QByteArray &received, int timeout = 30000);
         bool skipUntilFinished(int timeout = 30000);
+        void on_testConnection();
 
 private slots:
 
     void readStandardOutput();
     void processOutput();
     void logError(QProcess::ProcessError error);
-    void on_testConnection();
+//    void on_testConnection();
     bool startJLinkScript(const QString& scriptFileName);
 
 signals:
