@@ -17,6 +17,7 @@ set(SOURCES
     main.cpp
     AppComponent.cpp
     MainWindow.cpp
+    Dut.h
     Session.h
     Database.cpp
     TestSequence.cpp

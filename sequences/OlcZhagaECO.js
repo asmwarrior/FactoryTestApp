@@ -2,6 +2,12 @@ testSequenceManager.addSequence("OLC Zhaga ECO");
 
 ZhagaECO =
 {
+    showDutsState: function ()
+    {
+        dutList[0].state = 1
+        console.log(dutList[0].state)
+    },
+
     testConnection: function ()
     {
         JlinkList.forEach(function(item){item.testConnection()});
@@ -93,6 +99,7 @@ ZhagaECO =
     }
 }
 
+testSequenceManager.addTestFunction("Show DUT's states", ZhagaECO.showDutsState);
 testSequenceManager.addTestFunction("Test connection to JLink", ZhagaECO.testConnection);
 testSequenceManager.addTestFunction("Download Railtest", ZhagaECO.downloadRailtest);
 testSequenceManager.addTestFunction("Open and check Railtest Client", ZhagaECO.openRailTestClient);

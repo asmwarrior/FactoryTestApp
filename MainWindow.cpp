@@ -258,79 +258,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_clearLogWidgetButton, &QPushButton::clicked, _logWidget, &QListWidget::clear);
     connect(_clearLogWidgetButton, &QPushButton::clicked, _childProcessOutputLogWidget, &QListWidget::clear);
 
-    connect(_newSessionButton, &QPushButton::clicked, [=]()
-    {
-        session->setStarted(true);
-        session->setOperatorName(_operatorNameEdit->text().simplified());
-        session->setStartTime(QDateTime::currentDateTime().toString());
-        session->setBatchNumber(_batchNumberEdit->text());
-        session->setBatchInfo(_batchInfoEdit->text());
-
-        resetDutList();
-
-        //------------------------------------------------------------------------------------------
-        _selectMetodBox->setEnabled(true);
-        _selectMetodBox->clear();
-        _selectMetodBox->addItems(testSequenceManager->avaliableSequencesNames());
-
-        testSequenceManager->setCurrentSequence(_selectMetodBox->currentText());
-
-        _testFunctionsListWidget->setEnabled(true);
-        _testFunctionsListWidget->addItems(testSequenceManager->currentSequenceFunctionNames());
-        if(_testFunctionsListWidget->count() > 0)
-        {
-            _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
-        }
-
-        _startFullCycleTestingButton->setEnabled(true);
-        _startSelectedTestButton->setEnabled(true);
-        _newSessionButton->setEnabled(false);
-        _testFixtureWidget->setEnabled(true);
-        _finishSessionButton->setEnabled(true);
-
-        _actionHintWidget->showNormalHint(HINT_CHOOSE_METHOD);
-        _sessionInfoWidget->update();
-
-        if(!_operatorList.contains(session->getOperatorName(), Qt::CaseInsensitive))
-        {
-            _operatorList.push_back(session->getOperatorName());
-        }
-
-        //--------------------------------------------------------------------------------------
-        for(auto & jlink : _JLinkList)
-        {
-            jlink->testConnection();
-        }
-    });
-
-    connect(_finishSessionButton, &QPushButton::clicked, [=]()
-    {
-        session->setStarted(false);
-        session->setOperatorName("");
-        session->setStartTime("");
-        session->setBatchNumber("");
-        session->setBatchInfo("");
-
-        _selectMetodBox->clear();
-        _selectMetodBox->setEnabled(false);
-
-        _testFunctionsListWidget->clear();
-        _testFunctionsListWidget->setEnabled(false);
-
-        _startFullCycleTestingButton->setEnabled(false);
-        _startSelectedTestButton->setEnabled(false);
-        _newSessionButton->setEnabled(false);
-        _testFixtureWidget->setEnabled(false);
-        _finishSessionButton->setEnabled(false);
-        _operatorNameEdit->clear();
-        _batchNumberEdit->clear();
-        _batchInfoEdit->clear();
-        _logWidget->clear();
-        _childProcessOutputLogWidget->clear();
-
-        _actionHintWidget->showNormalHint(HINT_START);
-        _sessionInfoWidget->update();
-    });
+    connect(_newSessionButton, &QPushButton::clicked, this, &MainWindow::startNewSession);
+    connect(_finishSessionButton, &QPushButton::clicked, this, &MainWindow::finishSession);
 
 //    int dutNo = 1;
 //    for(auto & slip : _slipClientList)
@@ -371,6 +300,80 @@ MainWindow::~MainWindow()
 
     delete scriptEngine;
     delete settings;
+}
+
+void MainWindow::startNewSession()
+{
+    session->setStarted(true);
+    session->setOperatorName(_operatorNameEdit->text().simplified());
+    session->setStartTime(QDateTime::currentDateTime().toString());
+    session->setBatchNumber(_batchNumberEdit->text());
+    session->setBatchInfo(_batchInfoEdit->text());
+
+    resetDutList();
+
+    //------------------------------------------------------------------------------------------
+    _selectMetodBox->setEnabled(true);
+    _selectMetodBox->clear();
+    _selectMetodBox->addItems(testSequenceManager->avaliableSequencesNames());
+
+    testSequenceManager->setCurrentSequence(_selectMetodBox->currentText());
+
+    _testFunctionsListWidget->setEnabled(true);
+    _testFunctionsListWidget->addItems(testSequenceManager->currentSequenceFunctionNames());
+    if(_testFunctionsListWidget->count() > 0)
+    {
+        _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
+    }
+
+    _startFullCycleTestingButton->setEnabled(true);
+    _startSelectedTestButton->setEnabled(true);
+    _newSessionButton->setEnabled(false);
+    _testFixtureWidget->setEnabled(true);
+    _finishSessionButton->setEnabled(true);
+
+    _actionHintWidget->showNormalHint(HINT_CHOOSE_METHOD);
+    _sessionInfoWidget->update();
+
+    if(!_operatorList.contains(session->getOperatorName(), Qt::CaseInsensitive))
+    {
+        _operatorList.push_back(session->getOperatorName());
+    }
+
+    //--------------------------------------------------------------------------------------
+    for(auto & jlink : _JLinkList)
+    {
+        jlink->testConnection();
+    }
+}
+
+void MainWindow::finishSession()
+{
+    session->setStarted(false);
+    session->setOperatorName("");
+    session->setStartTime("");
+    session->setBatchNumber("");
+    session->setBatchInfo("");
+
+    _selectMetodBox->clear();
+    _selectMetodBox->setEnabled(false);
+
+    _testFunctionsListWidget->clear();
+    _testFunctionsListWidget->setEnabled(false);
+
+    _startFullCycleTestingButton->setEnabled(false);
+    _startSelectedTestButton->setEnabled(false);
+    _newSessionButton->setEnabled(false);
+    _testFixtureWidget->setEnabled(false);
+    _finishSessionButton->setEnabled(false);
+    _operatorNameEdit->clear();
+    _batchNumberEdit->clear();
+    _batchInfoEdit->clear();
+    _logWidget->clear();
+    _childProcessOutputLogWidget->clear();
+
+    _actionHintWidget->showNormalHint(HINT_START);
+    _sessionInfoWidget->update();
 }
 
 void MainWindow::startFullCycleTesting()

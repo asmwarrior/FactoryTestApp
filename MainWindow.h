@@ -31,6 +31,8 @@ public:
 
 public slots:
 
+    void startNewSession();
+    void finishSession();
     void startFullCycleTesting();
 
 private:

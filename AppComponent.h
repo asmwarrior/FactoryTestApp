@@ -3,6 +3,7 @@
 #include <QSettings>
 #include <QJSEngine>
 
+#include "Dut.h"
 #include "Session.h"
 #include "TestSequence.h"
 #include "Logger.h"

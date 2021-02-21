@@ -28,9 +28,9 @@ TestFixtureWidget::TestFixtureWidget(QWidget *parent) : QWidget(parent)
 
     for(auto & dut : dutList)
     {
-        DutButton* button = new DutButton(dut->no, dut->testPanel, dut->pos);
+        DutButton* button = new DutButton(dut->getNo(), dut->getTestPanel(), dut->getPos());
         _buttons.push_back(button);
-        _buttonGroup->addButton(button, dut->no);
+        _buttonGroup->addButton(button, dut->getNo());
     }
 
     int counter = 0;
@@ -50,7 +50,7 @@ TestFixtureWidget::TestFixtureWidget(QWidget *parent) : QWidget(parent)
     });
     connect(_buttonGroup, QOverload<QAbstractButton *, bool>::of(&QButtonGroup::buttonToggled), [=](QAbstractButton *button, bool checked)
     {
-        dutList[(dynamic_cast<DutButton*>(button))->getNo() - 1]->checked = checked;
+        dutList[(dynamic_cast<DutButton*>(button))->getNo() - 1]->setChecked(checked);
     });
 
 

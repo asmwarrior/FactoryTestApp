@@ -52,24 +52,24 @@ void DutInfoWidget::showDutInfo(int no)
         return;
 
     _slot->setText(_slotTemplate.arg(no));
-    _id->setText(_idTemplate.arg(dutList[no - 1]->id));
+    _id->setText(_idTemplate.arg(dutList[no - 1]->getId()));
 
     QString stateDescription;
-    switch (dutList[no - 1]->state)
+    switch (dutList[no - 1]->getState())
     {
-        case Dut::unavaliable:
+        case Dut::DutState::unavaliable:
         stateDescription = "The device is not avaliable now.";
         break;
 
-        case Dut::untested:
+        case Dut::DutState::untested:
         stateDescription = "The device is not tested yet.</p>";
         break;
 
-        case Dut::tested:
+        case Dut::DutState::tested:
         stateDescription = "The device passes testing successfully.";
         break;
 
-        case Dut::warning:
+        case Dut::DutState::warning:
         stateDescription = "An error occures during the testing.";
         break;
     }
@@ -77,9 +77,9 @@ void DutInfoWidget::showDutInfo(int no)
 
     _status->setText(_statusTemplate.arg(stateDescription));
 
-    if(dutList[no - 1]->lastErrorDescription.isEmpty())
+    if(!dutList[no - 1]->getErrorList().isEmpty())
     {
-        _errorDesc->setText(_errorDescTemplate.arg(dutList[no - 1]->lastErrorDescription));
+        _errorDesc->setText(_errorDescTemplate.arg(dutList[no - 1]->getErrorList().last()));
     }
 
     else
@@ -87,7 +87,7 @@ void DutInfoWidget::showDutInfo(int no)
         _errorDesc->setText("");
     }
 
-    if(dutList[no - 1]->checked)
+    if(dutList[no - 1]->isChecked())
     {
         _checkState->setText("CHECKED for a further testing.");
     }

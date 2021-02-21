@@ -1,27 +1,8 @@
 #pragma once
 
+#include <QObject>
 #include <QString>
 #include <QList>
-#include <QObject>
-
-class Dut : public QObject
-{
-    Q_OBJECT
-
-public:
-
-    enum State {unavaliable, untested, tested, warning};
-
-    Dut(int no, int testPanel, int pos) {this->no = no; this->testPanel = testPanel; this->pos = pos;}
-
-    int state = unavaliable;
-    QString id;
-    int no;
-    int testPanel;
-    int pos;
-    QString lastErrorDescription;
-    bool checked = true;
-};
 
 class Session : public QObject
 {
