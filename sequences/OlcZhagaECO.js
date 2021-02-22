@@ -16,7 +16,18 @@ ZhagaECO =
     downloadRailtest: function ()
     {
         let jlink = JlinkList[currentJLinkIndex];
-        jlink.startScript("/sequences/OlcZhagaECO/olc_zhaga_railtest.jlink");
+        jlink.startJlinkCommands([
+                                    "eoe 1",
+                                    "swdselect",
+                                    "si swd",
+                                    "speed 5000",
+                                    "Device = EFR32FG12PXXXF1024",
+                                    "connect",
+                                    "erase",
+                                    "loadfile dummy_btl_efr32xg12.s37",
+                                    "loadfile olc_zhaga_railtest.hex",
+                                    "r"
+                                 ]);
     },
 
     downloadSoftware: function ()
