@@ -1,10 +1,12 @@
-#pragma once
+#ifndef SESSIONMANAGER_H
+#define SESSIONMANAGER_H
 
 #include <QObject>
-#include <QString>
 #include <QList>
 
-class Session : public QObject
+#include "Dut.h"
+
+class SessionManager : public QObject
 {
     Q_OBJECT
 
@@ -20,7 +22,13 @@ class Session : public QObject
 
 public:
 
-    explicit Session(QObject* parent = nullptr) : QObject(parent) {}
+    explicit SessionManager(QObject *parent = nullptr);
+    ~SessionManager();
+
+    QList<Dut*>& getDutList()
+    {
+        return m_dutList;
+    }
 
     QString getOperatorName() const
     {
@@ -68,6 +76,9 @@ public:
     }
 
 public slots:
+
+    void resetDutList();
+
     void setOperatorName(QString operatorName)
     {
         m_operatorName = operatorName;
@@ -124,4 +135,8 @@ private:
     int m_totalTested = 0;
     int m_successCount = 0;
     int m_failedCount = 0;
+
+    QList<Dut*> m_dutList;
 };
+
+#endif // SESSIONMANAGER_H

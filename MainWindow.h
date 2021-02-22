@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QSettings>
+#include <QJSEngine>
 #include <QThread>
 #include <QComboBox>
 #include <QListWidget>
@@ -11,7 +13,9 @@
 #include <QSqlTableModel>
 #include <QModelIndex>
 
-#include "AppComponent.h"
+#include "SessionManager.h"
+#include "TestSequence.h"
+#include "Logger.h"
 #include "JLinkManager.h"
 #include "Database.h"
 #include "RailtestClient.h"
@@ -21,7 +25,7 @@
 #include "DutInfoWidget.h"
 #include "ActionHintWidget.h"
 
-class MainWindow : public QWidget, public AppComponent
+class MainWindow : public QWidget
 {
     Q_OBJECT
 
@@ -34,11 +38,22 @@ public slots:
     void startNewSession();
     void finishSession();
     void startFullCycleTesting();
+    void resetDutListInScriptEnv();
 
 private:
 
-    void setCurrentJLinkIndex(int index);
-    int getCurrentJLinkIndex();
+    QJSValue evaluateScriptFromFile(const QString& scriptFileName);
+    QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
+    QJSValue runScript(const QString& scriptName, const QJSValueList& args);
+
+    //QString _workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
+    //QString _workDirectory = QDir(".").absolutePath(); //For test version
+    QString _workDirectory = QDir("../..").absolutePath(); //For development
+    QSettings* _settings;
+    QJSEngine* _scriptEngine;
+    SessionManager* _session;
+    TestSequenceManager* _testSequenceManager;
+    Logger* _logger;
 
     QList<QThread*> _threads;
     QList<JLinkManager*> _JLinkList;

@@ -7,7 +7,7 @@
 #include <QGridLayout>
 #include <QLabel>
 
-TestFixtureWidget::TestFixtureWidget(QWidget *parent) : QWidget(parent)
+TestFixtureWidget::TestFixtureWidget(SessionManager* session, QWidget* parent) : QWidget(parent), _session(session)
 {
 
     QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -26,7 +26,7 @@ TestFixtureWidget::TestFixtureWidget(QWidget *parent) : QWidget(parent)
     _buttonGroup = new QButtonGroup;
     _buttonGroup->setExclusive(false);
 
-    for(auto & dut : dutList)
+    for(auto & dut : _session->getDutList())
     {
         DutButton* button = new DutButton(dut->getNo(), dut->getTestPanel(), dut->getPos());
         _buttons.push_back(button);
@@ -45,12 +45,12 @@ TestFixtureWidget::TestFixtureWidget(QWidget *parent) : QWidget(parent)
 
     connect(_buttonGroup, &QButtonGroup::idClicked, [=](int id)
     {
-        session->setCurrentDut(id);
+        _session->setCurrentDut(id);
         emit dutStateChanged();
     });
     connect(_buttonGroup, QOverload<QAbstractButton *, bool>::of(&QButtonGroup::buttonToggled), [=](QAbstractButton *button, bool checked)
     {
-        dutList[(dynamic_cast<DutButton*>(button))->getNo() - 1]->setChecked(checked);
+        _session->getDutList()[(dynamic_cast<DutButton*>(button))->getNo() - 1]->setChecked(checked);
     });
 
 

@@ -10,19 +10,18 @@
 #include <QSettings>
 #include <QSharedPointer>
 #include <QDebug>
-#include "AppComponent.h"
 
 #define TABLE "TestTable"
 #define TABLE_DEVICE_ID "DeviceID"
 #define TABLE_INFO "Info"
 
-class DataBase : public QObject, public AppComponent
+class DataBase : public QObject
 {
     Q_OBJECT
 
 public:
 
-    explicit DataBase(QObject *parent = nullptr);
+    explicit DataBase(QSettings* settings, QObject *parent = nullptr);
     ~DataBase();
 
     void connectToDataBase();

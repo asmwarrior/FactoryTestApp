@@ -6,8 +6,8 @@
 #include <QTime>
 #include <QThread>
 
-RailtestClient::RailtestClient(QObject *parent)
-    : QObject(parent), m_serial(this)
+RailtestClient::RailtestClient(QSettings *settings, QObject *parent)
+    : QObject(parent), _settings(settings), m_serial(this)
 {
     connect(&m_serial, &QSerialPort::readyRead, this, &RailtestClient::onSerialPortReadyRead, Qt::QueuedConnection);
     connect(&m_serial, &QSerialPort::errorOccurred, this, &RailtestClient::onSerialPortErrorOccurred, Qt::QueuedConnection);
@@ -46,7 +46,7 @@ bool RailtestClient::open()
         return false;
     }
 
-    logger->logInfo(QString("Opening %1 port for RailTest").arg(m_serial.portName()));
+    _logger->logInfo(QString("Opening %1 port for RailTest").arg(m_serial.portName()));
     return m_serial.open(QSerialPort::ReadWrite);
 }
 
@@ -142,23 +142,23 @@ void RailtestClient::on_readChipId()
 
 void RailtestClient::on_testRadio()
 {
-    logger->logInfo("Testing Radio Interface...");
+    _logger->logInfo("Testing Radio Interface...");
 
-    settings->beginGroup("Radio");
+    _settings->beginGroup("Radio");
 
-    RailtestClient rf(this);
+    RailtestClient rf(_settings, this);
 
     connect(&rf, &RailtestClient::replyReceived, this, &RailtestClient::onRfReplyReceived);
-    rf.setPort(settings->value("Serial", "COM2").toString());
+    rf.setPort(_settings->value("Serial", "COM2").toString());
     if (!rf.open())
     {
-        logger->logError("Cannot open serial port for reference radio module!");
+        _logger->logError("Cannot open serial port for reference radio module!");
     }
 
     rf.on_syncCommand("reset", "", 3000);
     if (!rf.on_waitCommandPrompt())
     {
-        logger->logError("Timeout waiting reference radio module command prompt!");
+        _logger->logError("Timeout waiting reference radio module command prompt!");
     }
 
     rf.syncCommand("rx", "0", 1000);
@@ -178,32 +178,32 @@ void RailtestClient::on_testRadio()
     bool isOk = true;
     if (_rfCount < 8)
     {
-        logger->logError(QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount));
+        _logger->logError(QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount));
         isOk = false;
     }
 
-    if (_rfRSSI < settings->value("Min", -50).toInt() || _rfRSSI > settings->value("Max", 20).toInt())
+    if (_rfRSSI < _settings->value("Min", -50).toInt() || _rfRSSI > _settings->value("Max", 20).toInt())
     {
-        logger->logError(QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI));
+        _logger->logError(QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI));
         isOk = false;
     }
 
     if(isOk)
     {
-        logger->logInfo(QString("Radio Interface: RSSI=%1.").arg(_rfRSSI));
-        logger->logInfo("Radio Interface is OK.");
+        _logger->logInfo(QString("Radio Interface: RSSI=%1.").arg(_rfRSSI));
+        _logger->logInfo("Radio Interface is OK.");
     }
 }
 
 void RailtestClient::on_testAccelerometer()
 {
-    logger->logInfo("Testing Accelerometer...");
+    _logger->logInfo("Testing Accelerometer...");
 
     auto reply = this->on_syncCommand("accl");
 
     if (reply.isEmpty())
     {
-        logger->logError("No reply to accelerometer command!");
+        _logger->logError("No reply to accelerometer command!");
         return;
     }
 
@@ -211,7 +211,7 @@ void RailtestClient::on_testAccelerometer()
 
     if (map.contains("error"))
     {
-        logger->logError(QString("Accelerometer error: %1, %2!").arg(map["error"].toString()).arg(map["errorCode"].toString()));
+        _logger->logError(QString("Accelerometer error: %1, %2!").arg(map["error"].toString()).arg(map["errorCode"].toString()));
     }
 
     if (map.contains("X") && map.contains("Y") && map.contains("Z"))
@@ -223,20 +223,20 @@ void RailtestClient::on_testAccelerometer()
 
         if (x > 10 || x < -10 || y > 10 || y < -10 || z < 80 || z > 100)
         {
-            logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+            _logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
         }
         else
-            logger->logInfo(QString("Accelerometer: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+            _logger->logInfo(QString("Accelerometer: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
     }
     else
-        logger->logError("Wrong reply to accelerometer command!");
+        _logger->logError("Wrong reply to accelerometer command!");
 
-    logger->logInfo("Accelerometer is OK.");
+    _logger->logInfo("Accelerometer is OK.");
 }
 
 void RailtestClient::on_testLightSensor()
 {
-    logger->logInfo("Testing Light Sensor...");
+    _logger->logInfo("Testing Light Sensor...");
     this->syncCommand("lsen");
     QThread::sleep(1);
 
@@ -244,7 +244,7 @@ void RailtestClient::on_testLightSensor()
 
     if (reply.isEmpty())
     {
-        logger->logError("No reply to light sensor command!");
+        _logger->logError("No reply to light sensor command!");
         return;
     }
 
@@ -252,7 +252,7 @@ void RailtestClient::on_testLightSensor()
 
     if (map.contains("error"))
     {
-        logger->logError(QString("Light Sensor error: %1, %2!").arg(map["error"].toString()).arg(map["errorCode"].toString()));
+        _logger->logError(QString("Light Sensor error: %1, %2!").arg(map["error"].toString()).arg(map["errorCode"].toString()));
     }
 
     if (map.contains("opwr"))
@@ -261,30 +261,30 @@ void RailtestClient::on_testLightSensor()
 
         if (opwr < 0)
         {
-            logger->logError(QString("Light Sensor failure: opwr=%1.").arg(opwr));
+            _logger->logError(QString("Light Sensor failure: opwr=%1.").arg(opwr));
         }
         else
         {
-            logger->logInfo(QString("Light Sensor: opwr=%1.").arg(opwr));
+            _logger->logInfo(QString("Light Sensor: opwr=%1.").arg(opwr));
         }
     }
     else
     {
-        logger->logError("Wrong reply to light sensor command!");
+        _logger->logError("Wrong reply to light sensor command!");
     }
 
-    logger->logInfo("Light Sensor is OK.");
+    _logger->logInfo("Light Sensor is OK.");
 }
 
 void RailtestClient::on_testDALI()
 {
-    logger->logInfo("Testing DALI...");
+    _logger->logInfo("Testing DALI...");
 
     auto reply = this->on_syncCommand("dali", "0xFF90 16 0 1000000");
 
     if (reply.isEmpty())
     {
-        logger->logError("No reply to DALI status command!");
+        _logger->logError("No reply to DALI status command!");
         return;
     }
 
@@ -299,37 +299,37 @@ void RailtestClient::on_testDALI()
 
         if (error != "0" || bits != "8")
         {
-            logger->logError(QString("DALI failure: code=%1, reply_bits=%2, reply_data=%3!")
+            _logger->logError(QString("DALI failure: code=%1, reply_bits=%2, reply_data=%3!")
                             .arg(error).arg(bits).arg(data));
         }
         else
-            logger->logInfo(QString("DALI status: reply_data=%1.").arg(data));
+            _logger->logInfo(QString("DALI status: reply_data=%1.").arg(data));
     }
     else
         if (map.contains("error"))
         {
-            logger->logError(QString("DALI error: %1, %2!")
+            _logger->logError(QString("DALI error: %1, %2!")
                             .arg(map["error"].toString()).arg(map["errorCode"].toString()));
         }
         else
         {
-            logger->logError("Wrong reply to DALI status command!");
+            _logger->logError("Wrong reply to DALI status command!");
         }
 
     this->syncCommand("dali", "0xFE00 16 0 0");
     this->syncCommand("dlpw", "0");
-    logger->logInfo("DALI is OK.");
+    _logger->logInfo("DALI is OK.");
 }
 
 void RailtestClient::on_testGNSS()
 {
-    logger->logInfo("Testing GNSS...");
+    _logger->logInfo("Testing GNSS...");
 
     auto replies = this->on_syncCommand("gnrx", "3", 15000);
 
     if (replies.isEmpty())
     {
-        logger->logError("No reply to GNSS command!");
+        _logger->logError("No reply to GNSS command!");
         return;
     }
 
@@ -339,21 +339,21 @@ void RailtestClient::on_testGNSS()
 
         if (map.contains("error"))
         {
-            logger->logError(QString("GNSS error: %1, %2!")
+            _logger->logError(QString("GNSS error: %1, %2!")
                             .arg(map["error"].toString()).arg(map["errorCode"].toString()));
         }
 
         if (map.contains("line"))
         {
-            logger->logInfo("GNSS reply: " + map["line"].toString());
+            _logger->logInfo("GNSS reply: " + map["line"].toString());
         }
         else
         {
-            logger->logError("Wrong reply to GNSS command!");
+            _logger->logError("Wrong reply to GNSS command!");
         }
     }
 
-    logger->logInfo("GNSS is OK.");
+    _logger->logInfo("GNSS is OK.");
 }
 
 void RailtestClient::onRfReplyReceived(QString id, QVariantMap params)

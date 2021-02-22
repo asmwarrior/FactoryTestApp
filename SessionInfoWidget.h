@@ -4,16 +4,16 @@
 #include <QLabel>
 
 #include "DutButton.h"
-#include "AppComponent.h"
+#include "SessionManager.h"
 
-class SessionInfoWidget : public QWidget, public AppComponent
+class SessionInfoWidget : public QWidget
 {
 
     Q_OBJECT
 
 public:
 
-    SessionInfoWidget(QWidget* parent = nullptr);
+    SessionInfoWidget(SessionManager* session, QWidget* parent = nullptr);
 
 public slots:
 
@@ -21,6 +21,8 @@ public slots:
 
 
 private:
+
+    SessionManager* _session;
 
     QLabel* _startTime;
     QString _startTimeTemplate = "<b>Started at:</b> %1";

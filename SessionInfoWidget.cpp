@@ -7,12 +7,12 @@
 #include <QGroupBox>
 #include <QButtonGroup>
 
-SessionInfoWidget::SessionInfoWidget(QWidget *parent) : QWidget(parent)
+SessionInfoWidget::SessionInfoWidget(SessionManager* session, QWidget* parent) : QWidget(parent), _session(session)
 {
     QVBoxLayout* mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
 
-    QGroupBox* widgetBox = new QGroupBox("Session summary");
+    QGroupBox* widgetBox = new QGroupBox("_session summary");
     widgetBox->setStyleSheet("QGroupBox{color: #595959; font-size:10pt; font-weight: bold;}");
     widgetBox->setFixedSize(350, 200);
     mainLayout->addWidget(widgetBox);
@@ -51,18 +51,18 @@ SessionInfoWidget::SessionInfoWidget(QWidget *parent) : QWidget(parent)
 
 void SessionInfoWidget::update()
 {
-    if(session->isStarted())
+    if(_session->isStarted())
     {
-        _startTime->setText(_startTimeTemplate.arg(session->getStartTime()));
-        _operatorName->setText(_operatorNameTemplate.arg(session->getOperatorName()));
-        _batchNumber->setText(_batchNumberTemplate.arg(session->getBatchNumber()));
-        _totalTested->setText(_totalTestedTemplate.arg(session->getTotalTested()));
-        _success->setText(_successTemplate.arg(session->getSuccessCount()));
-        _failtures->setText(_failturesTemplate.arg(session->getFailedCount()));
+        _startTime->setText(_startTimeTemplate.arg(_session->getStartTime()));
+        _operatorName->setText(_operatorNameTemplate.arg(_session->getOperatorName()));
+        _batchNumber->setText(_batchNumberTemplate.arg(_session->getBatchNumber()));
+        _totalTested->setText(_totalTestedTemplate.arg(_session->getTotalTested()));
+        _success->setText(_successTemplate.arg(_session->getSuccessCount()));
+        _failtures->setText(_failturesTemplate.arg(_session->getFailedCount()));
 
-        if(session->getBatchInfo().length())
+        if(_session->getBatchInfo().length())
         {
-            _batchInfo->setText(session->getBatchInfo());
+            _batchInfo->setText(_session->getBatchInfo());
         }
     }
 

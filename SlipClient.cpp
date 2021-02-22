@@ -91,7 +91,7 @@ void SlipClient::setPort(const QString &name, qint32 baudRate, QSerialPort::Data
         && m_serialPort.setFlowControl(flowControl);
 
     if (!res)
-        logger->logError(m_serialPort.errorString());
+        _logger->logError(m_serialPort.errorString());
 }
 
 void SlipClient::open()
@@ -100,14 +100,14 @@ void SlipClient::open()
         m_serialPort.close();
     cleanup();
     if (!m_serialPort.open(QSerialPort::ReadWrite))
-        logger->logError(m_serialPort.errorString());
+        _logger->logError(m_serialPort.errorString());
 }
 
 void SlipClient::open(const QSerialPortInfo &portInfo)
 {
     m_serialPort.setPort(portInfo);
     if (!m_serialPort.open(QSerialPort::ReadWrite))
-        logger->logError(m_serialPort.errorString());
+        _logger->logError(m_serialPort.errorString());
 }
 
 void SlipClient::close() Q_DECL_NOTHROW
@@ -209,7 +209,7 @@ void SlipClient::decodeFrame() Q_DECL_NOTHROW
             ++i;
             if (i >= m_recvBuffer.size())
             {
-                logger->logError("SLIP. Decode frame. Unfinished escape sequence.");
+                _logger->logError("SLIP. Decode frame. Unfinished escape sequence.");
                 return;
             }
             switch (m_recvBuffer.at(i))
@@ -223,7 +223,7 @@ void SlipClient::decodeFrame() Q_DECL_NOTHROW
                     break;
 
                 default:
-                    logger->logError("SLIP. Decode frame. Invalid escape sequence.");
+                    _logger->logError("SLIP. Decode frame. Invalid escape sequence.");
                     return;
             }
         }
@@ -232,7 +232,7 @@ void SlipClient::decodeFrame() Q_DECL_NOTHROW
     }
     if (decodedBuffer.size() < MIN_FRAME_SIZE)
     {
-        logger->logError("SLIP. Decode frame. Frame too short.");
+        _logger->logError("SLIP. Decode frame. Frame too short.");
         return;
     }
 
@@ -252,7 +252,7 @@ void SlipClient::decodeFrame() Q_DECL_NOTHROW
     // Check CRC.
     if (frameCrc != bufferCrc)
     {
-        logger->logError("SLIP. Decode frame. Invalid Frame CRC.");
+        _logger->logError("SLIP. Decode frame. Invalid Frame CRC.");
         return;
     }
 
@@ -625,7 +625,7 @@ void SlipClient::onSerialPortReadyRead() Q_DECL_NOTHROW
 void SlipClient::onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode) Q_DECL_NOTHROW
 {
     if (errorCode != QSerialPort::NoError)
-        logger->logError("SLIP. Serial port error occurred.");
+        _logger->logError("SLIP. Serial port error occurred.");
 }
 
 void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
@@ -641,7 +641,7 @@ void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
                 switch (pkt->type)
                 {
                     case MB_STARTUP:
-                        logger->logInfo("Startup event.");
+                        _logger->logInfo("Startup event.");
                         break;
 
                     case MB_GENERAL_RESULT:
@@ -649,7 +649,7 @@ void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
                             MB_GeneralResult_t *gr = (MB_GeneralResult_t*)pkt;
 
                             gr->errorCode = qFromBigEndian(gr->errorCode);
-                            logger->logInfo(QString("RESULT: cmd=%1, code=%2.").arg(gr->header.sequence).arg(gr->errorCode));
+                            _logger->logInfo(QString("RESULT: cmd=%1, code=%2.").arg(gr->header.sequence).arg(gr->errorCode));
                         }
                         break;
 
@@ -658,7 +658,7 @@ void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
                             MB_Event_t *evt = (MB_Event_t*)pkt;
 
                             evt->eventCode = qFromBigEndian(evt->eventCode);
-                            logger->logInfo(QString("EVENT: code=%2.").arg(evt->eventCode));
+                            _logger->logInfo(QString("EVENT: code=%2.").arg(evt->eventCode));
                         }
                         break;
                 }
@@ -666,15 +666,15 @@ void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
             break;
 
         case 1:
-            logger->logInfo(frame);
+            _logger->logInfo(frame);
             break;
 
         case 2:
-            logger->logInfo(frame);
+            _logger->logInfo(frame);
             break;
 
         case 3:
-            logger->logInfo(frame);
+            _logger->logInfo(frame);
             break;
     }
 }

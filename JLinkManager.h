@@ -1,9 +1,11 @@
 #pragma once
 
 #include <QProcess>
-#include "AppComponent.h"
+#include <QSettings>
 
-class JLinkManager : public QObject, public AppComponent
+#include "Logger.h"
+
+class JLinkManager : public QObject
 {
     Q_OBJECT
 
@@ -11,11 +13,13 @@ class JLinkManager : public QObject, public AppComponent
 
     enum State {unknown, waitingTestResponse, connectionTested};
 
-        explicit JLinkManager(QObject *parent = Q_NULLPTR);
-        ~JLinkManager() Q_DECL_OVERRIDE;
+    explicit JLinkManager(QSettings* settings, QObject *parent = Q_NULLPTR);
+    ~JLinkManager() Q_DECL_OVERRIDE;
 
-        void setSN(const QString& serialNumber);
-        QString getSN() const;
+    void setLogger(Logger* logger) {_logger = logger;}
+
+    void setSN(const QString& serialNumber);
+    QString getSN() const;
 
 public slots:
 
@@ -50,6 +54,8 @@ signals:
 
 private:
 
+    QSettings* _settings;
+    Logger* _logger;
     State _state = unknown;
     static QString _jlinkExecutable;
     QString _SN; // JLink serial number

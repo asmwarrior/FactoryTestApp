@@ -6,22 +6,24 @@
 #include <QButtonGroup>
 #include <QSharedPointer>
 
-#include "AppComponent.h"
 #include "DutButton.h"
+#include "SessionManager.h"
 
-class TestFixtureWidget : public QWidget, public AppComponent
+class TestFixtureWidget : public QWidget
 {
     Q_OBJECT
 
 public:
 
-    TestFixtureWidget(QWidget* parent = nullptr);
+    TestFixtureWidget(SessionManager* session, QWidget* parent = nullptr);
 
 signals:
 
     void dutStateChanged();
 
 private:
+
+    SessionManager* _session;
 
     QList<DutButton*> _buttons;
     QGroupBox* _groupBox;

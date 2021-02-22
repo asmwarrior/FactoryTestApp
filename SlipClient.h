@@ -9,9 +9,9 @@
 #include <QtEndian>
 
 #include "SlipProtocol.h"
-#include "AppComponent.h"
+#include "Logger.h"
 
-class SlipClient : public QObject, public AppComponent
+class SlipClient : public QObject
 {
     Q_OBJECT
 
@@ -19,6 +19,8 @@ public:
 
     explicit SlipClient(QObject *parent = Q_NULLPTR);
     ~SlipClient() Q_DECL_OVERRIDE;
+
+    void setLogger(Logger* logger) {_logger = logger;}
 
     void setPort(const QString &name,
                  qint32 baudRate = QSerialPort::Baud115200,
@@ -37,6 +39,7 @@ public:
 
 private:
 
+    Logger* _logger;
     QSerialPort m_serialPort;
     bool m_frameStarted;
     QByteArray m_recvBuffer;

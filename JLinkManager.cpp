@@ -7,8 +7,8 @@
 
 QString JLinkManager::_jlinkExecutable;
 
-JLinkManager::JLinkManager(QObject *parent)
-    : QObject(parent), m_proc(this)
+JLinkManager::JLinkManager(QSettings *settings, QObject *parent)
+    : QObject(parent), _settings(settings), m_proc(this)
 {
     _jlinkExecutable = settings->value("JLink/path", "JLink.exe").toString();
     connect(&m_proc, &QProcess::readyReadStandardOutput, this,  &JLinkManager::readStandardOutput);
@@ -55,11 +55,11 @@ bool JLinkManager::startJLinkScript(const QString &scriptFileName)
     args.append("-USB");
     args.append(_SN);
     args.append("-CommandFile");
-    args.append(workDirectory + scriptFileName);
-    logger->logInfo("Running JLink Commander script " + workDirectory + scriptFileName + "...");
+    args.append(_settings->value("workDirectory").toString() + scriptFileName);
+    _logger->logInfo("Running JLink Commander script " + _settings->value("workDirectory").toString() + scriptFileName + "...");
     if (!start(_jlinkExecutable, args))
     {
-        logger->logError("Cannot start JLink Commander!");
+        _logger->logError("Cannot start JLink Commander!");
         return false;
     }
 
@@ -71,11 +71,11 @@ bool JLinkManager::startJLinkScript(const QString &scriptFileName)
 
     if (exitCode())
     {
-        logger->logInfo("JLink Commander script failed!.");
+        _logger->logInfo("JLink Commander script failed!.");
         return false;
     }
 
-    logger->logInfo("JLink Commander script completed.");
+    _logger->logInfo("JLink Commander script completed.");
 
     return true;
 }
@@ -103,7 +103,7 @@ void JLinkManager::on_testConnection()
 {
     if(_SN.isEmpty())
     {
-        logger->logError("No serial number for the JLink device provided!");
+        _logger->logError("No serial number for the JLink device provided!");
         return;
     }
     _state = waitingTestResponse;
@@ -116,7 +116,7 @@ void JLinkManager::on_testConnection()
     m_proc.start(_jlinkExecutable, {"-USB", _SN});
     if (!m_proc.waitForStarted(3000))
     {
-        logger->logError(tr("Cannot start JLink executable!"));
+        _logger->logError(tr("Cannot start JLink executable!"));
         return;
     }
 
@@ -135,7 +135,7 @@ void JLinkManager::readStandardOutput()
         for(auto & line : lines)
         {
             if(!line.isEmpty())
-                logger->logChildProcessOutput(line);
+                _logger->logChildProcessOutput(line);
         }
     }
     m_rdBuf.append(data);
@@ -151,13 +151,13 @@ void JLinkManager::processOutput()
         if (QString(m_rdBuf).contains(_SN))
         {
             _state = connectionTested;
-            logger->logSuccess("JLink with S/N: " + _SN + " connected");
+            _logger->logSuccess("JLink with S/N: " + _SN + " connected");
         }
 
         else
         {
             _state = unknown;
-            logger->logError("No connection to JLink with S/N " + _SN);
+            _logger->logError("No connection to JLink with S/N " + _SN);
         }
         break;
     }

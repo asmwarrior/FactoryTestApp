@@ -5,20 +5,20 @@
 
 #include <QSerialPort>
 #include <QVariant>
-#include <QSharedPointer>
 #include <QSettings>
 
-#include "AppComponent.h"
 #include "Logger.h"
 
-class RailtestClient : public QObject, public AppComponent
+class RailtestClient : public QObject
 {
     Q_OBJECT
 
 public:
 
-    explicit RailtestClient(QObject *parent = Q_NULLPTR);
+    explicit RailtestClient(QSettings* settings, QObject *parent = Q_NULLPTR);
     virtual ~RailtestClient();
+
+    void setLogger(Logger* logger) {_logger = logger;}
 
     void setPort(const QString &portName);
     Q_INVOKABLE bool open();
@@ -58,6 +58,9 @@ signals:
     void testGNSS();
 
 private:
+
+    QSettings* _settings;
+    Logger* _logger;
 
     QSerialPort m_serial;
     QByteArray

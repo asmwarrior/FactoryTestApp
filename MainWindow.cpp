@@ -7,13 +7,29 @@
 #include <QHBoxLayout>
 #include <QFormLayout>
 #include <QCompleter>
-#include <QtConcurrent/QtConcurrentRun>
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
     thread()->setObjectName("Main Window thread");
-    setStyleSheet("color: #424242; font-size:10pt;");
+    setStyleSheet("color: #424242; font-size:10pt;");    
+
+    _settings = new QSettings(_workDirectory + "/settings.ini", QSettings::IniFormat, this);
+    _settings->setValue("workDirectory", _workDirectory);
+
+    _scriptEngine = _scriptEngine = new QJSEngine(this);
+    _scriptEngine->installExtensions(QJSEngine::ConsoleExtension);
+
+    _session = new SessionManager(this);
+    _scriptEngine->globalObject().setProperty("session", _scriptEngine->newQObject(_session));
+
+    _testSequenceManager = new TestSequenceManager(this);
+    _logger = new Logger(this);
+    _scriptEngine->globalObject().setProperty("testSequenceManager", _scriptEngine->newQObject(_testSequenceManager));
+
+    evaluateScriptFromFile(_workDirectory + "/init.js");
+    evaluateScriptsFromDirectory(_workDirectory + "/sequences");
+    _scriptEngine->globalObject().setProperty("logger", _scriptEngine->newQObject(_logger));
 
     // Creating threads for run the tests for each test panel
     for (int i = 0; i < 5; i++)
@@ -26,25 +42,28 @@ MainWindow::MainWindow(QWidget *parent)
     // Creating objects for controlling JLinks, Rail Test & Slip clients
     for (int i = 0; i < 5; i++)
     {
-        auto newJlink = new JLinkManager();
-        newJlink->setSN(settings->value(QString("JLink/SN" + QString().setNum(i + 1))).toString());
+        auto newJlink = new JLinkManager(_settings);
+        newJlink->setSN(_settings->value(QString("JLink/SN" + QString().setNum(i + 1))).toString());
+        newJlink->setLogger(_logger);
         _JLinkList.push_back(newJlink);
-        QJSValue jlink = scriptEngine->newQObject(newJlink);
-        scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
+        QJSValue jlink = _scriptEngine->newQObject(newJlink);
+        _scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
 
-        auto railClient = new RailtestClient();
-        railClient->setPort(settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
+        auto railClient = new RailtestClient(_settings);
+        railClient->setLogger(_logger);
+        railClient->setPort(_settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
         _railTestClientList.push_back(railClient);
         _railTestClientList[i]->moveToThread(_threads[i]);
-        QJSValue rail = scriptEngine->newQObject(railClient);
-        scriptEngine->globalObject().property("railTestClientList").setProperty(i, rail);
+        QJSValue rail = _scriptEngine->newQObject(railClient);
+        _scriptEngine->globalObject().property("railTestClientList").setProperty(i, rail);
 
         auto slipClient = new SlipClient();
-        slipClient->setPort(settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
+        slipClient->setLogger(_logger);
+        slipClient->setPort(_settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
         _slipClientList.push_back(slipClient);
         _slipClientList[i]->moveToThread(_threads[i]);
-        QJSValue slip = scriptEngine->newQObject(slipClient);
-        scriptEngine->globalObject().property("slipClientList").setProperty(i, slip);
+        QJSValue slip = _scriptEngine->newQObject(slipClient);
+        _scriptEngine->globalObject().property("slipClientList").setProperty(i, slip);
 
         _threads[i]->start();
     }   
@@ -95,7 +114,7 @@ MainWindow::MainWindow(QWidget *parent)
     QFormLayout* sessionInfoLayout = new QFormLayout;
     _operatorNameEdit = new QLineEdit(this);
     _operatorNameEdit->setPlaceholderText("Enter Operator Name here");
-    _operatorList = settings->value("operatorList").toString().split("|");
+    _operatorList = _settings->value("operatorList").toString().split("|");
     _operatorNameEdit->setCompleter(new QCompleter(_operatorList, this));
     _operatorNameEdit->completer()->setCaseSensitivity(Qt::CaseInsensitive);
 
@@ -160,16 +179,16 @@ MainWindow::MainWindow(QWidget *parent)
     startTestingButtonsLayout->addWidget(_startSelectedTestButton);
 
     //Test fixture representation widget
-    _testFixtureWidget = new TestFixtureWidget(this);
+    _testFixtureWidget = new TestFixtureWidget(_session, this);
     _testFixtureWidget->setEnabled(false);
     middlePanelLayout->addWidget(_testFixtureWidget);
     middlePanelLayout->addStretch();
 
     //Info widgets
-    _sessionInfoWidget = new SessionInfoWidget;
+    _sessionInfoWidget = new SessionInfoWidget(_session, this);
     rightPanelLayout->addWidget(_sessionInfoWidget);
 
-    _dutInfoWidget = new DutInfoWidget(this);
+    _dutInfoWidget = new DutInfoWidget(_session, this);
     rightPanelLayout->addWidget(_dutInfoWidget);
     rightPanelLayout->addStretch();
 
@@ -177,7 +196,7 @@ MainWindow::MainWindow(QWidget *parent)
     _logWidget = new QListWidget(this);
     _logWidget->setFixedHeight(200);
     logLayout->addWidget(_logWidget);
-    logger->setLogWidget(_logWidget);
+    _logger->setLogWidget(_logWidget);
 
     QVBoxLayout* logWidgetControlsLayout = new QVBoxLayout;
     logLayout->addLayout(logWidgetControlsLayout);
@@ -197,17 +216,17 @@ MainWindow::MainWindow(QWidget *parent)
     _childProcessOutputLogWidget = new QListWidget(this);
     _childProcessOutputLogWidget->setFixedHeight(200);
     logLayout->addWidget(_childProcessOutputLogWidget);
-    logger->setChildProcessLogWidget(_childProcessOutputLogWidget);
+    _logger->setChildProcessLogWidget(_childProcessOutputLogWidget);
 
     //Database
-    _db = new DataBase(this);
+    _db = new DataBase(_settings, this);
     _db->connectToDataBase();
     //_db->insertIntoTable("test", QDateTime::currentDateTime().toString());
 
     //Connections
     connect(_operatorNameEdit, &QLineEdit::textEdited, [=](const QString& text)
     {
-        if(!text.isEmpty() && !_batchNumberEdit->text().isEmpty() && !session->isStarted())
+        if(!text.isEmpty() && !_batchNumberEdit->text().isEmpty() && !_session->isStarted())
         {
             _newSessionButton->setEnabled(true);
         }
@@ -220,7 +239,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(_batchNumberEdit, &QLineEdit::textEdited, [=](const QString& text)
     {
-        if(!text.isEmpty() && !_operatorNameEdit->text().isEmpty() && !session->isStarted())
+        if(!text.isEmpty() && !_operatorNameEdit->text().isEmpty() && !_session->isStarted())
         {
             _newSessionButton->setEnabled(true);
         }
@@ -231,11 +250,11 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-    connect(_selectMetodBox, SIGNAL(currentTextChanged(const QString&)), testSequenceManager, SLOT(setCurrentSequence(const QString&)));
+    connect(_selectMetodBox, SIGNAL(currentTextChanged(const QString&)), _testSequenceManager, SLOT(setCurrentSequence(const QString&)));
     connect(_selectMetodBox, &QComboBox::currentTextChanged, [=]()
     {
         _testFunctionsListWidget->clear();
-        _testFunctionsListWidget->addItems(testSequenceManager->currentSequenceFunctionNames());
+        _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
         if(_testFunctionsListWidget->count() > 0)
         {
             _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
@@ -246,13 +265,13 @@ MainWindow::MainWindow(QWidget *parent)
     {
         if(_testFunctionsListWidget->currentItem())
         {
-            testSequenceManager->runTestFunction(_testFunctionsListWidget->currentItem()->text());
+            _testSequenceManager->runTestFunction(_testFunctionsListWidget->currentItem()->text());
         }
     });
 
     connect(_testFixtureWidget, &TestFixtureWidget::dutStateChanged, [=]()
     {
-        _dutInfoWidget->showDutInfo(session->getCurrentDut());
+        _dutInfoWidget->showDutInfo(_session->getCurrentDut());
     });
 
     connect(_clearLogWidgetButton, &QPushButton::clicked, _logWidget, &QListWidget::clear);
@@ -296,31 +315,29 @@ MainWindow::~MainWindow()
     }
 
 
-    settings->setValue("operatorList", _operatorList.join("|"));
-
-    delete scriptEngine;
-    delete settings;
+    _settings->setValue("operatorList", _operatorList.join("|"));
 }
 
 void MainWindow::startNewSession()
 {
-    session->setStarted(true);
-    session->setOperatorName(_operatorNameEdit->text().simplified());
-    session->setStartTime(QDateTime::currentDateTime().toString());
-    session->setBatchNumber(_batchNumberEdit->text());
-    session->setBatchInfo(_batchInfoEdit->text());
+    _session->setStarted(true);
+    _session->setOperatorName(_operatorNameEdit->text().simplified());
+    _session->setStartTime(QDateTime::currentDateTime().toString());
+    _session->setBatchNumber(_batchNumberEdit->text());
+    _session->setBatchInfo(_batchInfoEdit->text());
 
-    resetDutList();
+    _session->resetDutList();
+    resetDutListInScriptEnv();
 
     //------------------------------------------------------------------------------------------
     _selectMetodBox->setEnabled(true);
     _selectMetodBox->clear();
-    _selectMetodBox->addItems(testSequenceManager->avaliableSequencesNames());
+    _selectMetodBox->addItems(_testSequenceManager->avaliableSequencesNames());
 
-    testSequenceManager->setCurrentSequence(_selectMetodBox->currentText());
+    _testSequenceManager->setCurrentSequence(_selectMetodBox->currentText());
 
     _testFunctionsListWidget->setEnabled(true);
-    _testFunctionsListWidget->addItems(testSequenceManager->currentSequenceFunctionNames());
+    _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
     if(_testFunctionsListWidget->count() > 0)
     {
         _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
@@ -335,9 +352,9 @@ void MainWindow::startNewSession()
     _actionHintWidget->showNormalHint(HINT_CHOOSE_METHOD);
     _sessionInfoWidget->update();
 
-    if(!_operatorList.contains(session->getOperatorName(), Qt::CaseInsensitive))
+    if(!_operatorList.contains(_session->getOperatorName(), Qt::CaseInsensitive))
     {
-        _operatorList.push_back(session->getOperatorName());
+        _operatorList.push_back(_session->getOperatorName());
     }
 
     //--------------------------------------------------------------------------------------
@@ -349,11 +366,11 @@ void MainWindow::startNewSession()
 
 void MainWindow::finishSession()
 {
-    session->setStarted(false);
-    session->setOperatorName("");
-    session->setStartTime("");
-    session->setBatchNumber("");
-    session->setBatchInfo("");
+    _session->setStarted(false);
+    _session->setOperatorName("");
+    _session->setStartTime("");
+    _session->setBatchNumber("");
+    _session->setBatchInfo("");
 
     _selectMetodBox->clear();
     _selectMetodBox->setEnabled(false);
@@ -378,18 +395,49 @@ void MainWindow::finishSession()
 
 void MainWindow::startFullCycleTesting()
 {
-    for (auto & funcName : testSequenceManager->currentSequenceFunctionNames())
+    for (auto & funcName : _testSequenceManager->currentSequenceFunctionNames())
     {
-        testSequenceManager->runTestFunction(funcName);
+        _testSequenceManager->runTestFunction(funcName);
     }
 }
 
-void MainWindow::setCurrentJLinkIndex(int index)
+void MainWindow::resetDutListInScriptEnv()
 {
-    scriptEngine->globalObject().setProperty("currentJLinkIndex", index);
+    int counter = 0;
+    for(auto & dut : _session->getDutList())
+    {
+        QJSValue currentDut = _scriptEngine->newQObject(dut);
+        _scriptEngine->globalObject().property("dutList").setProperty(counter, currentDut);
+        counter++;
+    }
 }
 
-int MainWindow::getCurrentJLinkIndex()
+QJSValue MainWindow::evaluateScriptFromFile(const QString &scriptFileName)
 {
-    return scriptEngine->globalObject().property("currentJLinkIndex").toInt();
+    QFile scriptFile(scriptFileName);
+    scriptFile.open(QIODevice::ReadOnly | QIODevice::Text);
+    QTextStream in(&scriptFile);
+    in.setCodec("Utf-8");
+    QJSValue scriptResult = _scriptEngine->evaluate(QString(in.readAll()));
+    scriptFile.close();
+    return scriptResult;
+}
+
+QList<QJSValue> MainWindow::evaluateScriptsFromDirectory(const QString& directoryName)
+{
+    QDir scriptsDir = QDir(directoryName, "*.js", QDir::Name, QDir::Files);
+    QStringList fileNames = scriptsDir.entryList();
+    QList<QJSValue> results;
+
+    for (auto & i : fileNames)
+    {
+        results.push_back(evaluateScriptFromFile(scriptsDir.absoluteFilePath(i)));
+    }
+
+    return results;
+}
+
+QJSValue MainWindow::runScript(const QString& scriptName, const QJSValueList& args)
+{
+    return _scriptEngine->globalObject().property(scriptName).call(args);
 }
