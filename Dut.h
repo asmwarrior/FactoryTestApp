@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QDebug>
 
 class Dut : public QObject
 {

@@ -45,4 +45,5 @@ target_link_libraries(${PROJECT_NAME}
         Qt5::Sql
         Qt5::Network
         Qt5::SerialPort
+        "${CMAKE_SOURCE_DIR}/JLinkSDK/lib/JLinkARM.lib"
 )

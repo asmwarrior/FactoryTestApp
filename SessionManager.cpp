@@ -7,12 +7,7 @@ SessionManager::SessionManager(QObject *parent) : QObject(parent)
 
 SessionManager::~SessionManager()
 {
-    for(auto & dut : m_dutList)
-    {
-        delete dut;
-    }
 
-    m_dutList.clear();
 }
 
 void SessionManager::resetDutList()

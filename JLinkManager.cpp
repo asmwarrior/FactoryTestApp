@@ -1,5 +1,7 @@
 #include "JLinkManager.h"
 
+#include "JLinkSDK/JLinkARMDLL.h"
+
 #include <QDebug>
 #include <QProcess>
 #include <QThread>
@@ -106,21 +108,36 @@ void JLinkManager::on_testConnection()
         _logger->logError("No serial number for the JLink device provided!");
         return;
     }
-    _state = waitingTestResponse;
-    stop();
-    m_proc.setInputChannelMode(QProcess::ManagedInputChannel);
-    m_proc.setProcessChannelMode(QProcess::MergedChannels);
 
-    m_proc.setProgram(_jlinkExecutable);
-    m_proc.setArguments({"-USB", _SN});
-    m_proc.start(_jlinkExecutable, {"-USB", _SN});
-    if (!m_proc.waitForStarted(3000))
+    _state = waitingTestResponse;
+
+    if (JLINKARM_EMU_SelectByUSBSN(_SN.toUInt()) < 0)
     {
-        _logger->logError(tr("Cannot start JLink executable!"));
-        return;
+        _state = unknown;
+        _logger->logError("No connection to JLink with S/N " + _SN);
     }
 
-    m_proc.write("q\n");
+    else
+    {
+        _state = connectionTested;
+        _logger->logSuccess("JLink with S/N: " + _SN + " connected");
+    }
+
+//    _state = waitingTestResponse;
+//    stop();
+//    m_proc.setInputChannelMode(QProcess::ManagedInputChannel);
+//    m_proc.setProcessChannelMode(QProcess::MergedChannels);
+
+//    m_proc.setProgram(_jlinkExecutable);
+//    m_proc.setArguments({"-USB", _SN});
+//    m_proc.start(_jlinkExecutable, {"-USB", _SN});
+//    if (!m_proc.waitForStarted(3000))
+//    {
+//        _logger->logError(tr("Cannot start JLink executable!"));
+//        return;
+//    }
+
+//    m_proc.write("q\n");
 }
 
 void JLinkManager::readStandardOutput()
