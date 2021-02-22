@@ -294,11 +294,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    for(auto & thread : _threads)
-    {
-        thread->quit();
-    }
-
     for(auto & jlink : _JLinkList)
     {
         delete jlink;
@@ -306,14 +301,19 @@ MainWindow::~MainWindow()
 
     for(auto & rail : _railTestClientList)
     {
-        delete rail;
+        rail->deleteLater();
     }
 
     for(auto & slip : _slipClientList)
     {
-        delete slip;
+        slip->deleteLater();
     }
 
+    for(auto & thread : _threads)
+    {
+        thread->quit();
+        thread->deleteLater();
+    }
 
     _settings->setValue("operatorList", _operatorList.join("|"));
 }
