@@ -4,8 +4,5 @@ var currentDutIndex = 0;
 var JlinkList = [];
 var currentJLinkIndex = 0;
 
-var railTestClientList = [];
-var currentRailTestClientIndex = 0;
-
-var slipClientList = [];
-var currentSlipClientIndex = 0;
+var testClientList = [];
+var currentTestClientIndex = 0;

@@ -43,17 +43,15 @@ static const quint16 _crc_ccitt_lut[] = {
     0x2e93, 0x3eb2, 0x0ed1, 0x1ef0
 };
 
-SlipClient::SlipClient(QObject *parent)
-    : QObject(parent), m_serialPort(this), m_frameCnt(0)
+SlipClient::SlipClient(QSerialPort &serial, QObject *parent)
+    : QObject(parent), m_serialPort(serial), m_frameCnt(0)
 {
-    connect(&m_serialPort, &QSerialPort::readyRead, this, &SlipClient::onSerialPortReadyRead, Qt::QueuedConnection);
-    connect(&m_serialPort, &QSerialPort::errorOccurred, this, &SlipClient::onSerialPortErrorOccurred, Qt::QueuedConnection);
-    connect(&m_serialPort, &QSerialPort::aboutToClose, this, &SlipClient::aboutToClose, Qt::QueuedConnection);
+    connect(&m_serialPort, &QSerialPort::aboutToClose, this, &SlipClient::aboutToClose);
     connect(this, &SlipClient::packetReceived, this, &SlipClient::onSlipPacketReceived);
 
     connect(this, &SlipClient::sendDubugString, this, &SlipClient::on_sendDubugString);
     connect(this, &SlipClient::reset, this, &SlipClient::on_reset);
-    connect(this, &SlipClient::switchSWD, this, &SlipClient::on_switchSWD);
+    //connect(this, &SlipClient::switchSWD, this, &SlipClient::on_switchSWD);
     connect(this, &SlipClient::powerOn, this, &SlipClient::on_powerOn);
     connect(this, &SlipClient::powerOff, this, &SlipClient::on_powerOff);
     connect(this, &SlipClient::readDIN, this, &SlipClient::on_readDIN);
@@ -73,7 +71,7 @@ SlipClient::SlipClient(QObject *parent)
 
 SlipClient::~SlipClient()
 {
-    close();
+
 }
 
 void SlipClient::setPort(const QString &name, qint32 baudRate, QSerialPort::DataBits dataBits,
@@ -92,32 +90,6 @@ void SlipClient::setPort(const QString &name, qint32 baudRate, QSerialPort::Data
 
     if (!res)
         _logger->logError(m_serialPort.errorString());
-}
-
-void SlipClient::open()
-{
-    if (m_serialPort.isOpen())
-        m_serialPort.close();
-    cleanup();
-    if (!m_serialPort.open(QSerialPort::ReadWrite))
-        _logger->logError(m_serialPort.errorString());
-}
-
-void SlipClient::open(const QSerialPortInfo &portInfo)
-{
-    m_serialPort.setPort(portInfo);
-    if (!m_serialPort.open(QSerialPort::ReadWrite))
-        _logger->logError(m_serialPort.errorString());
-}
-
-void SlipClient::close() Q_DECL_NOTHROW
-{
-    if (m_serialPort.isOpen())
-    {
-        m_serialPort.flush();
-        m_serialPort.close();
-    }
-    cleanup();
 }
 
 static inline void _encodeSymbol(QByteArray &buffer, char ch) Q_DECL_NOTHROW
@@ -150,6 +122,7 @@ quint8 SlipClient::nextFrameId() Q_DECL_NOTHROW
 
 void SlipClient::sendPacket(quint8 channel, const QByteArray &frame) Q_DECL_NOTHROW
 {
+    emit commandStarted();
     sendFrame(channel, frame);
 }
 
@@ -275,8 +248,9 @@ void SlipClient::on_reset()
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::on_switchSWD(int DUT)
+void SlipClient::switchSWD(const QVariantList& args)
 {
+    qDebug() << QString("switchSWD called with arg %1").arg(args.at(0).toUInt());
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -290,7 +264,7 @@ void SlipClient::on_switchSWD(int DUT)
     pkt.h.type = qToBigEndian<uint16_t>(MB_SWITCH_SWD);
     pkt.h.sequence = 1;
     pkt.h.dataLen = 1;
-    pkt.dut = DUT;
+    pkt.dut = args.at(0).toUInt();
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
@@ -622,12 +596,6 @@ void SlipClient::onSerialPortReadyRead() Q_DECL_NOTHROW
     }
 }
 
-void SlipClient::onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode) Q_DECL_NOTHROW
-{
-    if (errorCode != QSerialPort::NoError)
-        _logger->logError("SLIP. Serial port error occurred.");
-}
-
 void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
 {
     switch (channel)
@@ -677,4 +645,6 @@ void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
             _logger->logInfo(frame);
             break;
     }
+
+    emit commandFinished();
 }

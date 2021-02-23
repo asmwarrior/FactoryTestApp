@@ -6,12 +6,9 @@
 #include <QTime>
 #include <QThread>
 
-RailtestClient::RailtestClient(QSettings *settings, QObject *parent)
-    : QObject(parent), _settings(settings), m_serial(this)
+RailtestClient::RailtestClient(QSerialPort& serial, QSettings *settings, QObject *parent)
+    : QObject(parent), _settings(settings), m_serial(serial)
 {
-    connect(&m_serial, &QSerialPort::readyRead, this, &RailtestClient::onSerialPortReadyRead, Qt::QueuedConnection);
-    connect(&m_serial, &QSerialPort::errorOccurred, this, &RailtestClient::onSerialPortErrorOccurred, Qt::QueuedConnection);
-
     connect(this, &RailtestClient::waitCommandPrompt, this, &RailtestClient::on_waitCommandPrompt);
     connect(this, &RailtestClient::syncCommand, this, &RailtestClient::on_syncCommand);
     connect(this, &RailtestClient::readChipId, this, &RailtestClient::on_readChipId);
@@ -24,7 +21,7 @@ RailtestClient::RailtestClient(QSettings *settings, QObject *parent)
 
 RailtestClient::~RailtestClient()
 {
-    close();
+
 }
 
 void RailtestClient::setPort(const QString &portName)
@@ -35,29 +32,6 @@ void RailtestClient::setPort(const QString &portName)
     m_serial.setParity(QSerialPort::NoParity);
     m_serial.setStopBits(QSerialPort::OneStop);
     m_serial.setFlowControl(QSerialPort::NoFlowControl);
-}
-
-bool RailtestClient::open()
-{
-    close();
-
-    if(m_serial.portName().isEmpty())
-    {
-        return false;
-    }
-
-    _logger->logInfo(QString("Opening %1 port for RailTest").arg(m_serial.portName()));
-    return m_serial.open(QSerialPort::ReadWrite);
-}
-
-void RailtestClient::close()
-{
-    if (m_serial.isOpen())
-    {
-        m_serial.flush();
-        m_serial.close();
-        m_recvBuffer.clear();
-    }
 }
 
 bool RailtestClient::on_waitCommandPrompt(int timeout)
@@ -85,6 +59,8 @@ QVariantList RailtestClient::on_syncCommand(const QByteArray &cmd, const QByteAr
     if (!m_serial.isOpen())
         return QVariantList();
 
+    emit commandStarted();
+
     m_syncCommand = cmd;
     m_syncReplies.clear();
 
@@ -109,6 +85,7 @@ QVariantList RailtestClient::on_syncCommand(const QByteArray &cmd, const QByteAr
 
 void RailtestClient::on_readChipId()
 {
+    qDebug() << "on_readChipId called";
     auto reply = on_syncCommand("getmemw", "0x0FE081F0 2");
 
     if (reply.size() != 2)
@@ -144,55 +121,55 @@ void RailtestClient::on_testRadio()
 {
     _logger->logInfo("Testing Radio Interface...");
 
-    _settings->beginGroup("Radio");
+//    _settings->beginGroup("Radio");
 
-    RailtestClient rf(_settings, this);
+//    RailtestClient rf(_settings, this);
 
-    connect(&rf, &RailtestClient::replyReceived, this, &RailtestClient::onRfReplyReceived);
-    rf.setPort(_settings->value("Serial", "COM2").toString());
-    if (!rf.open())
-    {
-        _logger->logError("Cannot open serial port for reference radio module!");
-    }
+//    connect(&rf, &RailtestClient::replyReceived, this, &RailtestClient::onRfReplyReceived);
+//    rf.setPort(_settings->value("Serial", "COM2").toString());
+//    if (!rf.open())
+//    {
+//        _logger->logError("Cannot open serial port for reference radio module!");
+//    }
 
-    rf.on_syncCommand("reset", "", 3000);
-    if (!rf.on_waitCommandPrompt())
-    {
-        _logger->logError("Timeout waiting reference radio module command prompt!");
-    }
+//    rf.on_syncCommand("reset", "", 3000);
+//    if (!rf.on_waitCommandPrompt())
+//    {
+//        _logger->logError("Timeout waiting reference radio module command prompt!");
+//    }
 
-    rf.syncCommand("rx", "0", 1000);
-    _rfRSSI = 255;
-    _rfCount = 0;
-    rf.syncCommand("setBleMode", "1", 1000);
-    rf.syncCommand("setBle1Mbps", "1", 1000);
-    rf.syncCommand("setChannel", "19", 1000);
-    this->syncCommand("rx", "0", 1000);
-    this->syncCommand("setBleMode", "1", 1000);
-    this->syncCommand("setBle1Mbps", "1", 1000);
-    this->syncCommand("setChannel", "19", 1000);
-    this->syncCommand("setPower", "80", 1000);
-    rf.syncCommand("rx", "1", 1000);
-    this->syncCommand("tx", "11", 5000);
+//    rf.syncCommand("rx", "0", 1000);
+//    _rfRSSI = 255;
+//    _rfCount = 0;
+//    rf.syncCommand("setBleMode", "1", 1000);
+//    rf.syncCommand("setBle1Mbps", "1", 1000);
+//    rf.syncCommand("setChannel", "19", 1000);
+//    this->syncCommand("rx", "0", 1000);
+//    this->syncCommand("setBleMode", "1", 1000);
+//    this->syncCommand("setBle1Mbps", "1", 1000);
+//    this->syncCommand("setChannel", "19", 1000);
+//    this->syncCommand("setPower", "80", 1000);
+//    rf.syncCommand("rx", "1", 1000);
+//    this->syncCommand("tx", "11", 5000);
 
-    bool isOk = true;
-    if (_rfCount < 8)
-    {
-        _logger->logError(QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount));
-        isOk = false;
-    }
+//    bool isOk = true;
+//    if (_rfCount < 8)
+//    {
+//        _logger->logError(QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount));
+//        isOk = false;
+//    }
 
-    if (_rfRSSI < _settings->value("Min", -50).toInt() || _rfRSSI > _settings->value("Max", 20).toInt())
-    {
-        _logger->logError(QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI));
-        isOk = false;
-    }
+//    if (_rfRSSI < _settings->value("Min", -50).toInt() || _rfRSSI > _settings->value("Max", 20).toInt())
+//    {
+//        _logger->logError(QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI));
+//        isOk = false;
+//    }
 
-    if(isOk)
-    {
-        _logger->logInfo(QString("Radio Interface: RSSI=%1.").arg(_rfRSSI));
-        _logger->logInfo("Radio Interface is OK.");
-    }
+//    if(isOk)
+//    {
+//        _logger->logInfo(QString("Radio Interface: RSSI=%1.").arg(_rfRSSI));
+//        _logger->logInfo("Radio Interface is OK.");
+//    }
 }
 
 void RailtestClient::on_testAccelerometer()
@@ -435,11 +412,8 @@ void RailtestClient::onSerialPortReadyRead() Q_DECL_NOTHROW
     }
 
     if (m_recvBuffer == "> ")
+    {
         m_syncCommand.clear();
-}
-
-void RailtestClient::onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode) Q_DECL_NOTHROW
-{
-    if (errorCode != QSerialPort::NoError)
-        emit error(m_serial.errorString());
+        emit commandFinished();
+    }
 }

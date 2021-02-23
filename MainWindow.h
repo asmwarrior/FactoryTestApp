@@ -18,8 +18,7 @@
 #include "Logger.h"
 #include "JLinkManager.h"
 #include "Database.h"
-#include "RailtestClient.h"
-#include "SlipClient.h"
+#include "TestClient.h"
 #include "TestFixtureWidget.h"
 #include "SessionInfoWidget.h"
 #include "DutInfoWidget.h"
@@ -57,8 +56,7 @@ private:
 
     QList<QThread*> _threads;
     QList<JLinkManager*> _JLinkList;
-    QList<RailtestClient*> _railTestClientList;
-    QList<SlipClient*> _slipClientList;
+    QList<TestClient*> _testClientList;
 
     QStringList _operatorList;
 

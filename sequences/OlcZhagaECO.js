@@ -2,10 +2,10 @@ testSequenceManager.addMethod("OLC Zhaga ECO");
 
 ZhagaECO =
 {
-    showDutsState: function ()
+    testCommand: function ()
     {
-        dutList[0].state = 1
-        console.log(dutList[0].state)
+        testClientList[0].addCommand("switch SWD", [1]);
+        testClientList[0].addCommand("read chip ID");
     },
 
     testConnection: function ()
@@ -110,7 +110,7 @@ ZhagaECO =
     }
 }
 
-testSequenceManager.addFunctionToGeneralList("Show DUT's states", ZhagaECO.showDutsState);
+testSequenceManager.addFunctionToGeneralList("testCommand", ZhagaECO.testCommand);
 testSequenceManager.addFunctionToGeneralList("Test connection to JLink", ZhagaECO.testConnection);
 testSequenceManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
 testSequenceManager.addFunctionToGeneralList("Open and check Railtest Client", ZhagaECO.openRailTestClient);

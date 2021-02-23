@@ -49,21 +49,12 @@ MainWindow::MainWindow(QWidget *parent)
         QJSValue jlink = _scriptEngine->newQObject(newJlink);
         _scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
 
-        auto railClient = new RailtestClient(_settings);
-        railClient->setLogger(_logger);
-        railClient->setPort(_settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
-        _railTestClientList.push_back(railClient);
-        _railTestClientList[i]->moveToThread(_threads[i]);
-        QJSValue rail = _scriptEngine->newQObject(railClient);
-        _scriptEngine->globalObject().property("railTestClientList").setProperty(i, rail);
-
-        auto slipClient = new SlipClient();
-        slipClient->setLogger(_logger);
-        slipClient->setPort(_settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
-        _slipClientList.push_back(slipClient);
-        _slipClientList[i]->moveToThread(_threads[i]);
-        QJSValue slip = _scriptEngine->newQObject(slipClient);
-        _scriptEngine->globalObject().property("slipClientList").setProperty(i, slip);
+        auto testClient = new TestClient(_settings);
+        testClient->setLogger(_logger);
+        testClient->setPort(_settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
+        _testClientList.push_back(testClient);
+        _testClientList[i]->moveToThread(_threads[i]);
+        _scriptEngine->globalObject().property("testClientList").setProperty(i, _scriptEngine->newQObject(testClient));
 
         _threads[i]->start();
     }   
@@ -300,14 +291,9 @@ MainWindow::~MainWindow()
         delete jlink;
     }
 
-    for(auto & rail : _railTestClientList)
+    for(auto & test : _testClientList)
     {
-        rail->deleteLater();
-    }
-
-    for(auto & slip : _slipClientList)
-    {
-        slip->deleteLater();
+        test->deleteLater();
     }
 
     for(auto & thread : _threads)

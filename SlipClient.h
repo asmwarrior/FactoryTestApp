@@ -17,7 +17,8 @@ class SlipClient : public QObject
 
 public:
 
-    explicit SlipClient(QObject *parent = Q_NULLPTR);
+    explicit SlipClient(QSerialPort& serial, QObject *parent = Q_NULLPTR);
+
     ~SlipClient() Q_DECL_OVERRIDE;
 
     void setLogger(Logger* logger) {_logger = logger;}
@@ -29,31 +30,15 @@ public:
                  QSerialPort::StopBits stopBits = QSerialPort::OneStop,
                  QSerialPort::FlowControl flowControl = QSerialPort::NoFlowControl);
 
-    void open();
-    void open(const QSerialPortInfo& portInfo);
-    void close() Q_DECL_NOTHROW;
-
     quint8 nextFrameId() Q_DECL_NOTHROW;
 
     void sendPacket(quint8 channel, const QByteArray &frame) Q_DECL_NOTHROW;
 
-private:
-
-    Logger* _logger;
-    QSerialPort m_serialPort;
-    bool m_frameStarted;
-    QByteArray m_recvBuffer;
-
-    quint8 m_frameCnt;
-
-    void cleanup() Q_DECL_NOTHROW;
-    void decodeFrame() Q_DECL_NOTHROW;
-
-private slots:
+public slots:
 
     void on_sendDubugString(int channel, const QByteArray& string);
     void on_reset();
-    void on_switchSWD(int DUT);
+    void switchSWD(const QVariantList& args);
     void on_powerOn(int DUT);
     void on_powerOff(int DUT);
     void on_readDIN(int DUT, int DIN);
@@ -72,10 +57,12 @@ private slots:
 
     void sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW;
     void onSerialPortReadyRead() Q_DECL_NOTHROW;
-    void onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode) Q_DECL_NOTHROW;
     void onSlipPacketReceived(quint8 channel, QByteArray frame) Q_DECL_NOTHROW;
 
 signals:
+
+    void commandStarted();
+    void commandFinished();
 
     void opened();
     void aboutToClose();
@@ -83,7 +70,7 @@ signals:
 
     void sendDubugString(int channel, const QByteArray& string);
     void reset();
-    void switchSWD(int DUT);
+    //void switchSWD(int DUT);
     void powerOn(int DUT);
     void powerOff(int DUT);
     void readDIN(int DUT, int DIN);
@@ -99,6 +86,18 @@ signals:
     void read24V();
     void read3V();
     void readTemperature();
+
+private:
+
+    Logger* _logger;
+    QSerialPort& m_serialPort;
+    bool m_frameStarted;
+    QByteArray m_recvBuffer;
+
+    quint8 m_frameCnt;
+
+    void cleanup() Q_DECL_NOTHROW;
+    void decodeFrame() Q_DECL_NOTHROW;
 };
 
 #endif // __CAP_MB_SLIP_H__

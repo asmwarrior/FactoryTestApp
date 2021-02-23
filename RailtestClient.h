@@ -15,24 +15,19 @@ class RailtestClient : public QObject
 
 public:
 
-    explicit RailtestClient(QSettings* settings, QObject *parent = Q_NULLPTR);
+    explicit RailtestClient(QSerialPort& serial, QSettings* settings, QObject *parent = Q_NULLPTR);
     virtual ~RailtestClient();
 
     void setLogger(Logger* logger) {_logger = logger;}
 
     void setPort(const QString &portName);
-    Q_INVOKABLE bool open();
-    Q_INVOKABLE void close();
     Q_INVOKABLE QByteArray currentChipId() const {return _currentChipId;}
 
 public slots:
 
     void onRfReplyReceived(QString id, QVariantMap params);
 
-private slots:
-
     void onSerialPortReadyRead() Q_DECL_NOTHROW;
-    void onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode) Q_DECL_NOTHROW;
 
     bool on_waitCommandPrompt(int timeout = 1000);
     QVariantList on_syncCommand(const QByteArray &cmd, const QByteArray &args = QByteArray(), int timeout = 5000);
@@ -44,6 +39,9 @@ private slots:
     void on_testGNSS();
 
 signals:
+
+    void commandStarted();
+    void commandFinished();
 
     void error(QString text);
     void replyReceived(QString id, QVariantMap params);
@@ -59,21 +57,19 @@ signals:
 
 private:
 
+    void decodeReply(const QByteArray &reply);
+
     QSettings* _settings;
     Logger* _logger;
 
-    QSerialPort m_serial;
-    QByteArray
-    m_recvBuffer,
-    m_syncCommand;
+    QSerialPort& m_serial;
+    QByteArray m_recvBuffer;
+    QByteArray m_syncCommand;
     QVariantList m_syncReplies;
     int _rfRSSI;
     int _rfCount;
 
     QByteArray _currentChipId;
-
-    void decodeReply(const QByteArray &reply);
-
 };
 
 #endif // __RAILTESTCLIENT_H__
