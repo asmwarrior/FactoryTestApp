@@ -1,4 +1,4 @@
-testSequenceManager.addSequence("OLC Zhaga ECO");
+testSequenceManager.addMethod("OLC Zhaga ECO");
 
 ZhagaECO =
 {
@@ -110,15 +110,15 @@ ZhagaECO =
     }
 }
 
-testSequenceManager.addTestFunction("Show DUT's states", ZhagaECO.showDutsState);
-testSequenceManager.addTestFunction("Test connection to JLink", ZhagaECO.testConnection);
-testSequenceManager.addTestFunction("Download Railtest", ZhagaECO.downloadRailtest);
-testSequenceManager.addTestFunction("Open and check Railtest Client", ZhagaECO.openRailTestClient);
-testSequenceManager.addTestFunction("Read unique device identifier (ID)", ZhagaECO.readChipID);
-testSequenceManager.addTestFunction("Initialize Dali test", ZhagaECO.initDali);
-testSequenceManager.addTestFunction("Test radio interface", ZhagaECO.testRadio);
-testSequenceManager.addTestFunction("Test accelerometer", ZhagaECO.testAccelerometer);
-testSequenceManager.addTestFunction("Test light sensor", ZhagaECO.testLightSensor);
-testSequenceManager.addTestFunction("Test DALI", ZhagaECO.testDALI);
-testSequenceManager.addTestFunction("Test GNSS", ZhagaECO.testGNSS);
-testSequenceManager.addTestFunction("Download Software", ZhagaECO.downloadSoftware);
+testSequenceManager.addFunctionToGeneralList("Show DUT's states", ZhagaECO.showDutsState);
+testSequenceManager.addFunctionToGeneralList("Test connection to JLink", ZhagaECO.testConnection);
+testSequenceManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
+testSequenceManager.addFunctionToGeneralList("Open and check Railtest Client", ZhagaECO.openRailTestClient);
+testSequenceManager.addFunctionToGeneralList("Read unique device identifier (ID)", ZhagaECO.readChipID);
+testSequenceManager.addFunctionToGeneralList("Initialize Dali test", ZhagaECO.initDali);
+testSequenceManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio);
+testSequenceManager.addFunctionToGeneralList("Test accelerometer", ZhagaECO.testAccelerometer);
+testSequenceManager.addFunctionToGeneralList("Test light sensor", ZhagaECO.testLightSensor);
+testSequenceManager.addFunctionToGeneralList("Test DALI", ZhagaECO.testDALI);
+testSequenceManager.addFunctionToGeneralList("Test GNSS", ZhagaECO.testGNSS);
+testSequenceManager.addFunctionToGeneralList("Download Software", ZhagaECO.downloadSoftware);

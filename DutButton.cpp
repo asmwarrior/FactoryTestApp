@@ -4,9 +4,6 @@ DutButton::DutButton(int no, int panelNo, int pos, QWidget *parent) : QPushButto
 {
     _stateStyles =
     {
-        {unavaliable, "QPushButton{color: #9E9E9E; border-style:solid; border-width:3px; border-color:#F0F0F0; background-color:#ffffff; font-size:11pt;}"
-        "QPushButton:checked{border-width:3px; border-color:#FFB74D;}"},
-
         {inactive, "QPushButton{color: #9E9E9E; border-style:solid; border-width:3px; border-color:#F0F0F0; background-color:#ffffff; font-size:11pt;}"
         "QPushButton:checked{border-width:3px; border-color:#FFB74D;}"},
 
@@ -22,7 +19,7 @@ DutButton::DutButton(int no, int panelNo, int pos, QWidget *parent) : QPushButto
 
     setCheckable(true);
     setChecked(false);
-    setButtonState(untested);
+    setButtonState(inactive);
     setFixedSize(44, 44);
     setText(QString().setNum(_no));
 }

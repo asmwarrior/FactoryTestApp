@@ -11,7 +11,7 @@ JLinkManager::JLinkManager(QSettings *settings, QObject *parent)
     : QObject(parent), _settings(settings)
 {
     connect(this, &JLinkManager::startJlinkCommands, this, &JLinkManager::on_startJlinkCommands);
-    connect(this, &JLinkManager::testConnection, this, &JLinkManager::on_testConnection);
+    connect(this, &JLinkManager::establishConnection, this, &JLinkManager::on_establishConnection);
     clearErrorBuffer();
 }
 
@@ -35,7 +35,7 @@ QString JLinkManager::getSN() const
     return _SN;
 }
 
-void JLinkManager::on_testConnection()
+void JLinkManager::on_establishConnection()
 {
     if(_SN.isEmpty())
     {
@@ -55,6 +55,7 @@ void JLinkManager::on_testConnection()
     {
         _state = connectionTested;
         _logger->logSuccess("JLink with S/N: " + _SN + " connected");
+        JLINKARM_Open();
     }
 }
 

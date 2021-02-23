@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     _session = new SessionManager(this);
     _scriptEngine->globalObject().setProperty("session", _scriptEngine->newQObject(_session));
 
-    _testSequenceManager = new TestSequenceManager(this);
+    _testSequenceManager = new TestMethodManager(this);
     _logger = new Logger(this);
     _scriptEngine->globalObject().setProperty("testSequenceManager", _scriptEngine->newQObject(_testSequenceManager));
 
@@ -250,11 +250,11 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-    connect(_selectMetodBox, SIGNAL(currentTextChanged(const QString&)), _testSequenceManager, SLOT(setCurrentSequence(const QString&)));
+    connect(_selectMetodBox, SIGNAL(currentTextChanged(const QString&)), _testSequenceManager, SLOT(setCurrentMethod(const QString&)));
     connect(_selectMetodBox, &QComboBox::currentTextChanged, [=]()
     {
         _testFunctionsListWidget->clear();
-        _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
+        _testFunctionsListWidget->addItems(_testSequenceManager->currentMethodFunctionNames());
         if(_testFunctionsListWidget->count() > 0)
         {
             _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
@@ -334,10 +334,10 @@ void MainWindow::startNewSession()
     _selectMetodBox->clear();
     _selectMetodBox->addItems(_testSequenceManager->avaliableSequencesNames());
 
-    _testSequenceManager->setCurrentSequence(_selectMetodBox->currentText());
+    _testSequenceManager->setCurrentMethod(_selectMetodBox->currentText());
 
     _testFunctionsListWidget->setEnabled(true);
-    _testFunctionsListWidget->addItems(_testSequenceManager->currentSequenceFunctionNames());
+    _testFunctionsListWidget->addItems(_testSequenceManager->currentMethodFunctionNames());
     if(_testFunctionsListWidget->count() > 0)
     {
         _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
@@ -360,7 +360,7 @@ void MainWindow::startNewSession()
     //--------------------------------------------------------------------------------------
     for(auto & jlink : _JLinkList)
     {
-        jlink->testConnection();
+        jlink->establishConnection();
     }
 }
 
@@ -395,7 +395,7 @@ void MainWindow::finishSession()
 
 void MainWindow::startFullCycleTesting()
 {
-    for (auto & funcName : _testSequenceManager->currentSequenceFunctionNames())
+    for (auto & funcName : _testSequenceManager->currentMethodFunctionNames())
     {
         _testSequenceManager->runTestFunction(funcName);
     }

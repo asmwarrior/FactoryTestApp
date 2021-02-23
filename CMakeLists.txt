@@ -19,7 +19,7 @@ set(SOURCES
     SessionManager.cpp
     Dut.h
     Database.cpp
-    TestSequence.cpp
+    TestMethodManager.cpp
     JLinkManager.cpp
     Logger.cpp
     RailtestClient.cpp

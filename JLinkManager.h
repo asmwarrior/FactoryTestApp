@@ -23,12 +23,12 @@ class JLinkManager : public QObject
 
 public slots:
 
-        void on_testConnection();
+        void on_establishConnection();
         void on_startJlinkCommands(const QStringList& commands);
 
 signals:
 
-    void testConnection();
+    void establishConnection();
     void startJlinkCommands(const QStringList& commands);
 
 private:

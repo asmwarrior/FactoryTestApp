@@ -14,7 +14,7 @@
 #include <QModelIndex>
 
 #include "SessionManager.h"
-#include "TestSequence.h"
+#include "TestMethodManager.h"
 #include "Logger.h"
 #include "JLinkManager.h"
 #include "Database.h"
@@ -52,7 +52,7 @@ private:
     QSettings* _settings;
     QJSEngine* _scriptEngine;
     SessionManager* _session;
-    TestSequenceManager* _testSequenceManager;
+    TestMethodManager* _testSequenceManager;
     Logger* _logger;
 
     QList<QThread*> _threads;
