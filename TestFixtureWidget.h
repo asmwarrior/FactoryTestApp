@@ -17,6 +17,10 @@ public:
 
     TestFixtureWidget(SessionManager* session, QWidget* parent = nullptr);
 
+public slots:
+
+    void refreshButtonsState();
+
 signals:
 
     void dutStateChanged();

@@ -59,7 +59,7 @@ void DutInfoWidget::showDutInfo(int no)
     QString stateDescription;
     switch (dut->getState())
     {
-        case Dut::DutState::unavaliable:
+        case Dut::DutState::inactive:
         stateDescription = "The device is not avaliable now.";
         break;
 

@@ -82,3 +82,12 @@ TestFixtureWidget::TestFixtureWidget(SessionManager* session, QWidget* parent) :
         emit dutStateChanged();
     });
 }
+
+void TestFixtureWidget::refreshButtonsState()
+{
+    for(int i = 0; i < _buttons.size(); i++)
+    {
+        _buttons.at(i)->setButtonState(_session->getDutList().at(i)->getState());
+        _buttons.at(i)->setChecked(_session->getDutList().at(i)->isChecked());
+    }
+}

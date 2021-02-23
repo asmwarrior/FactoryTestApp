@@ -4,22 +4,22 @@ DutButton::DutButton(int no, int panelNo, int pos, QWidget *parent) : QPushButto
 {
     _stateStyles =
     {
-        {inactive, "QPushButton{color: #9E9E9E; border-style:solid; border-width:3px; border-color:#F0F0F0; background-color:#ffffff; font-size:11pt;}"
+        {Dut::inactive, "QPushButton{color: #9E9E9E; border-style:solid; border-width:3px; border-color:#F0F0F0; background-color:#ffffff; font-size:11pt;}"
         "QPushButton:checked{border-width:3px; border-color:#FFB74D;}"},
 
-        {untested, "QPushButton{color: #ffffff; border-style:solid; border-width:3px; border-color:#F0F0F0; background-color:#9E9E9E; font-size:11pt;}"
+        {Dut::untested, "QPushButton{color: #ffffff; border-style:solid; border-width:3px; border-color:#F0F0F0; background-color:#9E9E9E; font-size:11pt;}"
         "QPushButton:checked{border-width:3px; border-color:#FFB74D;}"},
 
-        {tested, "QPushButton{color: #ffffff; border-style:solid; border-width:3px; border-color:#F0F0F0; background-color:#00b050; font-size:11pt;}"
+        {Dut::tested, "QPushButton{color: #ffffff; border-style:solid; border-width:3px; border-color:#F0F0F0; background-color:#00b050; font-size:11pt;}"
         "QPushButton:checked{border-width:3px; border-color:#FFB74D;}"},
 
-        {warning, "QPushButton{color: #ffffff; border-style:solid; border-width:3px; border-color:#F0F0F0; background-color:#c05046; font-size:11pt;}"
+        {Dut::warning, "QPushButton{color: #ffffff; border-style:solid; border-width:3px; border-color:#F0F0F0; background-color:#c05046; font-size:11pt;}"
         "QPushButton:checked{border-width:3px; border-color:#FFB74D;}"}
     };
 
     setCheckable(true);
     setChecked(false);
-    setButtonState(inactive);
+    setButtonState(Dut::inactive);
     setFixedSize(44, 44);
     setText(QString().setNum(_no));
 }
@@ -54,7 +54,7 @@ int DutButton::getPos()
     return _pos;
 }
 
-void DutButton::setButtonState(State state)
+void DutButton::setButtonState(Dut::DutState state)
 {
     _state = state;
     setStyleSheet(_stateStyles[_state]);

@@ -35,8 +35,10 @@ public:
 
     Q_INVOKABLE void addMethod(const QString& name);
     Q_INVOKABLE void addFunctionToGeneralList(const QString& name, const QJSValue& function);
+    Q_INVOKABLE void addFunctionToTestSequence(const QString& name, const QJSValue& function);
     QStringList avaliableSequencesNames() const;
-    QStringList currentMethodFunctionNames() const;
+    QStringList currentMethodGeneralFunctionNames() const;
+    QStringList currentMethodSequenceFunctionNames() const;
 
 public slots:
     void setCurrentMethod(const QString& name);

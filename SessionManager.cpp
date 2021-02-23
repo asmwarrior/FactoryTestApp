@@ -39,3 +39,12 @@ void SessionManager::resetDutList()
     m_dutList.push_back(new Dut(14, 5, 2));
     m_dutList.push_back(new Dut(15, 5, 3));
 }
+
+void SessionManager::uncheckAllDuts()
+{
+    for(auto & dut : m_dutList)
+    {
+        dut->setState(Dut::inactive);
+        dut->setChecked(false);
+    }
+}

@@ -78,6 +78,7 @@ public:
 public slots:
 
     void resetDutList();
+    void uncheckAllDuts();
 
     void setOperatorName(QString operatorName)
     {

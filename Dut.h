@@ -10,7 +10,7 @@ class Dut : public QObject
 
 public:
 
-    enum class DutState {unavaliable, untested, tested, warning};
+    enum DutState {inactive, untested, tested, warning};
     Q_ENUM(DutState)
 
     Q_PROPERTY(DutState state WRITE setState READ getState)
@@ -101,11 +101,11 @@ public slots:
 
 private:
 
-    DutState m_state = DutState::unavaliable;
+    DutState m_state = DutState::inactive;
     QString m_id;
     int m_no;
     int m_testPanel;
     int m_pos;
-    bool m_checked;
+    bool m_checked = true;
     QStringList m_errorList;
 };

@@ -22,6 +22,7 @@ set(SOURCES
     TestMethodManager.cpp
     JLinkManager.cpp
     Logger.cpp
+    TestClient.cpp
     RailtestClient.cpp
     SlipClient.cpp
     TestFixtureWidget.cpp

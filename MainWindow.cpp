@@ -254,7 +254,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_selectMetodBox, &QComboBox::currentTextChanged, [=]()
     {
         _testFunctionsListWidget->clear();
-        _testFunctionsListWidget->addItems(_testSequenceManager->currentMethodFunctionNames());
+        _testFunctionsListWidget->addItems(_testSequenceManager->currentMethodGeneralFunctionNames());
         if(_testFunctionsListWidget->count() > 0)
         {
             _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
@@ -279,6 +279,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(_newSessionButton, &QPushButton::clicked, this, &MainWindow::startNewSession);
     connect(_finishSessionButton, &QPushButton::clicked, this, &MainWindow::finishSession);
+    connect(_startFullCycleTestingButton, &QPushButton::clicked, this, &MainWindow::startFullCycleTesting);
 
 //    int dutNo = 1;
 //    for(auto & slip : _slipClientList)
@@ -337,7 +338,7 @@ void MainWindow::startNewSession()
     _testSequenceManager->setCurrentMethod(_selectMetodBox->currentText());
 
     _testFunctionsListWidget->setEnabled(true);
-    _testFunctionsListWidget->addItems(_testSequenceManager->currentMethodFunctionNames());
+    _testFunctionsListWidget->addItems(_testSequenceManager->currentMethodGeneralFunctionNames());
     if(_testFunctionsListWidget->count() > 0)
     {
         _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
@@ -351,6 +352,7 @@ void MainWindow::startNewSession()
 
     _actionHintWidget->showNormalHint(HINT_CHOOSE_METHOD);
     _sessionInfoWidget->update();
+    _testFixtureWidget->refreshButtonsState();
 
     if(!_operatorList.contains(_session->getOperatorName(), Qt::CaseInsensitive))
     {
@@ -371,6 +373,7 @@ void MainWindow::finishSession()
     _session->setStartTime("");
     _session->setBatchNumber("");
     _session->setBatchInfo("");
+    _session->uncheckAllDuts();
 
     _selectMetodBox->clear();
     _selectMetodBox->setEnabled(false);
@@ -391,13 +394,14 @@ void MainWindow::finishSession()
 
     _actionHintWidget->showNormalHint(HINT_START);
     _sessionInfoWidget->update();
+    _testFixtureWidget->refreshButtonsState();
 }
 
 void MainWindow::startFullCycleTesting()
 {
-    for (auto & funcName : _testSequenceManager->currentMethodFunctionNames())
+    for (auto & funcName : _testSequenceManager->currentMethodSequenceFunctionNames())
     {
-        _testSequenceManager->runTestFunction(funcName);
+        qDebug() << funcName;
     }
 }
 

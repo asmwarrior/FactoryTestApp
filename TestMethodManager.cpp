@@ -27,10 +27,21 @@ QStringList TestMethodManager::avaliableSequencesNames() const
     return _methods.keys();
 }
 
-QStringList TestMethodManager::currentMethodFunctionNames() const
+QStringList TestMethodManager::currentMethodGeneralFunctionNames() const
 {
     QStringList names;
     for(auto & i : _methods[_currentMethod].generalFunctionList)
+    {
+        names.push_back(i.functionName);
+    }
+
+    return names;
+}
+
+QStringList TestMethodManager::currentMethodSequenceFunctionNames() const
+{
+    QStringList names;
+    for(auto & i : _methods[_currentMethod].testSequenceFunctionList)
     {
         names.push_back(i.functionName);
     }
@@ -53,4 +64,9 @@ void TestMethodManager::runTestFunction(const QString &name, const QJSValueList 
 void TestMethodManager::addFunctionToGeneralList(const QString &name, const QJSValue &function)
 {
     _methods[_currentMethod].generalFunctionList.push_back({name, function});
+}
+
+void TestMethodManager::addFunctionToTestSequence(const QString &name, const QJSValue &function)
+{
+    _methods[_currentMethod].testSequenceFunctionList.push_back({name, function});
 }

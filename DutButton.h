@@ -4,13 +4,13 @@
 #include <QPushButton>
 #include <QMap>
 
+#include "Dut.h"
+
 class DutButton : public QPushButton
 {
     Q_OBJECT
 
 public:
-
-    enum State {unavaliable, inactive, untested, tested, warning};
 
     explicit DutButton(int no, int panelNo, int pos, QWidget *parent = nullptr);
 
@@ -26,11 +26,11 @@ signals:
 
 public slots:
 
-    void setButtonState(State state);
+    void setButtonState(Dut::DutState state);
 
 private:
 
-    State _state;
+    Dut::DutState _state;
     QMap<int, QString> _stateStyles;
     int _no;
     int _testPanelNo;
