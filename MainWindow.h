@@ -46,8 +46,8 @@ private:
     QJSValue runScript(const QString& scriptName, const QJSValueList& args);
 
     //QString _workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
-    QString _workDirectory = QDir(".").absolutePath(); //For test version
-//    QString _workDirectory = QDir("../..").absolutePath(); //For development
+//    QString _workDirectory = QDir(".").absolutePath(); //For test version
+    QString _workDirectory = QDir("../..").absolutePath(); //For development
     QSettings* _settings;
     QJSEngine* _scriptEngine;
     SessionManager* _session;

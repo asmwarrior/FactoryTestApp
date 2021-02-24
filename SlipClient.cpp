@@ -1,6 +1,7 @@
 #include "SlipClient.h"
 
 #include <QCoreApplication>
+#include <QTime>
 #include <QDebug>
 
 static constexpr char
@@ -44,29 +45,9 @@ static const quint16 _crc_ccitt_lut[] = {
 };
 
 SlipClient::SlipClient(QSerialPort &serial, SessionManager* session, QObject *parent)
-    : QObject(parent), m_serialPort(serial), _session(session), m_frameCnt(0)
+    : QObject(parent), _session(session), m_serialPort(serial), m_frameCnt(0)
 {
-//    connect(&m_serialPort, &QSerialPort::aboutToClose, this, &SlipClient::aboutToClose);
-//    connect(this, &SlipClient::packetReceived, this, &SlipClient::onSlipPacketReceived);
 
-//    connect(this, &SlipClient::sendDubugString, this, &SlipClient::on_sendDubugString);
-//    connect(this, &SlipClient::reset, this, &SlipClient::on_reset);
-    //connect(this, &SlipClient::switchSWD, this, &SlipClient::on_switchSWD);
-//    connect(this, &SlipClient::powerOn, this, &SlipClient::on_powerOn);
-//    connect(this, &SlipClient::powerOff, this, &SlipClient::on_powerOff);
-//    connect(this, &SlipClient::readDIN, this, &SlipClient::on_readDIN);
-//    connect(this, &SlipClient::setDOUT, this, &SlipClient::on_setDOUT);
-//    connect(this, &SlipClient::clearDOUT, this, &SlipClient::on_clearDOUT);
-//    connect(this, &SlipClient::readCSA, this, &SlipClient::on_readCSA);
-//    connect(this, &SlipClient::readAIN, this, &SlipClient::on_readAIN);
-//    connect(this, &SlipClient::configDebugSerial, this, &SlipClient::on_configDebugSerial);
-//    connect(this, &SlipClient::DaliOn, this, &SlipClient::on_DaliOn);
-//    connect(this, &SlipClient::DaliOff, this, &SlipClient::on_DaliOff);
-//    connect(this, &SlipClient::readDaliADC, this, &SlipClient::on_readDaliADC);
-//    connect(this, &SlipClient::readDinADC, this, &SlipClient::on_readDinADC);
-//    connect(this, &SlipClient::read24V, this, &SlipClient::on_read24V);
-//    connect(this, &SlipClient::read3V, this, &SlipClient::on_read3V);
-//    connect(this, &SlipClient::readTemperature, this, &SlipClient::on_readTemperature);
 }
 
 SlipClient::~SlipClient()
@@ -577,34 +558,6 @@ void SlipClient::on_readTemperature()
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::onSerialPortReadyRead() Q_DECL_NOTHROW
-{
-    while (m_serialPort.bytesAvailable())
-    {
-        QByteArray buffer = m_serialPort.readAll();
-
-        foreach (char ch, buffer)
-            if (ch == END_SLIP_OCTET)
-                if (m_frameStarted)
-                {
-                    if (m_recvBuffer.size() >= MIN_FRAME_SIZE)
-                    {
-                        decodeFrame();
-                        m_frameStarted = false;
-                    }
-                    m_recvBuffer.clear();
-                }
-                else
-                {
-                   m_frameStarted = true;
-                   m_recvBuffer.clear();
-                }
-            else
-                if (m_frameStarted)
-                    m_recvBuffer.append(ch);
-    }
-}
-
 void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
 {
     switch (channel)
@@ -654,19 +607,19 @@ void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
             _logger->logInfo(frame);
             break;
     }
-
-    //emit commandFinished();
 }
 
 void SlipClient::processResponsePacket()
 {
-    //thread()->sleep(500);
+
+    QTime expire = QTime::currentTime().addMSecs(1000);
 
     while (m_serialPort.bytesAvailable())
     {
         QByteArray buffer = m_serialPort.readAll();
 
         foreach (char ch, buffer)
+        {
             if (ch == END_SLIP_OCTET)
                 if (m_frameStarted)
                 {
@@ -679,11 +632,18 @@ void SlipClient::processResponsePacket()
                 }
                 else
                 {
-                   m_frameStarted = true;
-                   m_recvBuffer.clear();
+                    m_frameStarted = true;
+                    m_recvBuffer.clear();
                 }
             else
                 if (m_frameStarted)
                     m_recvBuffer.append(ch);
+        }
+
+        if(QTime::currentTime() > expire)
+        {
+            _logger->logError("Too long response from serial port!");
+            break;
+        }
     }
 }

@@ -9,14 +9,7 @@
 RailtestClient::RailtestClient(QSerialPort& serial, QSettings *settings, SessionManager *session, QObject *parent)
     : QObject(parent), _settings(settings), _session(session), m_serial(serial)
 {
-    connect(this, &RailtestClient::waitCommandPrompt, this, &RailtestClient::on_waitCommandPrompt);
-    connect(this, &RailtestClient::syncCommand, this, &RailtestClient::on_syncCommand);
-    //connect(this, &RailtestClient::readChipId, this, &RailtestClient::on_readChipId);
-    connect(this, &RailtestClient::testRadio, this, &RailtestClient::on_testRadio);
-    connect(this, &RailtestClient::testAccelerometer, this, &RailtestClient::on_testAccelerometer);
-    connect(this, &RailtestClient::testLightSensor, this, &RailtestClient::on_testLightSensor);
-    connect(this, &RailtestClient::testDALI, this, &RailtestClient::on_testDALI);
-    connect(this, &RailtestClient::testGNSS, this, &RailtestClient::on_testGNSS);
+
 }
 
 RailtestClient::~RailtestClient()
@@ -64,14 +57,14 @@ QVariantList RailtestClient::on_syncCommand(const QByteArray &cmd, const QByteAr
     if (!m_serial.isOpen())
         return QVariantList();
 
-    emit commandStarted();
-
     m_syncCommand = cmd;
     m_syncReplies.clear();
 
     QTime expire = QTime::currentTime().addMSecs(timeout);
 
     m_serial.write(cmd + " " + args + "\r\n");
+    processResponse();
+
     while (QTime::currentTime() <= expire)
     {
         QCoreApplication::processEvents();
@@ -88,7 +81,7 @@ QVariantList RailtestClient::on_syncCommand(const QByteArray &cmd, const QByteAr
     return m_syncReplies;
 }
 
-void RailtestClient::readChipId()
+void RailtestClient::on_readChipId()
 {
     qDebug() << "on_readChipId called";
     auto reply = on_syncCommand("getmemw", "0x0FE081F0 2");
@@ -219,7 +212,7 @@ void RailtestClient::on_testAccelerometer()
 void RailtestClient::on_testLightSensor()
 {
     _logger->logInfo("Testing Light Sensor...");
-    this->syncCommand("lsen");
+    this->on_syncCommand("lsen");
     QThread::sleep(1);
 
     auto reply = this->on_syncCommand("lsen");
@@ -298,8 +291,8 @@ void RailtestClient::on_testDALI()
             _logger->logError("Wrong reply to DALI status command!");
         }
 
-    this->syncCommand("dali", "0xFE00 16 0 0");
-    this->syncCommand("dlpw", "0");
+    this->on_syncCommand("dali", "0xFE00 16 0 0");
+    this->on_syncCommand("dlpw", "0");
     _logger->logInfo("DALI is OK.");
 }
 
@@ -354,6 +347,29 @@ void RailtestClient::onRfReplyReceived(QString id, QVariantMap params)
     }
 }
 
+void RailtestClient::processResponse()
+{
+    while (m_serial.bytesAvailable())
+        m_recvBuffer += m_serial.readAll();
+
+    int idx = m_recvBuffer.indexOf("\r\n");
+
+    while (idx != -1)
+    {
+        auto reply = m_recvBuffer.left(idx);
+
+        decodeReply(reply);
+
+        m_recvBuffer = m_recvBuffer.mid(idx + 2);
+        idx = m_recvBuffer.indexOf("\r\n");
+    }
+
+    if (m_recvBuffer == "> ")
+    {
+        m_syncCommand.clear();
+    }
+}
+
 void RailtestClient::decodeReply(const QByteArray &reply)
 {
     if (reply.startsWith("{{(") && reply.endsWith("}}"))
@@ -396,29 +412,5 @@ void RailtestClient::decodeReply(const QByteArray &reply)
             m_syncReplies.push_back(decodedParams);
 
         return;
-    }
-}
-
-void RailtestClient::onSerialPortReadyRead() Q_DECL_NOTHROW
-{
-    while (m_serial.bytesAvailable())
-        m_recvBuffer += m_serial.readAll();
-
-    int idx = m_recvBuffer.indexOf("\r\n");
-
-    while (idx != -1)
-    {
-        auto reply = m_recvBuffer.left(idx);
-
-        decodeReply(reply);
-
-        m_recvBuffer = m_recvBuffer.mid(idx + 2);
-        idx = m_recvBuffer.indexOf("\r\n");
-    }
-
-    if (m_recvBuffer == "> ")
-    {
-        m_syncCommand.clear();
-        emit commandFinished();
     }
 }

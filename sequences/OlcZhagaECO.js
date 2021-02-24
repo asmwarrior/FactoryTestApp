@@ -4,8 +4,8 @@ ZhagaECO =
 {
     testCommand: function ()
     {
-        testClientList[0].readCSA(0);
-        //testClientList.forEach(function(item){item.readCSA(0)});
+        //testClientList[0].readCSA(0);
+        testClientList.forEach(function(item){item.readCSA(0)});
     },
 
     testConnection: function ()

@@ -12,8 +12,33 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
 {
     connect(&_serial, &QSerialPort::errorOccurred, this, &TestClient::onSerialPortErrorOccurred);
 
+    connect(this, &TestClient::sendDubugString, &_slip, &SlipClient::on_sendDubugString);
+    connect(this, &TestClient::reset, &_slip, &SlipClient::on_reset);
     connect(this, &TestClient::switchSWD, &_slip, &SlipClient::on_switchSWD);
+    connect(this, &TestClient::powerOn, &_slip, &SlipClient::on_powerOn);
+    connect(this, &TestClient::powerOff, &_slip, &SlipClient::on_powerOff);
+    connect(this, &TestClient::readDIN, &_slip, &SlipClient::on_readDIN);
+    connect(this, &TestClient::setDOUT, &_slip, &SlipClient::on_setDOUT);
+    connect(this, &TestClient::clearDOUT, &_slip, &SlipClient::on_clearDOUT);
     connect(this, &TestClient::readCSA, &_slip, &SlipClient::on_readCSA);
+    connect(this, &TestClient::readAIN, &_slip, &SlipClient::on_readAIN);
+    connect(this, &TestClient::configDebugSerial, &_slip, &SlipClient::on_configDebugSerial);
+    connect(this, &TestClient::DaliOn, &_slip, &SlipClient::on_DaliOn);
+    connect(this, &TestClient::DaliOff, &_slip, &SlipClient::on_DaliOff);
+    connect(this, &TestClient::readDaliADC, &_slip, &SlipClient::on_readDaliADC);
+    connect(this, &TestClient::readDinADC, &_slip, &SlipClient::on_readDinADC);
+    connect(this, &TestClient::read24V, &_slip, &SlipClient::on_read24V);
+    connect(this, &TestClient::read3V, &_slip, &SlipClient::on_read3V);
+    connect(this, &TestClient::readTemperature, &_slip, &SlipClient::on_readTemperature);
+
+    connect(this, &TestClient::waitCommandPrompt, &_rail, &RailtestClient::on_waitCommandPrompt);
+    connect(this, &TestClient::syncCommand, &_rail, &RailtestClient::on_syncCommand);
+    connect(this, &TestClient::readChipId, &_rail, &RailtestClient::on_readChipId);
+    connect(this, &TestClient::testRadio, &_rail, &RailtestClient::on_testRadio);
+    connect(this, &TestClient::testAccelerometer, &_rail, &RailtestClient::on_testAccelerometer);
+    connect(this, &TestClient::testLightSensor, &_rail, &RailtestClient::on_testLightSensor);
+    connect(this, &TestClient::testDALI, &_rail, &RailtestClient::on_testDALI);
+    connect(this, &TestClient::testGNSS, &_rail, &RailtestClient::on_testGNSS);
 }
 
 TestClient::~TestClient()

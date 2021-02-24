@@ -58,36 +58,7 @@ public slots:
     void on_readTemperature();
 
     void sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW;
-    void onSerialPortReadyRead() Q_DECL_NOTHROW;
     void onSlipPacketReceived(quint8 channel, QByteArray frame) Q_DECL_NOTHROW;
-
-signals:
-
-//    void commandStarted();
-//    void commandFinished();
-
-    void opened();
-    void aboutToClose();
-    void packetReceived(quint8 channel, QByteArray frame);
-
-//    void sendDubugString(int channel, const QByteArray& string);
-//    void reset();
-//    void switchSWD(int DUT);
-//    void powerOn(int DUT);
-//    void powerOff(int DUT);
-//    void readDIN(int DUT, int DIN);
-//    void setDOUT(int DUT, int DOUT);
-//    void clearDOUT(int DUT, int DOUT);
-//    void readCSA(int gain);
-//    void readAIN(int DUT, int AIN, int gain);
-//    void configDebugSerial(int DUT, int baudRate = QSerialPort::Baud115200, unsigned char bits = QSerialPort::Data8, unsigned char parity = QSerialPort::NoParity, unsigned char stopBits = QSerialPort::OneStop);
-//    void DaliOn();
-//    void DaliOff();
-//    void readDaliADC();
-//    void readDinADC(int DUT, int DIN);
-//    void read24V();
-//    void read3V();
-//    void readTemperature();
 
 private:
 

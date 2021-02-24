@@ -35,6 +35,7 @@ private slots:
 
 signals:
 
+    //Slip commands
     void sendDubugString(int channel, const QByteArray& string);
     void reset();
     void switchSWD(int DUT);
@@ -53,6 +54,16 @@ signals:
     void read24V();
     void read3V();
     void readTemperature();
+
+    //Railtest commands
+    void waitCommandPrompt(int timeout = 1000);
+    void syncCommand(const QByteArray &cmd, const QByteArray &args = QByteArray(), int timeout = 5000);
+    void readChipId();
+    void testRadio();
+    void testAccelerometer();
+    void testLightSensor();
+    void testDALI();
+    void testGNSS();
 
 private:
 
