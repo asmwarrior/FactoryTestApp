@@ -8,6 +8,7 @@
 #include <QMutex>
 #include <QtEndian>
 
+#include "SessionManager.h"
 #include "SlipProtocol.h"
 #include "Logger.h"
 
@@ -17,11 +18,12 @@ class SlipClient : public QObject
 
 public:
 
-    explicit SlipClient(QSerialPort& serial, QObject *parent = Q_NULLPTR);
+    explicit SlipClient(QSerialPort& serial, SessionManager* session, QObject *parent = Q_NULLPTR);
 
     ~SlipClient() Q_DECL_OVERRIDE;
 
     void setLogger(Logger* logger) {_logger = logger;}
+    void setDutsNumbers(QList<int> numbers);
 
     void setPort(const QString &name,
                  qint32 baudRate = QSerialPort::Baud115200,
@@ -38,7 +40,7 @@ public slots:
 
     void on_sendDubugString(int channel, const QByteArray& string);
     void on_reset();
-    void switchSWD(const QVariantList& args);
+    void on_switchSWD(int DUT);
     void on_powerOn(int DUT);
     void on_powerOff(int DUT);
     void on_readDIN(int DUT, int DIN);
@@ -61,35 +63,40 @@ public slots:
 
 signals:
 
-    void commandStarted();
-    void commandFinished();
+//    void commandStarted();
+//    void commandFinished();
 
     void opened();
     void aboutToClose();
     void packetReceived(quint8 channel, QByteArray frame);
 
-    void sendDubugString(int channel, const QByteArray& string);
-    void reset();
-    //void switchSWD(int DUT);
-    void powerOn(int DUT);
-    void powerOff(int DUT);
-    void readDIN(int DUT, int DIN);
-    void setDOUT(int DUT, int DOUT);
-    void clearDOUT(int DUT, int DOUT);
-    void readCSA(int gain);
-    void readAIN(int DUT, int AIN, int gain);
-    void configDebugSerial(int DUT, int baudRate = QSerialPort::Baud115200, unsigned char bits = QSerialPort::Data8, unsigned char parity = QSerialPort::NoParity, unsigned char stopBits = QSerialPort::OneStop);
-    void DaliOn();
-    void DaliOff();
-    void readDaliADC();
-    void readDinADC(int DUT, int DIN);
-    void read24V();
-    void read3V();
-    void readTemperature();
+//    void sendDubugString(int channel, const QByteArray& string);
+//    void reset();
+//    void switchSWD(int DUT);
+//    void powerOn(int DUT);
+//    void powerOff(int DUT);
+//    void readDIN(int DUT, int DIN);
+//    void setDOUT(int DUT, int DOUT);
+//    void clearDOUT(int DUT, int DOUT);
+//    void readCSA(int gain);
+//    void readAIN(int DUT, int AIN, int gain);
+//    void configDebugSerial(int DUT, int baudRate = QSerialPort::Baud115200, unsigned char bits = QSerialPort::Data8, unsigned char parity = QSerialPort::NoParity, unsigned char stopBits = QSerialPort::OneStop);
+//    void DaliOn();
+//    void DaliOff();
+//    void readDaliADC();
+//    void readDinADC(int DUT, int DIN);
+//    void read24V();
+//    void read3V();
+//    void readTemperature();
 
 private:
 
+    void processResponsePacket();
+
+    SessionManager* _session;
     Logger* _logger;
+    QList<int> _dutsNumbers;
+
     QSerialPort& m_serialPort;
     bool m_frameStarted;
     QByteArray m_recvBuffer;

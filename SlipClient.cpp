@@ -43,35 +43,40 @@ static const quint16 _crc_ccitt_lut[] = {
     0x2e93, 0x3eb2, 0x0ed1, 0x1ef0
 };
 
-SlipClient::SlipClient(QSerialPort &serial, QObject *parent)
-    : QObject(parent), m_serialPort(serial), m_frameCnt(0)
+SlipClient::SlipClient(QSerialPort &serial, SessionManager* session, QObject *parent)
+    : QObject(parent), m_serialPort(serial), _session(session), m_frameCnt(0)
 {
-    connect(&m_serialPort, &QSerialPort::aboutToClose, this, &SlipClient::aboutToClose);
-    connect(this, &SlipClient::packetReceived, this, &SlipClient::onSlipPacketReceived);
+//    connect(&m_serialPort, &QSerialPort::aboutToClose, this, &SlipClient::aboutToClose);
+//    connect(this, &SlipClient::packetReceived, this, &SlipClient::onSlipPacketReceived);
 
-    connect(this, &SlipClient::sendDubugString, this, &SlipClient::on_sendDubugString);
-    connect(this, &SlipClient::reset, this, &SlipClient::on_reset);
+//    connect(this, &SlipClient::sendDubugString, this, &SlipClient::on_sendDubugString);
+//    connect(this, &SlipClient::reset, this, &SlipClient::on_reset);
     //connect(this, &SlipClient::switchSWD, this, &SlipClient::on_switchSWD);
-    connect(this, &SlipClient::powerOn, this, &SlipClient::on_powerOn);
-    connect(this, &SlipClient::powerOff, this, &SlipClient::on_powerOff);
-    connect(this, &SlipClient::readDIN, this, &SlipClient::on_readDIN);
-    connect(this, &SlipClient::setDOUT, this, &SlipClient::on_setDOUT);
-    connect(this, &SlipClient::clearDOUT, this, &SlipClient::on_clearDOUT);
-    connect(this, &SlipClient::readCSA, this, &SlipClient::on_readCSA);
-    connect(this, &SlipClient::readAIN, this, &SlipClient::on_readAIN);
-    connect(this, &SlipClient::configDebugSerial, this, &SlipClient::on_configDebugSerial);
-    connect(this, &SlipClient::DaliOn, this, &SlipClient::on_DaliOn);
-    connect(this, &SlipClient::DaliOff, this, &SlipClient::on_DaliOff);
-    connect(this, &SlipClient::readDaliADC, this, &SlipClient::on_readDaliADC);
-    connect(this, &SlipClient::readDinADC, this, &SlipClient::on_readDinADC);
-    connect(this, &SlipClient::read24V, this, &SlipClient::on_read24V);
-    connect(this, &SlipClient::read3V, this, &SlipClient::on_read3V);
-    connect(this, &SlipClient::readTemperature, this, &SlipClient::on_readTemperature);
+//    connect(this, &SlipClient::powerOn, this, &SlipClient::on_powerOn);
+//    connect(this, &SlipClient::powerOff, this, &SlipClient::on_powerOff);
+//    connect(this, &SlipClient::readDIN, this, &SlipClient::on_readDIN);
+//    connect(this, &SlipClient::setDOUT, this, &SlipClient::on_setDOUT);
+//    connect(this, &SlipClient::clearDOUT, this, &SlipClient::on_clearDOUT);
+//    connect(this, &SlipClient::readCSA, this, &SlipClient::on_readCSA);
+//    connect(this, &SlipClient::readAIN, this, &SlipClient::on_readAIN);
+//    connect(this, &SlipClient::configDebugSerial, this, &SlipClient::on_configDebugSerial);
+//    connect(this, &SlipClient::DaliOn, this, &SlipClient::on_DaliOn);
+//    connect(this, &SlipClient::DaliOff, this, &SlipClient::on_DaliOff);
+//    connect(this, &SlipClient::readDaliADC, this, &SlipClient::on_readDaliADC);
+//    connect(this, &SlipClient::readDinADC, this, &SlipClient::on_readDinADC);
+//    connect(this, &SlipClient::read24V, this, &SlipClient::on_read24V);
+//    connect(this, &SlipClient::read3V, this, &SlipClient::on_read3V);
+//    connect(this, &SlipClient::readTemperature, this, &SlipClient::on_readTemperature);
 }
 
 SlipClient::~SlipClient()
 {
 
+}
+
+void SlipClient::setDutsNumbers(QList<int> numbers)
+{
+    _dutsNumbers = numbers;
 }
 
 void SlipClient::setPort(const QString &name, qint32 baudRate, QSerialPort::DataBits dataBits,
@@ -122,7 +127,7 @@ quint8 SlipClient::nextFrameId() Q_DECL_NOTHROW
 
 void SlipClient::sendPacket(quint8 channel, const QByteArray &frame) Q_DECL_NOTHROW
 {
-    emit commandStarted();
+    //emit commandStarted();
     sendFrame(channel, frame);
 }
 
@@ -159,6 +164,9 @@ void SlipClient::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
 
     // Write encoded frame to serial port.
     m_serialPort.write(encodedBuffer);
+    m_serialPort.waitForBytesWritten();
+
+    processResponsePacket();
 }
 
 void SlipClient::cleanup() Q_DECL_NOTHROW
@@ -230,7 +238,8 @@ void SlipClient::decodeFrame() Q_DECL_NOTHROW
     }
 
     // Frame received successfully.
-    emit packetReceived(decodedBuffer.at(0), decodedBuffer.mid(1, frameSize - 1));
+    //emit packetReceived(decodedBuffer.at(0), decodedBuffer.mid(1, frameSize - 1));
+    onSlipPacketReceived(decodedBuffer.at(0), decodedBuffer.mid(1, frameSize - 1));
 }
 
 void SlipClient::on_sendDubugString(int channel, const QByteArray &string)
@@ -248,9 +257,9 @@ void SlipClient::on_reset()
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void SlipClient::switchSWD(const QVariantList& args)
+void SlipClient::on_switchSWD(int DUT)
 {
-    qDebug() << QString("switchSWD called with arg %1").arg(args.at(0).toUInt());
+    qDebug() << QString("switchSWD called with arg %1").arg(DUT);
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -264,7 +273,7 @@ void SlipClient::switchSWD(const QVariantList& args)
     pkt.h.type = qToBigEndian<uint16_t>(MB_SWITCH_SWD);
     pkt.h.sequence = 1;
     pkt.h.dataLen = 1;
-    pkt.dut = args.at(0).toUInt();
+    pkt.dut = DUT;
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
@@ -646,5 +655,35 @@ void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
             break;
     }
 
-    emit commandFinished();
+    //emit commandFinished();
+}
+
+void SlipClient::processResponsePacket()
+{
+    //thread()->sleep(500);
+
+    while (m_serialPort.bytesAvailable())
+    {
+        QByteArray buffer = m_serialPort.readAll();
+
+        foreach (char ch, buffer)
+            if (ch == END_SLIP_OCTET)
+                if (m_frameStarted)
+                {
+                    if (m_recvBuffer.size() >= MIN_FRAME_SIZE)
+                    {
+                        decodeFrame();
+                        m_frameStarted = false;
+                    }
+                    m_recvBuffer.clear();
+                }
+                else
+                {
+                   m_frameStarted = true;
+                   m_recvBuffer.clear();
+                }
+            else
+                if (m_frameStarted)
+                    m_recvBuffer.append(ch);
+    }
 }

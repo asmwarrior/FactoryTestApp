@@ -14,18 +14,11 @@ class TestClient : public QObject
 
 public:
 
-    enum Mode {idleMode, railMode, slipMode};
-
-    struct Command
-    {
-        QString name;
-        QVariantList args;
-    };
-
-    explicit TestClient(QSettings* settings, QObject *parent = nullptr);
+    explicit TestClient(QSettings* settings, SessionManager* session, QObject *parent = nullptr);
     ~TestClient();
 
     void setLogger(Logger* logger);
+    void setDutsNumbers(QList<int> numbers);
 
     void setPort(const QString &name,
                  qint32 baudRate = QSerialPort::Baud115200,
@@ -36,34 +29,42 @@ public:
     void open();
     void close();
 
-    void setMode(Mode mode) {_mode = mode;}
-
 private slots:
 
-    void onSerialPortReadyRead();
     void onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode);
-    void processCommandQueue();
-    void on_waitCommandsExecTimerTimeout();
-
-public slots:
-
-    void addCommand(const QString& name, const QVariantList& args = {}) {_commands.enqueue({name, args});}
 
 signals:
+
+    void sendDubugString(int channel, const QByteArray& string);
+    void reset();
+    void switchSWD(int DUT);
+    void powerOn(int DUT);
+    void powerOff(int DUT);
+    void readDIN(int DUT, int DIN);
+    void setDOUT(int DUT, int DOUT);
+    void clearDOUT(int DUT, int DOUT);
+    void readCSA(int gain);
+    void readAIN(int DUT, int AIN, int gain);
+    void configDebugSerial(int DUT, int baudRate = QSerialPort::Baud115200, unsigned char bits = QSerialPort::Data8, unsigned char parity = QSerialPort::NoParity, unsigned char stopBits = QSerialPort::OneStop);
+    void DaliOn();
+    void DaliOff();
+    void readDaliADC();
+    void readDinADC(int DUT, int DIN);
+    void read24V();
+    void read3V();
+    void readTemperature();
 
 private:
 
     QSettings* _settings;
+    SessionManager* _session;
     Logger* _logger;
 
-    Mode _mode = idleMode;
+    QList<int> _dutsNumbers;
+
     QSerialPort _serial;
     RailtestClient _rail;
     SlipClient _slip;
-
-    QQueue<Command> _commands;
-    QTimer* _processCommandsTimer;
-    QTimer* _waitCommandsExecTimer;
 };
 
 #endif // TESTCLIENT_H

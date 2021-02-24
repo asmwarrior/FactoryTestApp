@@ -2,33 +2,23 @@
 
 #include <QTimer>
 
-TestClient::TestClient(QSettings *settings, QObject *parent)
+TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *parent)
     : QObject(parent),
       _settings(settings),
+      _session(session),
       _serial(this),
-      _rail(_serial, settings, this),
-      _slip(_serial, this)
+      _rail(_serial, settings, session, this),
+      _slip(_serial, session, this)
 {
-    connect(&_serial, &QSerialPort::readyRead, this, &TestClient::onSerialPortReadyRead);
     connect(&_serial, &QSerialPort::errorOccurred, this, &TestClient::onSerialPortErrorOccurred);
 
-    connect(&_rail, &RailtestClient::commandStarted, [this](){setMode(railMode);});
-    connect(&_rail, &RailtestClient::commandFinished, [this](){setMode(idleMode); _waitCommandsExecTimer->stop();});
-    connect(&_slip, &SlipClient::commandStarted, [this](){setMode(slipMode);});
-    connect(&_slip, &SlipClient::commandFinished, [this](){setMode(idleMode);; _waitCommandsExecTimer->stop();});
-
-    _processCommandsTimer = new QTimer(this);
-    connect(_processCommandsTimer, &QTimer::timeout, this, &TestClient::processCommandQueue);
-    _processCommandsTimer->start(200);
-
-    _waitCommandsExecTimer = new QTimer(this);
-    connect(_waitCommandsExecTimer, &QTimer::timeout, this, &TestClient::on_waitCommandsExecTimerTimeout);
+    connect(this, &TestClient::switchSWD, &_slip, &SlipClient::on_switchSWD);
+    connect(this, &TestClient::readCSA, &_slip, &SlipClient::on_readCSA);
 }
 
 TestClient::~TestClient()
 {
-    _processCommandsTimer->stop();
-    _waitCommandsExecTimer->stop();
+
 }
 
 void TestClient::setLogger(Logger *logger)
@@ -36,6 +26,12 @@ void TestClient::setLogger(Logger *logger)
     _logger = logger;
     _rail.setLogger(logger);
     _slip.setLogger(logger);
+}
+
+void TestClient::setDutsNumbers(QList<int> numbers)
+{
+    _rail.setDutsNumbers(numbers);
+    _slip.setDutsNumbers(numbers);
 }
 
 void TestClient::setPort(const QString &name, qint32 baudRate, QSerialPort::DataBits dataBits,
@@ -75,55 +71,8 @@ void TestClient::close()
     }
 }
 
-void TestClient::onSerialPortReadyRead()
-{
-    switch (_mode)
-    {
-    case railMode:
-        _rail.onSerialPortReadyRead();
-        break;
-
-    case slipMode:
-        _slip.onSerialPortReadyRead();
-        break;
-
-    case idleMode:
-        break;
-    }
-
-}
-
 void TestClient::onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode)
 {
     if (errorCode != QSerialPort::NoError)
         _logger->logError("Serial port error occurred.");
-}
-
-void TestClient::processCommandQueue()
-{
-    if(_commands.isEmpty() || _mode != Mode::idleMode)
-        return;
-
-    auto command = _commands.dequeue();
-
-    if(command.name == "switch SWD")
-    {
-        setMode(slipMode);
-        _slip.switchSWD(command.args);
-    }
-
-    else if(command.name == "read chip ID")
-    {
-        setMode(railMode);
-        _rail.readChipId();
-    }
-
-    _waitCommandsExecTimer->start(3000);
-}
-
-void TestClient::on_waitCommandsExecTimerTimeout()
-{
-    setMode(idleMode);
-    _waitCommandsExecTimer->stop();
-    _logger->logError("No response to the test command was recieved!");
 }

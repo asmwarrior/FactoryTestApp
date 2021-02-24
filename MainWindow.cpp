@@ -49,7 +49,7 @@ MainWindow::MainWindow(QWidget *parent)
         QJSValue jlink = _scriptEngine->newQObject(newJlink);
         _scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
 
-        auto testClient = new TestClient(_settings);
+        auto testClient = new TestClient(_settings, _session);
         testClient->setLogger(_logger);
         testClient->setPort(_settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
         _testClientList.push_back(testClient);
@@ -57,7 +57,18 @@ MainWindow::MainWindow(QWidget *parent)
         _scriptEngine->globalObject().property("testClientList").setProperty(i, _scriptEngine->newQObject(testClient));
 
         _threads[i]->start();
-    }   
+    }
+
+    _testClientList[0]->setDutsNumbers({1, 2, 3});
+    _testClientList[1]->setDutsNumbers({4, 5, 6});
+    _testClientList[2]->setDutsNumbers({7, 8, 9});
+    _testClientList[3]->setDutsNumbers({10, 11, 12});
+    _testClientList[4]->setDutsNumbers({13, 14, 15});
+
+//    for(auto & test : _testClientList)
+//    {
+//        test->switchSWD(1);
+//    }
 
 //--- GUI Layouts---
     QVBoxLayout* mainLayout = new QVBoxLayout;

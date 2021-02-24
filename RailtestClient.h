@@ -7,6 +7,7 @@
 #include <QVariant>
 #include <QSettings>
 
+#include "SessionManager.h"
 #include "Logger.h"
 
 class RailtestClient : public QObject
@@ -15,10 +16,11 @@ class RailtestClient : public QObject
 
 public:
 
-    explicit RailtestClient(QSerialPort& serial, QSettings* settings, QObject *parent = Q_NULLPTR);
+    explicit RailtestClient(QSerialPort& serial, QSettings* settings, SessionManager* session, QObject *parent = Q_NULLPTR);
     virtual ~RailtestClient();
 
     void setLogger(Logger* logger) {_logger = logger;}
+    void setDutsNumbers(QList<int> numbers);
 
     void setPort(const QString &portName);
     Q_INVOKABLE QByteArray currentChipId() const {return _currentChipId;}
@@ -31,7 +33,7 @@ public slots:
 
     bool on_waitCommandPrompt(int timeout = 1000);
     QVariantList on_syncCommand(const QByteArray &cmd, const QByteArray &args = QByteArray(), int timeout = 5000);
-    void on_readChipId();
+    void readChipId();
     void on_testRadio();
     void on_testAccelerometer();
     void on_testLightSensor();
@@ -48,7 +50,7 @@ signals:
 
     void waitCommandPrompt(int timeout = 1000);
     void syncCommand(const QByteArray &cmd, const QByteArray &args = QByteArray(), int timeout = 5000);
-    void readChipId();
+    //void readChipId();
     void testRadio();
     void testAccelerometer();
     void testLightSensor();
@@ -60,7 +62,9 @@ private:
     void decodeReply(const QByteArray &reply);
 
     QSettings* _settings;
+    SessionManager* _session;
     Logger* _logger;
+    QList<int> _dutsNumbers;
 
     QSerialPort& m_serial;
     QByteArray m_recvBuffer;

@@ -6,12 +6,12 @@
 #include <QTime>
 #include <QThread>
 
-RailtestClient::RailtestClient(QSerialPort& serial, QSettings *settings, QObject *parent)
-    : QObject(parent), _settings(settings), m_serial(serial)
+RailtestClient::RailtestClient(QSerialPort& serial, QSettings *settings, SessionManager *session, QObject *parent)
+    : QObject(parent), _settings(settings), _session(session), m_serial(serial)
 {
     connect(this, &RailtestClient::waitCommandPrompt, this, &RailtestClient::on_waitCommandPrompt);
     connect(this, &RailtestClient::syncCommand, this, &RailtestClient::on_syncCommand);
-    connect(this, &RailtestClient::readChipId, this, &RailtestClient::on_readChipId);
+    //connect(this, &RailtestClient::readChipId, this, &RailtestClient::on_readChipId);
     connect(this, &RailtestClient::testRadio, this, &RailtestClient::on_testRadio);
     connect(this, &RailtestClient::testAccelerometer, this, &RailtestClient::on_testAccelerometer);
     connect(this, &RailtestClient::testLightSensor, this, &RailtestClient::on_testLightSensor);
@@ -22,6 +22,11 @@ RailtestClient::RailtestClient(QSerialPort& serial, QSettings *settings, QObject
 RailtestClient::~RailtestClient()
 {
 
+}
+
+void RailtestClient::setDutsNumbers(QList<int> numbers)
+{
+    _dutsNumbers = numbers;
 }
 
 void RailtestClient::setPort(const QString &portName)
@@ -83,7 +88,7 @@ QVariantList RailtestClient::on_syncCommand(const QByteArray &cmd, const QByteAr
     return m_syncReplies;
 }
 
-void RailtestClient::on_readChipId()
+void RailtestClient::readChipId()
 {
     qDebug() << "on_readChipId called";
     auto reply = on_syncCommand("getmemw", "0x0FE081F0 2");

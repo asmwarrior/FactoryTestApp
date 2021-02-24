@@ -4,8 +4,8 @@ ZhagaECO =
 {
     testCommand: function ()
     {
-        testClientList[0].addCommand("switch SWD", [1]);
-        testClientList[0].addCommand("read chip ID");
+        testClientList[0].readCSA(0);
+        //testClientList.forEach(function(item){item.readCSA(0)});
     },
 
     testConnection: function ()
