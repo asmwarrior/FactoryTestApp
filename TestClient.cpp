@@ -12,6 +12,8 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
 {
     connect(&_serial, &QSerialPort::errorOccurred, this, &TestClient::onSerialPortErrorOccurred);
 
+    connect(this, &TestClient::checkBoardCurrent, &_slip, &SlipClient::on_checkBoardCurrent);
+
     connect(this, &TestClient::sendDubugString, &_slip, &SlipClient::on_sendDubugString);
     connect(this, &TestClient::reset, &_slip, &SlipClient::on_reset);
     connect(this, &TestClient::switchSWD, &_slip, &SlipClient::on_switchSWD);
@@ -81,10 +83,15 @@ void TestClient::setPort(const QString &name, qint32 baudRate, QSerialPort::Data
 void TestClient::open()
 {
     if (_serial.isOpen())
+    {
+        qDebug() << "Already opened " << _serial.portName();
         _serial.close();
+    }
 
     if (!_serial.open(QSerialPort::ReadWrite))
         _logger->logError(_serial.errorString());
+    else
+        readCSA(0);
 }
 
 void TestClient::close()

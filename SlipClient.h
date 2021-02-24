@@ -36,7 +36,11 @@ public:
 
     void sendPacket(quint8 channel, const QByteArray &frame) Q_DECL_NOTHROW;
 
+    int getBoardCurrent() const {return _CSA;}
+
 public slots:
+
+    void on_checkBoardCurrent();
 
     void on_sendDubugString(int channel, const QByteArray& string);
     void on_reset();
@@ -63,6 +67,8 @@ public slots:
 private:
 
     void processResponsePacket();
+    void cleanup() Q_DECL_NOTHROW;
+    void decodeFrame() Q_DECL_NOTHROW;
 
     SessionManager* _session;
     Logger* _logger;
@@ -74,8 +80,7 @@ private:
 
     quint8 m_frameCnt;
 
-    void cleanup() Q_DECL_NOTHROW;
-    void decodeFrame() Q_DECL_NOTHROW;
+    int _CSA = 0; //Board current (mA)
 };
 
 #endif // __CAP_MB_SLIP_H__

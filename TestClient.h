@@ -35,6 +35,8 @@ private slots:
 
 signals:
 
+    void checkBoardCurrent();
+
     //Slip commands
     void sendDubugString(int channel, const QByteArray& string);
     void reset();

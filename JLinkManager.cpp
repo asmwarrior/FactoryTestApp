@@ -55,7 +55,6 @@ void JLinkManager::on_establishConnection()
     {
         _state = connectionTested;
         _logger->logSuccess("JLink with S/N: " + _SN + " connected");
-        JLINKARM_Open();
     }
 }
 

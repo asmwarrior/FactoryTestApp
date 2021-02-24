@@ -108,7 +108,6 @@ quint8 SlipClient::nextFrameId() Q_DECL_NOTHROW
 
 void SlipClient::sendPacket(quint8 channel, const QByteArray &frame) Q_DECL_NOTHROW
 {
-    //emit commandStarted();
     sendFrame(channel, frame);
 }
 
@@ -145,7 +144,7 @@ void SlipClient::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
 
     // Write encoded frame to serial port.
     m_serialPort.write(encodedBuffer);
-    m_serialPort.waitForBytesWritten();
+    //m_serialPort.waitForBytesWritten();
 
     processResponsePacket();
 }
@@ -219,8 +218,8 @@ void SlipClient::decodeFrame() Q_DECL_NOTHROW
     }
 
     // Frame received successfully.
-    //emit packetReceived(decodedBuffer.at(0), decodedBuffer.mid(1, frameSize - 1));
-    onSlipPacketReceived(decodedBuffer.at(0), decodedBuffer.mid(1, frameSize - 1));
+    if(decodedBuffer.at(0) == 0) //Cause we send commands only in 0 channel
+        onSlipPacketReceived(decodedBuffer.at(0), decodedBuffer.mid(1, frameSize - 1));
 }
 
 void SlipClient::on_sendDubugString(int channel, const QByteArray &string)
@@ -579,7 +578,13 @@ void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
                             MB_GeneralResult_t *gr = (MB_GeneralResult_t*)pkt;
 
                             gr->errorCode = qFromBigEndian(gr->errorCode);
-                            _logger->logInfo(QString("RESULT: cmd=%1, code=%2.").arg(gr->header.sequence).arg(gr->errorCode));
+                            //_logger->logInfo(QString("RESULT: cmd=%1, code=%2.").arg(gr->header.sequence).arg(gr->errorCode));
+                            switch (gr->header.sequence)
+                            {
+                            case 7:
+                                _CSA = gr->errorCode;
+                                break;
+                            }
                         }
                         break;
 
@@ -596,15 +601,15 @@ void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
             break;
 
         case 1:
-            _logger->logInfo(frame);
+            _logger->logInfo("frame from chanel 1");
             break;
 
         case 2:
-            _logger->logInfo(frame);
+            _logger->logInfo("frame  from chanel 2");
             break;
 
         case 3:
-            _logger->logInfo(frame);
+            _logger->logInfo("frame  from chanel 3");
             break;
     }
 }
@@ -612,7 +617,7 @@ void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
 void SlipClient::processResponsePacket()
 {
 
-    QTime expire = QTime::currentTime().addMSecs(1000);
+    QTime expire = QTime::currentTime().addMSecs(100);
 
     while (m_serialPort.bytesAvailable())
     {
@@ -642,8 +647,17 @@ void SlipClient::processResponsePacket()
 
         if(QTime::currentTime() > expire)
         {
-            _logger->logError("Too long response from serial port!");
+            _logger->logError("Too long response from serial port  " + m_serialPort.portName());
             break;
         }
     }
+}
+
+void SlipClient::on_checkBoardCurrent()
+{
+    on_readCSA(0);
+    if((_CSA < 140) && (_CSA > 110))
+        _logger->logSuccess("Test board on " + m_serialPort.portName() + " works norally");
+    else
+        _logger->logError("Test board on " + m_serialPort.portName() + " do not works norally!");
 }

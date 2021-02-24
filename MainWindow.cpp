@@ -46,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
         newJlink->setSN(_settings->value(QString("JLink/SN" + QString().setNum(i + 1))).toString());
         newJlink->setLogger(_logger);
         _JLinkList.push_back(newJlink);
+        _JLinkList[i]->moveToThread(_threads[i]);
         QJSValue jlink = _scriptEngine->newQObject(newJlink);
         _scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
 
@@ -64,11 +65,6 @@ MainWindow::MainWindow(QWidget *parent)
     _testClientList[2]->setDutsNumbers({7, 8, 9});
     _testClientList[3]->setDutsNumbers({10, 11, 12});
     _testClientList[4]->setDutsNumbers({13, 14, 15});
-
-//    for(auto & test : _testClientList)
-//    {
-//        test->switchSWD(1);
-//    }
 
 //--- GUI Layouts---
     QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -173,7 +169,6 @@ MainWindow::MainWindow(QWidget *parent)
     _startFullCycleTestingButton->setFixedSize(165, 40);
     _startFullCycleTestingButton->setEnabled(false);
     startTestingButtonsLayout->addWidget(_startFullCycleTestingButton);
-    //connect(_startFullCycleTestingButton, SIGNAL(clicked()), this, SLOT(startFullCycleTesting()));
 
     _startSelectedTestButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/checked")), tr("Start Selected Test"), this);
     _startSelectedTestButton->setFixedSize(165, 40);
@@ -282,24 +277,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_newSessionButton, &QPushButton::clicked, this, &MainWindow::startNewSession);
     connect(_finishSessionButton, &QPushButton::clicked, this, &MainWindow::finishSession);
     connect(_startFullCycleTestingButton, &QPushButton::clicked, this, &MainWindow::startFullCycleTesting);
-
-//    int dutNo = 1;
-//    for(auto & slip : _slipClientList)
-//    {
-//        for(int i = 1; i < 4; i++)
-//        {
-//            logger->logInfo(QString("Reading AIN for DUT %1").arg(dutNo));
-//            dutNo++;
-//            slip->readAIN(i, 3, 0);
-//        }
-//    }
 }
 
 MainWindow::~MainWindow()
 {
     for(auto & jlink : _JLinkList)
     {
-        delete jlink;
+        jlink->deleteLater();
     }
 
     for(auto & test : _testClientList)
@@ -360,6 +344,11 @@ void MainWindow::startNewSession()
     for(auto & jlink : _JLinkList)
     {
         jlink->establishConnection();
+    }
+
+    for(auto & testClient : _testClientList)
+    {
+        testClient->checkBoardCurrent();
     }
 }
 
