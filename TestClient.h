@@ -29,6 +29,8 @@ public:
     void open();
     void close();
 
+    Q_INVOKABLE int getDutCount() const {return _dutsNumbers.size();}
+
 private slots:
 
     void onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode);

@@ -281,6 +281,7 @@ void SlipClient::on_powerOn(int DUT)
 
 void SlipClient::on_powerOff(int DUT)
 {
+    qDebug() << "on_powerOff called";
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -581,6 +582,10 @@ void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
                             //_logger->logInfo(QString("RESULT: cmd=%1, code=%2.").arg(gr->header.sequence).arg(gr->errorCode));
                             switch (gr->header.sequence)
                             {
+                            case 2:
+                                qDebug() << gr->errorCode;
+                                break;
+
                             case 7:
                                 _CSA = gr->errorCode;
                                 break;

@@ -2,10 +2,28 @@ testSequenceManager.addMethod("OLC Zhaga ECO");
 
 ZhagaECO =
 {
-    testCommand: function ()
+    dutsPowerOn: function ()
     {
-        //testClientList[0].readCSA(0);
-        testClientList.forEach(function(item){item.readCSA(0)});
+        testClientList.forEach(
+        function(item)
+        {
+            for(var i = 0; i < item.getDutCount(); i++)
+            {
+                item.powerOn(i + 1);
+            }
+        });
+    },
+
+    dutsPowerOff: function ()
+    {
+        testClientList.forEach(
+        function(item)
+        {
+            for(var i = 0; i < item.getDutCount(); i++)
+            {
+                item.powerOff(i + 1);
+            }
+        });
     },
 
     testConnection: function ()
@@ -110,7 +128,8 @@ ZhagaECO =
     }
 }
 
-testSequenceManager.addFunctionToGeneralList("testCommand", ZhagaECO.testCommand);
+testSequenceManager.addFunctionToGeneralList("Supply power to DUTs", ZhagaECO.dutsPowerOn);
+testSequenceManager.addFunctionToGeneralList("Power off DUTs", ZhagaECO.dutsPowerOff);
 testSequenceManager.addFunctionToGeneralList("Test connection to JLink", ZhagaECO.testConnection);
 testSequenceManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
 testSequenceManager.addFunctionToGeneralList("Open and check Railtest Client", ZhagaECO.openRailTestClient);
