@@ -2,6 +2,10 @@
 
 #include <QListWidget>
 #include <QMutexLocker>
+#include <QSettings>
+
+#include "SessionManager.h"
+#include "Database.h"
 
 class Logger : public QObject
 {
@@ -9,7 +13,7 @@ class Logger : public QObject
 
 public:
 
-    explicit Logger(QObject *parent = nullptr);
+    explicit Logger(QSettings* settings, SessionManager* session, QObject *parent = nullptr);
 
     void setLogWidget(QListWidget* widget);
     void setChildProcessLogWidget(QListWidget* widget);
@@ -23,6 +27,10 @@ public slots:
     void logChildProcessOutput(const QString &message);
 
 private:
+
+    QSettings* _settings;
+    SessionManager* _session;
+    DataBase *_db;
 
     QMutex _logMutex;
     QMutex _childProcessLogMutex;

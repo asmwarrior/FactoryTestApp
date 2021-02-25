@@ -2,9 +2,12 @@
 
 #include <QDebug>
 
-Logger::Logger(QObject *parent) : QObject(parent)
+Logger::Logger(QSettings *settings, SessionManager *session, QObject *parent) : QObject(parent), _settings(settings), _session(session)
 {
-
+    //Database
+    _db = new DataBase(_settings, this);
+    _db->connectToDataBase();
+    //_db->insertIntoTable("test", QDateTime::currentDateTime().toString());
 }
 
 void Logger::setLogWidget(QListWidget *widget)

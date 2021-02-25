@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
     _scriptEngine->globalObject().setProperty("session", _scriptEngine->newQObject(_session));
 
     _testSequenceManager = new TestMethodManager(this);
-    _logger = new Logger(this);
+    _logger = new Logger(_settings, _session, this);
     _scriptEngine->globalObject().setProperty("testSequenceManager", _scriptEngine->newQObject(_testSequenceManager));
 
     evaluateScriptFromFile(_workDirectory + "/init.js");
@@ -214,11 +214,6 @@ MainWindow::MainWindow(QWidget *parent)
     _childProcessOutputLogWidget->setFixedHeight(200);
     logLayout->addWidget(_childProcessOutputLogWidget);
     _logger->setChildProcessLogWidget(_childProcessOutputLogWidget);
-
-    //Database
-    _db = new DataBase(_settings, this);
-    _db->connectToDataBase();
-    //_db->insertIntoTable("test", QDateTime::currentDateTime().toString());
 
     //Connections
     connect(_operatorNameEdit, &QLineEdit::textEdited, [=](const QString& text)

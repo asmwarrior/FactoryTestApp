@@ -14,6 +14,8 @@ class TestClient : public QObject
 
 public:
 
+    enum Mode {idleMode, railMode, slipMode};
+
     explicit TestClient(QSettings* settings, SessionManager* session, QObject *parent = nullptr);
     ~TestClient();
 
@@ -72,6 +74,7 @@ signals:
 
 private:
 
+    Mode _mode = idleMode;
     QSettings* _settings;
     SessionManager* _session;
     Logger* _logger;

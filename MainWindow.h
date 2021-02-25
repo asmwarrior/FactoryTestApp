@@ -17,7 +17,6 @@
 #include "TestMethodManager.h"
 #include "Logger.h"
 #include "JLinkManager.h"
-#include "Database.h"
 #include "TestClient.h"
 #include "TestFixtureWidget.h"
 #include "SessionInfoWidget.h"
@@ -60,7 +59,6 @@ private:
 
     QStringList _operatorList;
 
-    DataBase *_db;
     QSqlTableModel  *model;
 
     //--- GUI Elements ------------------------------------------------

@@ -65,8 +65,13 @@ public slots:
     void sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW;
     void onSlipPacketReceived(quint8 channel, QByteArray frame) Q_DECL_NOTHROW;
 
+signals:
+
+    void commandFinished();
+
 private:
 
+    void delay(int msec);
     void cleanup() Q_DECL_NOTHROW;
     void decodeFrame() Q_DECL_NOTHROW;
 
@@ -80,7 +85,6 @@ private:
 
     quint8 m_frameCnt;
 
-    bool _waitForResponse = false;
     int _CSA = 0; //Board current (mA)
 };
 

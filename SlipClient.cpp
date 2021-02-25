@@ -112,72 +112,7 @@ void SlipClient::cleanup() Q_DECL_NOTHROW
     m_recvBuffer.clear();
 }
 
-void SlipClient::decodeFrame() Q_DECL_NOTHROW
-{
-    QByteArray decodedBuffer;
 
-    // Write unescaped buffer.
-    decodedBuffer.reserve(m_recvBuffer.size());
-    for (int i = 0; i < m_recvBuffer.size(); ++i)
-    {
-        char ch = m_recvBuffer.at(i);
-
-        if (ch == ESC_SLIP_OCTET)
-        {
-            ++i;
-            if (i >= m_recvBuffer.size())
-            {
-                _logger->logError("SLIP. Decode frame. Unfinished escape sequence.");
-                return;
-            }
-            switch (m_recvBuffer.at(i))
-            {
-                case END_SUBS_OCTET:
-                    decodedBuffer.append(END_SLIP_OCTET);
-                    break;
-
-                case ESC_SUBS_OCTET:
-                    decodedBuffer.append(ESC_SLIP_OCTET);
-                    break;
-
-                default:
-                    _logger->logError("SLIP. Decode frame. Invalid escape sequence.");
-                    return;
-            }
-        }
-        else
-            decodedBuffer.append(ch);
-    }
-    if (decodedBuffer.size() < MIN_FRAME_SIZE)
-    {
-        _logger->logError("SLIP. Decode frame. Frame too short.");
-        return;
-    }
-
-    // Calculate CRC.
-    int frameSize = decodedBuffer.size() - 2;
-    quint16
-        frameCrc = 0xFFFF,
-        bufferCrc = (quint8)decodedBuffer.at(frameSize + 1) | ((quint16)decodedBuffer.at(frameSize) << 8);
-
-    for (int i = 0; i < frameSize; ++i)
-    {
-        quint8 index = (quint8)decodedBuffer.at(i) ^ (frameCrc >> 8);
-
-        frameCrc = _crc_ccitt_lut[index] ^ (frameCrc << 8);
-    }
-
-    // Check CRC.
-    if (frameCrc != bufferCrc)
-    {
-        _logger->logError("SLIP. Decode frame. Invalid Frame CRC.");
-        return;
-    }
-
-    // Frame received successfully.
-    if(decodedBuffer.at(0) == 0) //Cause we send commands only in 0 channel
-        onSlipPacketReceived(decodedBuffer.at(0), decodedBuffer.mid(1, frameSize - 1));
-}
 
 void SlipClient::on_sendDubugString(int channel, const QByteArray &string)
 {
@@ -554,10 +489,7 @@ void SlipClient::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
     encodedBuffer.append(END_SLIP_OCTET);
 
     // Write encoded frame to serial port.
-
-    _waitForResponse = true;
     m_serialPort.write(encodedBuffer);
-    processResponsePacket();
 }
 
 void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
@@ -613,23 +545,24 @@ void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
             break;
 
         case 1:
-            _logger->logInfo("frame from chanel 1");
+            _logger->logInfo(frame);
             break;
 
         case 2:
-            _logger->logInfo("frame  from chanel 2");
+            _logger->logInfo(frame);
             break;
 
         case 3:
-            _logger->logInfo("frame  from chanel 3");
+            _logger->logInfo(frame);
             break;
     }
 
-    _waitForResponse = false;
+    emit commandFinished();
 }
 
 void SlipClient::processResponsePacket()
 {
+    //m_serialPort.waitForReadyRead();
 
     QTime expire = QTime::currentTime().addMSecs(100);
 
@@ -637,9 +570,6 @@ void SlipClient::processResponsePacket()
     while (m_serialPort.bytesAvailable())
     {
         buffer = m_serialPort.readAll();
-
-//        if(!_waitForResponse)
-//            return;
 
         qDebug() << "Buffer size: " << buffer.size() << "from " << m_serialPort.portName();
 
@@ -674,11 +604,89 @@ void SlipClient::processResponsePacket()
     }
 }
 
+void SlipClient::decodeFrame() Q_DECL_NOTHROW
+{
+    QByteArray decodedBuffer;
+
+    // Write unescaped buffer.
+    decodedBuffer.reserve(m_recvBuffer.size());
+    for (int i = 0; i < m_recvBuffer.size(); ++i)
+    {
+        char ch = m_recvBuffer.at(i);
+
+        if (ch == ESC_SLIP_OCTET)
+        {
+            ++i;
+            if (i >= m_recvBuffer.size())
+            {
+                _logger->logError("SLIP. Decode frame. Unfinished escape sequence.");
+                return;
+            }
+            switch (m_recvBuffer.at(i))
+            {
+                case END_SUBS_OCTET:
+                    decodedBuffer.append(END_SLIP_OCTET);
+                    break;
+
+                case ESC_SUBS_OCTET:
+                    decodedBuffer.append(ESC_SLIP_OCTET);
+                    break;
+
+                default:
+                    _logger->logError("SLIP. Decode frame. Invalid escape sequence.");
+                    return;
+            }
+        }
+        else
+            decodedBuffer.append(ch);
+    }
+    if (decodedBuffer.size() < MIN_FRAME_SIZE)
+    {
+        _logger->logError("SLIP. Decode frame. Frame too short.");
+        return;
+    }
+
+    // Calculate CRC.
+    int frameSize = decodedBuffer.size() - 2;
+    quint16
+        frameCrc = 0xFFFF,
+        bufferCrc = (quint8)decodedBuffer.at(frameSize + 1) | ((quint16)decodedBuffer.at(frameSize) << 8);
+
+    for (int i = 0; i < frameSize; ++i)
+    {
+        quint8 index = (quint8)decodedBuffer.at(i) ^ (frameCrc >> 8);
+
+        frameCrc = _crc_ccitt_lut[index] ^ (frameCrc << 8);
+    }
+
+    // Check CRC.
+    if (frameCrc != bufferCrc)
+    {
+        _logger->logError("SLIP. Decode frame. Invalid Frame CRC.");
+        return;
+    }
+
+    // Frame received successfully.
+    if(decodedBuffer.at(0) == 0) //Cause we send commands only in 0 channel
+        onSlipPacketReceived(decodedBuffer.at(0), decodedBuffer.mid(1, frameSize - 1));
+}
+
 void SlipClient::on_checkBoardCurrent()
 {
     on_readCSA(0);
+    delay(30);
+
     if((_CSA < 140) && (_CSA > 110))
-        _logger->logSuccess("Test board on " + m_serialPort.portName() + "works normally. Current:" + QString().setNum(_CSA));
+        _logger->logSuccess("Test board on " + m_serialPort.portName() + " works normally. Current: " + QString().setNum(_CSA));
     else
-        _logger->logError("Test board on " + m_serialPort.portName() + "do not works normally!. Current:" + QString().setNum(_CSA));
+        _logger->logError("Test board on " + m_serialPort.portName() + " do not works normally!. Current: " + QString().setNum(_CSA));
+}
+
+void SlipClient::delay(int msec)
+{
+    QTime expire = QTime::currentTime().addMSecs(msec);
+    while (QTime::currentTime() <= expire)
+    {
+        QCoreApplication::processEvents();
+    }
 }

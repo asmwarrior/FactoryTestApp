@@ -10,20 +10,33 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
       _rail(_serial, settings, session, this),
       _slip(_serial, session, this)
 {
-    //connect(&_serial, &QSerialPort::readyRead, this, &TestClient::onSerialPortReadyRead);
+    connect(&_serial, &QSerialPort::readyRead, this, &TestClient::onSerialPortReadyRead);
     connect(&_serial, &QSerialPort::errorOccurred, this, &TestClient::onSerialPortErrorOccurred);
 
+    connect(&_slip, &SlipClient::commandFinished, [this](){_mode = idleMode;});
+
+    connect(this, &TestClient::checkBoardCurrent, [this](){_mode = slipMode;});
     connect(this, &TestClient::checkBoardCurrent, &_slip, &SlipClient::on_checkBoardCurrent);
 
     connect(this, &TestClient::sendDubugString, &_slip, &SlipClient::on_sendDubugString);
     connect(this, &TestClient::reset, &_slip, &SlipClient::on_reset);
+
+    connect(this, &TestClient::switchSWD, [this](){_mode = slipMode;});
     connect(this, &TestClient::switchSWD, &_slip, &SlipClient::on_switchSWD);
+
+    connect(this, &TestClient::powerOn, [this](){_mode = slipMode;});
     connect(this, &TestClient::powerOn, &_slip, &SlipClient::on_powerOn);
+
+    connect(this, &TestClient::powerOff, [this](){_mode = slipMode;});
     connect(this, &TestClient::powerOff, &_slip, &SlipClient::on_powerOff);
+
     connect(this, &TestClient::readDIN, &_slip, &SlipClient::on_readDIN);
     connect(this, &TestClient::setDOUT, &_slip, &SlipClient::on_setDOUT);
     connect(this, &TestClient::clearDOUT, &_slip, &SlipClient::on_clearDOUT);
+
+    connect(this, &TestClient::readCSA, [this](){_mode = slipMode;});
     connect(this, &TestClient::readCSA, &_slip, &SlipClient::on_readCSA);
+
     connect(this, &TestClient::readAIN, &_slip, &SlipClient::on_readAIN);
     connect(this, &TestClient::configDebugSerial, &_slip, &SlipClient::on_configDebugSerial);
     connect(this, &TestClient::DaliOn, &_slip, &SlipClient::on_DaliOn);
@@ -93,7 +106,7 @@ void TestClient::open()
         _logger->logError(_serial.errorString());
     else
     {
-        readCSA(0);
+//        readCSA(0);
     }
 }
 
@@ -108,11 +121,23 @@ void TestClient::close()
 
 void TestClient::onSerialPortReadyRead()
 {
-    _slip.processResponsePacket();
+    switch (_mode)
+    {
+    case idleMode:
+        _serial.readAll();
+        break;
+
+    case slipMode:
+        _slip.processResponsePacket();
+        break;
+
+    case railMode:
+        break;
+    }
 }
 
 void TestClient::onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode)
 {
     if (errorCode != QSerialPort::NoError)
-        _logger->logError("Serial port error occurred.");
+        _logger->logError("Serial port error occurred " + QString().setNum(errorCode) + " on port " + _serial.portName());
 }
