@@ -40,6 +40,7 @@ public:
 
 public slots:
 
+    void processResponsePacket();
     void on_checkBoardCurrent();
 
     void on_sendDubugString(int channel, const QByteArray& string);
@@ -66,7 +67,6 @@ public slots:
 
 private:
 
-    void processResponsePacket();
     void cleanup() Q_DECL_NOTHROW;
     void decodeFrame() Q_DECL_NOTHROW;
 
@@ -80,6 +80,7 @@ private:
 
     quint8 m_frameCnt;
 
+    bool _waitForResponse = false;
     int _CSA = 0; //Board current (mA)
 };
 

@@ -10,6 +10,7 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
       _rail(_serial, settings, session, this),
       _slip(_serial, session, this)
 {
+    //connect(&_serial, &QSerialPort::readyRead, this, &TestClient::onSerialPortReadyRead);
     connect(&_serial, &QSerialPort::errorOccurred, this, &TestClient::onSerialPortErrorOccurred);
 
     connect(this, &TestClient::checkBoardCurrent, &_slip, &SlipClient::on_checkBoardCurrent);
@@ -91,7 +92,9 @@ void TestClient::open()
     if (!_serial.open(QSerialPort::ReadWrite))
         _logger->logError(_serial.errorString());
     else
+    {
         readCSA(0);
+    }
 }
 
 void TestClient::close()
@@ -101,6 +104,11 @@ void TestClient::close()
         _serial.flush();
         _serial.close();
     }
+}
+
+void TestClient::onSerialPortReadyRead()
+{
+    _slip.processResponsePacket();
 }
 
 void TestClient::onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode)

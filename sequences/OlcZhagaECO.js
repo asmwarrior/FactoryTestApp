@@ -2,12 +2,21 @@ testSequenceManager.addMethod("OLC Zhaga ECO");
 
 ZhagaECO =
 {
+    readCSA: function ()
+    {
+        testClientList.forEach(
+        function(item)
+        {
+            item.readCSA(0);
+        });
+    },
+
     dutsPowerOn: function ()
     {
         testClientList.forEach(
         function(item)
         {
-            for(var i = 0; i < item.getDutCount(); i++)
+            for(var i = 0; i < 3; i++)
             {
                 item.powerOn(i + 1);
             }
@@ -19,7 +28,7 @@ ZhagaECO =
         testClientList.forEach(
         function(item)
         {
-            for(var i = 0; i < item.getDutCount(); i++)
+            for(var i = 0; i < 3; i++)
             {
                 item.powerOff(i + 1);
             }
@@ -128,6 +137,7 @@ ZhagaECO =
     }
 }
 
+testSequenceManager.addFunctionToGeneralList("Read CSA", ZhagaECO.readCSA);
 testSequenceManager.addFunctionToGeneralList("Supply power to DUTs", ZhagaECO.dutsPowerOn);
 testSequenceManager.addFunctionToGeneralList("Power off DUTs", ZhagaECO.dutsPowerOff);
 testSequenceManager.addFunctionToGeneralList("Test connection to JLink", ZhagaECO.testConnection);

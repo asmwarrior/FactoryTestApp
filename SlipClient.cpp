@@ -106,49 +106,6 @@ quint8 SlipClient::nextFrameId() Q_DECL_NOTHROW
     return m_frameCnt;
 }
 
-void SlipClient::sendPacket(quint8 channel, const QByteArray &frame) Q_DECL_NOTHROW
-{
-    sendFrame(channel, frame);
-}
-
-void SlipClient::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
-{
-    QByteArray encodedBuffer;
-    quint16 frameCrc = 0xFFFF;
-
-    // Write UART wake up symbols and SLIP frame start.
-    encodedBuffer.reserve((frame.size() + 3) * 2 + 2);
-    encodedBuffer.append(END_SLIP_OCTET);
-
-    // Write escaped channel number.
-    quint8 index = channel ^ (frameCrc >> 8);
-
-    _encodeSymbol(encodedBuffer, channel);
-    frameCrc = _crc_ccitt_lut[index] ^ (frameCrc << 8);
-
-    // Write escaped frame and calculate CRC.
-    foreach (char ch, frame)
-    {
-        quint8 index = (quint8)ch ^ (frameCrc >> 8);
-
-        _encodeSymbol(encodedBuffer, ch);
-        frameCrc = _crc_ccitt_lut[index] ^ (frameCrc << 8);
-    }
-
-    // Write escaped CRC.
-    _encodeSymbol(encodedBuffer, frameCrc >> 8);
-    _encodeSymbol(encodedBuffer, frameCrc & 0xFF);
-
-    // Write SLIP frame end.
-    encodedBuffer.append(END_SLIP_OCTET);
-
-    // Write encoded frame to serial port.
-    m_serialPort.write(encodedBuffer);
-    //m_serialPort.waitForBytesWritten();
-
-    processResponsePacket();
-}
-
 void SlipClient::cleanup() Q_DECL_NOTHROW
 {
     m_frameStarted = false;
@@ -259,6 +216,7 @@ void SlipClient::on_switchSWD(int DUT)
 
 void SlipClient::on_powerOn(int DUT)
 {
+    qDebug() << "on_powerOn called";
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -374,6 +332,7 @@ void SlipClient::on_clearDOUT(int DUT, int DOUT)
 
 void SlipClient::on_readCSA(int gain)
 {
+    qDebug() << "on_readCSA called";
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -558,6 +517,49 @@ void SlipClient::on_readTemperature()
     sendPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
+void SlipClient::sendPacket(quint8 channel, const QByteArray &frame) Q_DECL_NOTHROW
+{
+    sendFrame(channel, frame);
+}
+
+void SlipClient::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
+{
+    QByteArray encodedBuffer;
+    quint16 frameCrc = 0xFFFF;
+
+    // Write UART wake up symbols and SLIP frame start.
+    encodedBuffer.reserve((frame.size() + 3) * 2 + 2);
+    encodedBuffer.append(END_SLIP_OCTET);
+
+    // Write escaped channel number.
+    quint8 index = channel ^ (frameCrc >> 8);
+
+    _encodeSymbol(encodedBuffer, channel);
+    frameCrc = _crc_ccitt_lut[index] ^ (frameCrc << 8);
+
+    // Write escaped frame and calculate CRC.
+    foreach (char ch, frame)
+    {
+        quint8 index = (quint8)ch ^ (frameCrc >> 8);
+
+        _encodeSymbol(encodedBuffer, ch);
+        frameCrc = _crc_ccitt_lut[index] ^ (frameCrc << 8);
+    }
+
+    // Write escaped CRC.
+    _encodeSymbol(encodedBuffer, frameCrc >> 8);
+    _encodeSymbol(encodedBuffer, frameCrc & 0xFF);
+
+    // Write SLIP frame end.
+    encodedBuffer.append(END_SLIP_OCTET);
+
+    // Write encoded frame to serial port.
+
+    _waitForResponse = true;
+    m_serialPort.write(encodedBuffer);
+    processResponsePacket();
+}
+
 void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
 {
     switch (channel)
@@ -586,7 +588,12 @@ void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
                                 qDebug() << gr->errorCode;
                                 break;
 
+                            case 3:
+                                qDebug() << gr->errorCode;
+                                break;
+
                             case 7:
+                                qDebug() << "Reply to on_readCSA recieved: " << gr->errorCode;
                                 _CSA = gr->errorCode;
                                 break;
                             }
@@ -617,6 +624,8 @@ void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
             _logger->logInfo("frame  from chanel 3");
             break;
     }
+
+    _waitForResponse = false;
 }
 
 void SlipClient::processResponsePacket()
@@ -624,9 +633,15 @@ void SlipClient::processResponsePacket()
 
     QTime expire = QTime::currentTime().addMSecs(100);
 
+    QByteArray buffer;
     while (m_serialPort.bytesAvailable())
     {
-        QByteArray buffer = m_serialPort.readAll();
+        buffer = m_serialPort.readAll();
+
+//        if(!_waitForResponse)
+//            return;
+
+        qDebug() << "Buffer size: " << buffer.size() << "from " << m_serialPort.portName();
 
         foreach (char ch, buffer)
         {
@@ -650,6 +665,7 @@ void SlipClient::processResponsePacket()
                     m_recvBuffer.append(ch);
         }
 
+
         if(QTime::currentTime() > expire)
         {
             _logger->logError("Too long response from serial port  " + m_serialPort.portName());
@@ -662,7 +678,7 @@ void SlipClient::on_checkBoardCurrent()
 {
     on_readCSA(0);
     if((_CSA < 140) && (_CSA > 110))
-        _logger->logSuccess("Test board on " + m_serialPort.portName() + " works norally");
+        _logger->logSuccess("Test board on " + m_serialPort.portName() + "works normally. Current:" + QString().setNum(_CSA));
     else
-        _logger->logError("Test board on " + m_serialPort.portName() + " do not works norally!");
+        _logger->logError("Test board on " + m_serialPort.portName() + "do not works normally!. Current:" + QString().setNum(_CSA));
 }

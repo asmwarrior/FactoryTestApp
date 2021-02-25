@@ -33,6 +33,7 @@ public:
 
 private slots:
 
+    void onSerialPortReadyRead();
     void onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode);
 
 signals:
