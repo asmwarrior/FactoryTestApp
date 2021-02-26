@@ -15,6 +15,8 @@ public:
 
     enum Mode {idleMode, railMode, slipMode};
 
+    enum RailTestCommand {noCommand, readChipIdCommand};
+
     explicit TestClient(QSettings* settings, SessionManager* session, QObject *parent = nullptr);
     ~TestClient();
 
@@ -43,7 +45,7 @@ private slots:
 
     void on_checkBoardCurrent();
 
-    void on_sendDubugString(int channel, const QByteArray& string);
+    void on_sendRailtestCommand(int channel, const QByteArray& cmd, const QByteArray& args);
     void on_reset();
     void on_switchSWD(int DUT);
     void on_powerOn(int DUT);
@@ -62,7 +64,7 @@ private slots:
     void on_read3V();
     void on_readTemperature();
 
-    void on_readChipId();
+    void on_readChipId(int dut);
 //    void on_testRadio();
 //    void on_testAccelerometer();
 //    void on_testLightSensor();
@@ -74,7 +76,7 @@ signals:
     void checkBoardCurrent();
 
     //Slip commands
-    void sendDubugString(int channel, const QByteArray& string);
+    void sendRailtestCommand(int channel, const QByteArray& cmd, const QByteArray& args);
     void reset();
     void switchSWD(int DUT);
     void powerOn(int DUT);
@@ -96,7 +98,7 @@ signals:
     //Railtest commands
     void waitCommandPrompt(int timeout = 1000);
     void syncCommand(const QByteArray &cmd, const QByteArray &args = QByteArray(), int timeout = 5000);
-    void readChipId();
+    void readChipId(int dut);
     void testRadio();
     void testAccelerometer();
     void testLightSensor();
@@ -106,9 +108,12 @@ signals:
 private:
 
     void decodeFrame() Q_DECL_NOTHROW;
+    void decodeRailtestReply(const QByteArray &reply);
+    void processFrameFromRail(QByteArray frame);
     void delay(int msec);
 
     Mode _mode = idleMode;
+    RailTestCommand _currentCommand = noCommand;
     QSettings* _settings;
     SessionManager* _session;
     Logger* _logger;
@@ -120,8 +125,10 @@ private:
 //    SlipClient _slip;
 
     bool _frameStarted;
-    bool _railReplyFinished = true;
     QByteArray _recvBuffer;
+
+    QByteArray _syncCommand;
+    QVariantList _syncReplies;
 
     int _CSA = 0; //Board current (mA)
 };

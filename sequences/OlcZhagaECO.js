@@ -84,10 +84,10 @@ ZhagaECO =
     readChipID: function ()
     {
         let test = testClientList[0];
-        test.powerOn(3);
-        test.switchSWD(3);
-        test.waitCommandPrompt();
-        test.readChipId();
+//        test.powerOn(3);
+//        test.switchSWD(3);
+//        test.waitCommandPrompt();
+        test.readChipId(3);
 //        for(var i = 0; i < 3; i++)
 //        {
 //            test.switchSWD(i + 1);

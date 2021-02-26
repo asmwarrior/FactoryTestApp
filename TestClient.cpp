@@ -76,7 +76,7 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
     connect(this, &TestClient::checkBoardCurrent, [this](){_mode = slipMode;});
     connect(this, &TestClient::checkBoardCurrent, this, &TestClient::on_checkBoardCurrent);
 
-    connect(this, &TestClient::sendDubugString, this, &TestClient::on_sendDubugString);
+    connect(this, &TestClient::sendRailtestCommand, this, &TestClient::on_sendRailtestCommand);
     connect(this, &TestClient::reset, this, &TestClient::on_reset);
 
     connect(this, &TestClient::switchSWD, [this](){_mode = slipMode;});
@@ -202,9 +202,12 @@ void TestClient::onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCod
         _logger->logError("Serial port error occurred " + QString().setNum(errorCode) + " on port " + _serial.portName());
 }
 
-void TestClient::on_sendDubugString(int channel, const QByteArray &string)
+void TestClient::on_sendRailtestCommand(int channel, const QByteArray &cmd, const QByteArray &args)
 {
-    sendFrame(channel, string + "\r\n");
+    _mode = railMode;
+    _syncCommand = cmd;
+    _syncReplies.clear();
+    sendFrame(channel, cmd + " " + args + "\r\n\r\n");
 }
 
 void TestClient::on_reset()
@@ -540,9 +543,10 @@ void TestClient::on_readTemperature()
     sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void TestClient::on_readChipId()
+void TestClient::on_readChipId(int dut)
 {
-    sendDubugString(3, "getmemw 0x0FE081F0 2\r\n");
+    _currentCommand = readChipIdCommand;
+    sendRailtestCommand(dut, "getmemw", "0x0FE081F0 2");
 }
 
 void TestClient::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
@@ -755,26 +759,101 @@ void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
             break;
 
         case 1:
-            _logger->logInfo(frame);
-            break;
-
         case 2:
-            _logger->logInfo(frame);
-            break;
-
         case 3:
-            _logger->logInfo(frame);
+            processFrameFromRail(frame);
             break;
     }
 
     _mode = idleMode;
 }
 
+void TestClient::decodeRailtestReply(const QByteArray &reply)
+{
+    if (reply.startsWith("{{(") && reply.endsWith("}}"))
+    {
+        int idx = reply.indexOf(")}");
+
+        if (idx == -1)
+            return;
+
+        auto name = reply.mid(3, idx - 3);
+        auto params = reply.mid(idx + 2, reply.length() - idx - 3).split('}');
+        QVariantMap decodedParams;
+
+        foreach (auto param, params)
+            if (param.startsWith('{'))
+            {
+                idx = param.indexOf(':');
+                if (idx != -1)
+                    decodedParams.insert(param.mid(1, idx - 1), param.mid(idx + 1));
+            }
+
+        if (_syncCommand == name)
+            _syncReplies.append(decodedParams);
+        else
+            //emit replyReceived(name, decodedParams);
+
+        return;
+    }
+
+    if (reply.startsWith("{{") && reply.endsWith("}}"))
+    {
+        auto params = reply.mid(1, reply.length() - 2).split('}');
+        QVariantList decodedParams;
+
+        foreach (auto param, params)
+            if (param.startsWith('{'))
+                decodedParams.append(param.mid(1));
+
+        if (!_syncCommand.isEmpty())
+            _syncReplies.push_back(decodedParams);
+
+        return;
+    }
+}
+
+void TestClient::processFrameFromRail(QByteArray frame)
+{
+    int idx = frame.indexOf("\r\n");
+    frame = frame.mid(idx + 2); // Delete first line
+    frame = frame.mid(1); // Delete '#' symbol
+
+    QString frameString(frame);
+
+    auto replyStringList = frameString.split("\r\n");
+    QList<QByteArray> replyList;
+    for (int i = 1; i < replyStringList.size() - 2; i++)
+    {
+        replyList.push_back(replyStringList.at(i).toLocal8Bit());
+    }
+
+    for(auto & reply : replyList)
+    {
+        decodeRailtestReply(reply);
+    }
+
+    switch (_currentCommand)
+    {
+    case readChipIdCommand:
+        auto
+            llo = _syncReplies.at(0).toList(),
+            lhi = _syncReplies.at(1).toList();
+
+        auto
+           lo = llo.at(1).toByteArray().trimmed(),
+           hi = lhi.at(1).toByteArray().trimmed();
+
+        qDebug() << (hi.mid(2) + lo.mid(2)).toUpper();
+
+        break;
+    }
+}
+
 void TestClient::on_checkBoardCurrent()
 {
     readCSA(0);
     //delay(30);
-    //QCoreApplication::processEvents();
 
     if((_CSA < 140) && (_CSA > 110))
         _logger->logSuccess("Test board on " + _serial.portName() + " works normally. Current: " + QString().setNum(_CSA));
