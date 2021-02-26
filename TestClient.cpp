@@ -167,7 +167,7 @@ void TestClient::open()
         _logger->logError(_serial.errorString());
     else
     {
-//        readCSA(0);
+        readCSA(0);
     }
 }
 
@@ -189,11 +189,9 @@ void TestClient::onSerialPortReadyRead()
         break;
 
     case slipMode:
-        processResponsePacket();
-        break;
-
     case railMode:
-        processResponsePacket();
+        if(_serial.portName() != "COM6")
+            processResponsePacket();
         break;
     }
 }
@@ -544,7 +542,7 @@ void TestClient::on_readTemperature()
 
 void TestClient::on_readChipId()
 {
-    sendDubugString(3, "getmemw 0x0FE081F0 2");
+    sendDubugString(3, "getmemw 0x0FE081F0 2\r\n");
 }
 
 void TestClient::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
@@ -584,10 +582,10 @@ void TestClient::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
 
 void TestClient::processResponsePacket()
 {
-    QByteArray buffer;
     while (_serial.bytesAvailable())
     {
-        buffer += _serial.readAll();
+        QByteArray buffer = _serial.readAll();
+
         foreach (char ch, buffer)
         {
             if (ch == END_SLIP_OCTET)
@@ -610,12 +608,12 @@ void TestClient::processResponsePacket()
                     _recvBuffer.append(ch);
         }
     }
-
 }
 
 void TestClient::decodeFrame() Q_DECL_NOTHROW
 {
     QByteArray decodedBuffer;
+    static QByteArray railReply;
 
     // Write unescaped buffer.
     decodedBuffer.reserve(_recvBuffer.size());
@@ -676,9 +674,29 @@ void TestClient::decodeFrame() Q_DECL_NOTHROW
     }
 
     // Frame received successfully.
-    //if(decodedBuffer.at(0) == 0) //Cause we send commands only in 0 channel
-    if(decodedBuffer.at(0) != 2 && _serial.portName() != "COM6")
-        onSlipPacketReceived(decodedBuffer.at(0), decodedBuffer.mid(1, frameSize - 1));
+
+    QByteArray frame = decodedBuffer.mid(1, frameSize - 1);
+
+//    if(decodedBuffer.at(0) == 2 && _serial.portName() == "COM6")
+//        return;
+
+    switch(_mode)
+    {
+    case slipMode:
+        onSlipPacketReceived(decodedBuffer.at(0), frame);
+        break;
+
+    case railMode:
+        railReply += frame;
+        if(frame.contains("> "))
+        {
+            onSlipPacketReceived(decodedBuffer.at(0), railReply);
+            railReply.clear();
+        }
+        break;
+    }
+
+    //onSlipPacketReceived(decodedBuffer.at(0), decodedBuffer.mid(1, frameSize - 1));
 }
 
 void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
@@ -745,7 +763,6 @@ void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
             break;
 
         case 3:
-            _logger->logInfo("Frame recieved");
             _logger->logInfo(frame);
             break;
     }
@@ -755,8 +772,9 @@ void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
 
 void TestClient::on_checkBoardCurrent()
 {
-    on_readCSA(0);
-    delay(30);
+    readCSA(0);
+    //delay(30);
+    //QCoreApplication::processEvents();
 
     if((_CSA < 140) && (_CSA > 110))
         _logger->logSuccess("Test board on " + _serial.portName() + " works normally. Current: " + QString().setNum(_CSA));

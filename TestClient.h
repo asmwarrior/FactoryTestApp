@@ -120,6 +120,7 @@ private:
 //    SlipClient _slip;
 
     bool _frameStarted;
+    bool _railReplyFinished = true;
     QByteArray _recvBuffer;
 
     int _CSA = 0; //Board current (mA)
