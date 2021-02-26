@@ -1,12 +1,11 @@
 #ifndef TESTCLIENT_H
 #define TESTCLIENT_H
 
-#include <QObject>
-#include <QQueue>
-#include <QTimer>
+#include <QSerialPort>
 
-#include "RailtestClient.h"
-#include "SlipClient.h"
+#include "SlipProtocol.h"
+#include "SessionManager.h"
+#include "Logger.h"
 
 class TestClient : public QObject
 {
@@ -37,6 +36,38 @@ private slots:
 
     void onSerialPortReadyRead();
     void onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode);
+
+    void sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW;
+    void processResponsePacket();
+    void onSlipPacketReceived(quint8 channel, QByteArray frame) Q_DECL_NOTHROW;
+
+    void on_checkBoardCurrent();
+
+    void on_sendDubugString(int channel, const QByteArray& string);
+    void on_reset();
+    void on_switchSWD(int DUT);
+    void on_powerOn(int DUT);
+    void on_powerOff(int DUT);
+    void on_readDIN(int DUT, int DIN);
+    void on_setDOUT(int DUT, int DOUT);
+    void on_clearDOUT(int DUT, int DOUT);
+    void on_readCSA(int gain);
+    void on_readAIN(int DUT, int AIN, int gain);
+    void on_configDebugSerial(int DUT, int baudRate = QSerialPort::Baud115200, unsigned char bits = QSerialPort::Data8, unsigned char parity = QSerialPort::NoParity, unsigned char stopBits = QSerialPort::OneStop);
+    void on_DaliOn();
+    void on_DaliOff();
+    void on_readDaliADC();
+    void on_readDinADC(int DUT, int DIN);
+    void on_read24V();
+    void on_read3V();
+    void on_readTemperature();
+
+    void on_readChipId();
+//    void on_testRadio();
+//    void on_testAccelerometer();
+//    void on_testLightSensor();
+//    void on_testDALI();
+//    void on_testGNSS();
 
 signals:
 
@@ -74,6 +105,9 @@ signals:
 
 private:
 
+    void decodeFrame() Q_DECL_NOTHROW;
+    void delay(int msec);
+
     Mode _mode = idleMode;
     QSettings* _settings;
     SessionManager* _session;
@@ -82,8 +116,13 @@ private:
     QList<int> _dutsNumbers;
 
     QSerialPort _serial;
-    RailtestClient _rail;
-    SlipClient _slip;
+//    RailtestClient _rail;
+//    SlipClient _slip;
+
+    bool _frameStarted;
+    QByteArray _recvBuffer;
+
+    int _CSA = 0; //Board current (mA)
 };
 
 #endif // TESTCLIENT_H

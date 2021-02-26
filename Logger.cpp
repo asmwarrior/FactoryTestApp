@@ -69,7 +69,7 @@ void Logger::logSuccess(const QString &message)
     qInfo().noquote() << message;
 }
 
-void Logger::logChildProcessOutput(const QString &message)
+void Logger::logDebug(const QString &message)
 {
     QMutexLocker locker(&_childProcessLogMutex);
 

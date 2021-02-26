@@ -54,8 +54,8 @@ bool RailtestClient::on_waitCommandPrompt(int timeout)
 
 QVariantList RailtestClient::on_syncCommand(const QByteArray &cmd, const QByteArray &args, int timeout)
 {
-    if (!m_serial.isOpen())
-        return QVariantList();
+//    if (!m_serial.isOpen())
+//        return QVariantList();
 
     m_syncCommand = cmd;
     m_syncReplies.clear();
@@ -63,7 +63,6 @@ QVariantList RailtestClient::on_syncCommand(const QByteArray &cmd, const QByteAr
     QTime expire = QTime::currentTime().addMSecs(timeout);
 
     m_serial.write(cmd + " " + args + "\r\n");
-    processResponse();
 
     while (QTime::currentTime() <= expire)
     {
@@ -78,12 +77,13 @@ QVariantList RailtestClient::on_syncCommand(const QByteArray &cmd, const QByteAr
     error.insert("errorCode", 1);
     m_syncReplies.append(error);
 
+    qDebug() << m_syncReplies;
     return m_syncReplies;
 }
 
 void RailtestClient::on_readChipId()
 {
-    qDebug() << "on_readChipId called";
+    _logger->logDebug("on_readChipId called");
     auto reply = on_syncCommand("getmemw", "0x0FE081F0 2");
 
     if (reply.size() != 2)
@@ -113,6 +113,8 @@ void RailtestClient::on_readChipId()
     }
 
     _currentChipId = (hi.mid(2) + lo.mid(2)).toUpper();
+
+    _logger->logDebug(QString("Current chip ID: %1").arg(QString(_currentChipId)));
 }
 
 void RailtestClient::on_testRadio()
@@ -368,6 +370,8 @@ void RailtestClient::processResponse()
     {
         m_syncCommand.clear();
     }
+
+    emit commandFinished();
 }
 
 void RailtestClient::decodeReply(const QByteArray &reply)

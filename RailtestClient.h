@@ -27,6 +27,7 @@ public:
 
 public slots:
 
+    void processResponse();
     void onRfReplyReceived(QString id, QVariantMap params);
 
     bool on_waitCommandPrompt(int timeout = 1000);
@@ -40,6 +41,7 @@ public slots:
 
 signals:
 
+    void commandFinished();
     void error(QString text);
     void replyReceived(QString id, QVariantMap params);
 
@@ -47,7 +49,6 @@ signals:
 
 private:
 
-    void processResponse();
     void decodeReply(const QByteArray &reply);
 
     QSettings* _settings;

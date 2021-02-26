@@ -24,7 +24,7 @@ public slots:
     void logError(const QString &message);
     void logSuccess(const QString &message);
 
-    void logChildProcessOutput(const QString &message);
+    void logDebug(const QString &message);
 
 private:
 

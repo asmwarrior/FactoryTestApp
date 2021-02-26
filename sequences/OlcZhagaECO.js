@@ -83,19 +83,16 @@ ZhagaECO =
 
     readChipID: function ()
     {
-        let rail = railTestClientList[currentRailTestClientIndex];
-        rail.readChipId();
-        let id = rail.currentChipId();
-
-        if(id == "")
-        {
-            logger.logError("Cannot read unique device identifier!");
-        }
-
-        else
-        {
-            logger.logSuccess("Device ID: " + id);
-        }
+        let test = testClientList[0];
+        test.powerOn(3);
+        test.switchSWD(3);
+        test.waitCommandPrompt();
+        test.readChipId();
+//        for(var i = 0; i < 3; i++)
+//        {
+//            test.switchSWD(i + 1);
+//            test.readChipId();
+//        }
     },
 
     initDali: function ()

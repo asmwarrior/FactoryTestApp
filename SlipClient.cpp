@@ -131,7 +131,7 @@ void SlipClient::on_reset()
 
 void SlipClient::on_switchSWD(int DUT)
 {
-    qDebug() << QString("switchSWD called with arg %1").arg(DUT);
+   _logger->logDebug(QString("switchSWD called with arg %1").arg(DUT));
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -151,7 +151,7 @@ void SlipClient::on_switchSWD(int DUT)
 
 void SlipClient::on_powerOn(int DUT)
 {
-    qDebug() << "on_powerOn called";
+    _logger->logDebug(QString("on_powerOn called for %1").arg(DUT));
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -174,7 +174,7 @@ void SlipClient::on_powerOn(int DUT)
 
 void SlipClient::on_powerOff(int DUT)
 {
-    qDebug() << "on_powerOff called";
+    _logger->logDebug(QString("on_powerOff called for %1").arg(DUT));
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -267,7 +267,7 @@ void SlipClient::on_clearDOUT(int DUT, int DOUT)
 
 void SlipClient::on_readCSA(int gain)
 {
-    qDebug() << "on_readCSA called";
+    _logger->logDebug(QString("on_readCSA called for board on %1").arg(m_serialPort.portName()));
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -516,17 +516,21 @@ void SlipClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
                             //_logger->logInfo(QString("RESULT: cmd=%1, code=%2.").arg(gr->header.sequence).arg(gr->errorCode));
                             switch (gr->header.sequence)
                             {
+                            case 1:
+                                _logger->logDebug(QString("Reply to switchSWD command to board on %1: %2").arg(m_serialPort.portName()).arg(gr->errorCode));
+                                break;
+
                             case 2:
-                                qDebug() << gr->errorCode;
+                                _logger->logDebug(QString("Reply to powerOn command to %1: %2").arg(m_serialPort.portName()).arg(gr->errorCode));
                                 break;
 
                             case 3:
-                                qDebug() << gr->errorCode;
+                                _logger->logDebug(QString("Reply to powerOff command to %1: %2").arg(m_serialPort.portName()).arg(gr->errorCode));
                                 break;
 
                             case 7:
-                                qDebug() << "Reply to on_readCSA recieved: " << gr->errorCode;
                                 _CSA = gr->errorCode;
+                                _logger->logDebug(QString("Reply to readCSA command to %1: %2").arg(m_serialPort.portName()).arg(gr->errorCode));
                                 break;
                             }
                         }
@@ -571,7 +575,7 @@ void SlipClient::processResponsePacket()
     {
         buffer = m_serialPort.readAll();
 
-        qDebug() << "Buffer size: " << buffer.size() << "from " << m_serialPort.portName();
+       // qDebug() << "Buffer size: " << buffer.size() << "from " << m_serialPort.portName();
 
         foreach (char ch, buffer)
         {
@@ -667,7 +671,7 @@ void SlipClient::decodeFrame() Q_DECL_NOTHROW
     }
 
     // Frame received successfully.
-    if(decodedBuffer.at(0) == 0) //Cause we send commands only in 0 channel
+    //if(decodedBuffer.at(0) == 0) //Cause we send commands only in 0 channel
         onSlipPacketReceived(decodedBuffer.at(0), decodedBuffer.mid(1, frameSize - 1));
 }
 
