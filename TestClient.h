@@ -22,6 +22,7 @@ public:
 
     void setLogger(Logger* logger);
     void setDutsNumbers(QList<int> numbers);
+    void setDutsNumbers(QString numbers);
 
     void setPort(const QString &name,
                  qint32 baudRate = QSerialPort::Baud115200,
@@ -29,13 +30,15 @@ public:
                  QSerialPort::Parity parity = QSerialPort::NoParity,
                  QSerialPort::StopBits stopBits = QSerialPort::OneStop,
                  QSerialPort::FlowControl flowControl = QSerialPort::NoFlowControl);
-    void open();
+
     void close();
 
     Q_INVOKABLE int getDutCount() const {return _dutsNumbers.size();}
+    Q_INVOKABLE int getDutNo(int dut) const {return _dutsNumbers.at(dut - 1);}
 
 private slots:
 
+    void on_open();
     void onSerialPortReadyRead();
     void onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode);
 
@@ -44,6 +47,8 @@ private slots:
     void onSlipPacketReceived(quint8 channel, QByteArray frame) Q_DECL_NOTHROW;
 
     void on_checkBoardCurrent();
+    void on_checkDutsCurrent();
+    void on_readIdForAllDuts();
 
     void on_sendRailtestCommand(int channel, const QByteArray& cmd, const QByteArray& args);
     void on_reset();
@@ -73,7 +78,12 @@ private slots:
 
 signals:
 
+    void open();
     void checkBoardCurrent();
+    void checkDutsCurrent();
+    void readIdForAllDuts();
+
+    void dutsStateChanged();
 
     //Slip commands
     void sendRailtestCommand(int channel, const QByteArray& cmd, const QByteArray& args);
@@ -131,6 +141,7 @@ private:
     QVariantList _syncReplies;
 
     int _CSA = 0; //Board current (mA)
+    QString _currentChipID = "";
 };
 
 #endif // TESTCLIENT_H

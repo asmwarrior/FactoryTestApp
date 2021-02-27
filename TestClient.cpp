@@ -71,10 +71,18 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
     connect(&_serial, &QSerialPort::readyRead, this, &TestClient::onSerialPortReadyRead);
     connect(&_serial, &QSerialPort::errorOccurred, this, &TestClient::onSerialPortErrorOccurred);
 
-    //Slip commands
+    connect(this, &TestClient::open, this, &TestClient::on_open);
 
     connect(this, &TestClient::checkBoardCurrent, [this](){_mode = slipMode;});
     connect(this, &TestClient::checkBoardCurrent, this, &TestClient::on_checkBoardCurrent);
+
+    connect(this, &TestClient::checkDutsCurrent, [this](){_mode = slipMode;});
+    connect(this, &TestClient::checkDutsCurrent, this, &TestClient::on_checkDutsCurrent);
+
+    connect(this, &TestClient::readIdForAllDuts, [this](){_mode = railMode;});
+    connect(this, &TestClient::readIdForAllDuts, this, &TestClient::on_readIdForAllDuts);
+
+    //Slip commands
 
     connect(this, &TestClient::sendRailtestCommand, this, &TestClient::on_sendRailtestCommand);
     connect(this, &TestClient::reset, this, &TestClient::on_reset);
@@ -137,12 +145,19 @@ void TestClient::setDutsNumbers(QList<int> numbers)
     _dutsNumbers = numbers;
 }
 
+void TestClient::setDutsNumbers(QString numbers)
+{
+    auto numberList = numbers.simplified().split("|");
+    for(auto & i : numberList)
+    {
+        _dutsNumbers.push_back(i.toInt());
+    }
+}
+
 void TestClient::setPort(const QString &name, qint32 baudRate, QSerialPort::DataBits dataBits,
     QSerialPort::Parity parity, QSerialPort::StopBits stopBits,
     QSerialPort::FlowControl flowControl)
 {
-    if (_serial.isOpen())
-        _serial.close();
     _serial.setPortName(name);
 
     bool res = _serial.setBaudRate(baudRate)
@@ -152,11 +167,10 @@ void TestClient::setPort(const QString &name, qint32 baudRate, QSerialPort::Data
         && _serial.setFlowControl(flowControl);
 
     if (!res)
-        _logger->logError(_serial.errorString());
-    open();
+        qDebug() << _serial.errorString();
 }
 
-void TestClient::open()
+void TestClient::on_open()
 {
     if (_serial.isOpen())
     {
@@ -164,10 +178,12 @@ void TestClient::open()
     }
 
     if (!_serial.open(QSerialPort::ReadWrite))
-        _logger->logError(_serial.errorString());
+        qDebug() << _serial.errorString();
     else
     {
+        _serial.readAll();
         readCSA(0);
+        //delay(100);
     }
 }
 
@@ -190,8 +206,7 @@ void TestClient::onSerialPortReadyRead()
 
     case slipMode:
     case railMode:
-        if(_serial.portName() != "COM6")
-            processResponsePacket();
+        processResponsePacket();
         break;
     }
 }
@@ -222,7 +237,7 @@ void TestClient::on_reset()
 
 void TestClient::on_switchSWD(int DUT)
 {
-   _logger->logDebug(QString("switchSWD called with arg %1").arg(DUT));
+   //_logger->logDebug(QString("switchSWD called with arg %1").arg(DUT));
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -242,7 +257,7 @@ void TestClient::on_switchSWD(int DUT)
 
 void TestClient::on_powerOn(int DUT)
 {
-    _logger->logDebug(QString("on_powerOn called for %1").arg(DUT));
+    //_logger->logDebug(QString("on_powerOn called for %1").arg(DUT));
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -265,7 +280,7 @@ void TestClient::on_powerOn(int DUT)
 
 void TestClient::on_powerOff(int DUT)
 {
-    _logger->logDebug(QString("on_powerOff called for %1").arg(DUT));
+    //_logger->logDebug(QString("on_powerOff called for %1").arg(DUT));
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -358,7 +373,7 @@ void TestClient::on_clearDOUT(int DUT, int DOUT)
 
 void TestClient::on_readCSA(int gain)
 {
-    _logger->logDebug(QString("on_readCSA called for board on %1").arg(_serial.portName()));
+    //_logger->logDebug(QString("on_readCSA called for board on %1").arg(_serial.portName()));
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -547,6 +562,9 @@ void TestClient::on_readChipId(int dut)
 {
     _currentCommand = readChipIdCommand;
     sendRailtestCommand(dut, "getmemw", "0x0FE081F0 2");
+    delay(50);
+    _session->getDut(getDutNo(dut))->setId(_currentChipID);
+    qDebug() << _session->getDut(getDutNo(dut))->getId();
 }
 
 void TestClient::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
@@ -727,15 +745,15 @@ void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
                             switch (gr->header.sequence)
                             {
                             case 1:
-                                _logger->logDebug(QString("Reply to switchSWD command to board on %1: %2").arg(_serial.portName()).arg(gr->errorCode));
+                                //_logger->logDebug(QString("Reply to switchSWD command to board on %1: %2").arg(_serial.portName()).arg(gr->errorCode));
                                 break;
 
                             case 2:
-                                _logger->logDebug(QString("Reply to powerOn command to %1: %2").arg(_serial.portName()).arg(gr->errorCode));
+                                //_logger->logDebug(QString("Reply to powerOn command to %1: %2").arg(_serial.portName()).arg(gr->errorCode));
                                 break;
 
                             case 3:
-                                _logger->logDebug(QString("Reply to powerOff command to %1: %2").arg(_serial.portName()).arg(gr->errorCode));
+                                //_logger->logDebug(QString("Reply to powerOff command to %1: %2").arg(_serial.portName()).arg(gr->errorCode));
                                 break;
 
                             case 7:
@@ -844,7 +862,7 @@ void TestClient::processFrameFromRail(QByteArray frame)
            lo = llo.at(1).toByteArray().trimmed(),
            hi = lhi.at(1).toByteArray().trimmed();
 
-        qDebug() << (hi.mid(2) + lo.mid(2)).toUpper();
+        _currentChipID = (hi.mid(2) + lo.mid(2)).toUpper();
 
         break;
     }
@@ -852,13 +870,67 @@ void TestClient::processFrameFromRail(QByteArray frame)
 
 void TestClient::on_checkBoardCurrent()
 {
+    for (int i = 0; i < _dutsNumbers.size(); i++)
+    {
+        powerOff(i + 1);
+    }
+
+    delay(3000);
     readCSA(0);
-    //delay(30);
 
     if((_CSA < 140) && (_CSA > 110))
-        _logger->logSuccess("Test board on " + _serial.portName() + " works normally. Current: " + QString().setNum(_CSA));
+        _logger->logSuccess("Test board on " + _serial.portName() + " works normally. Consumed current: " + QString().setNum(_CSA)  + " mA");
     else
-        _logger->logError("Test board on " + _serial.portName() + " do not works normally!. Current: " + QString().setNum(_CSA));
+        _logger->logError("Test board on " + _serial.portName() + " do not works normally!. Consumed current: " + QString().setNum(_CSA)  + " mA");
+}
+
+void TestClient::on_checkDutsCurrent()
+{
+    for (int i = 1; i < _dutsNumbers.size() + 1; i++)
+    {
+        powerOff(i);
+    }
+
+    delay(3000);
+
+    for(int i = 1; i < _dutsNumbers.size() + 1; i++)
+    {
+        readCSA(0);
+        delay(100);
+        int currentCSA = _CSA;
+
+        powerOn(i);
+        delay(3000);
+
+        readCSA(0);
+        delay(100);
+        if((_CSA - currentCSA) > 20)
+        {
+            _logger->logSuccess(QString("Device connected to the slot %1 of the test board on port %2").arg(i).arg(_serial.portName()));
+            _session->getDut(getDutNo(i))->setState(Dut::untested);
+            _session->getDut(getDutNo(i))->setChecked(true);
+        }
+
+        powerOff(i);
+        delay(3000);
+    }
+
+    emit dutsStateChanged();
+}
+
+void TestClient::on_readIdForAllDuts()
+{
+    for(int slot = 1; slot < _dutsNumbers.size() + 1; slot++)
+    {
+        if(_session->getDut(getDutNo(slot))->isChecked())
+        {
+            powerOn(slot);
+            delay(5000);
+            readChipId(slot);
+//            delay(100);
+            //_session->getDut(getDutNo(slot))->setId(_currentChipID);
+        }
+    }
 }
 
 void TestClient::delay(int msec)

@@ -25,6 +25,7 @@ public slots:
 
         void on_establishConnection();
         void on_startJlinkCommands(const QStringList& commands);
+        void readStandardOutput();
 
 signals:
 
@@ -40,4 +41,6 @@ private:
     State _state = unknown;
     QString _SN; // JLink serial number
     QByteArray _errorBuffer;
+
+    QProcess _proc;
 };

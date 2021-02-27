@@ -8,8 +8,9 @@
 #include <QCoreApplication>
 
 JLinkManager::JLinkManager(QSettings *settings, QObject *parent)
-    : QObject(parent), _settings(settings)
+    : QObject(parent), _settings(settings), _proc(this)
 {
+    connect(&_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
     connect(this, &JLinkManager::startJlinkCommands, this, &JLinkManager::on_startJlinkCommands);
     connect(this, &JLinkManager::establishConnection, this, &JLinkManager::on_establishConnection);
     clearErrorBuffer();
@@ -60,15 +61,41 @@ void JLinkManager::on_establishConnection()
 
 void JLinkManager::on_startJlinkCommands(const QStringList &commands)
 {
-    for(auto & command : commands)
+    _proc.setProgram("c:/Program Files (x86)/SEGGER/JLink/JLink.exe");
+    _proc.setArguments({"-USB", _SN, "-CommanderScript", "download.jlink"});
+    //proc.startDetached();
+    _proc.start();
+    _proc.waitForStarted(2000);
+//    while(_proc.state() == QProcess::Running)
+//    {
+
+//    }
+//    _proc.waitForFinished();
+
+//    JLINKARM_EMU_SelectByUSBSN(_SN.toUInt());
+//    JLINKARM_Open();
+//    for(auto & command : commands)
+//    {
+//        clearErrorBuffer();
+//        JLINKARM_ExecCommand(command.toLatin1().data(), _errorBuffer.data(), _errorBuffer.size());
+//        if(_errorBuffer.at(0) != 0)
+//        {
+//            _logger->logError("JLINK: " + _errorBuffer);
+//            break;
+//        }
+    //    }
+}
+
+void JLinkManager::readStandardOutput()
+{
+    QByteArray data = _proc.readAllStandardOutput();
+
+    data.replace('\0', ' ');
+    QStringList lines = QString::fromLocal8Bit(data).split("\r\n");
+    for(auto & line : lines)
     {
-        clearErrorBuffer();
-        JLINKARM_ExecCommand(command.toLatin1().data(), _errorBuffer.data(), _errorBuffer.size());
-        if(_errorBuffer.at(0) != 0)
-        {
-            _logger->logError("JLINK: " + _errorBuffer);
-            break;
-        }
+        if(line.size())
+            qDebug() << line;
     }
 }
 

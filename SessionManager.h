@@ -30,6 +30,8 @@ public:
         return m_dutList;
     }
 
+    Dut* getDut(int no) const {return m_dutList.at(no - 1);}
+
     QString getOperatorName() const
     {
         return m_operatorName;

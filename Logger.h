@@ -35,5 +35,5 @@ private:
     QMutex _logMutex;
     QMutex _childProcessLogMutex;
     QListWidget* _logWidget = nullptr;
-    QListWidget* _childProcessLogWidget;
+    QListWidget* _childProcessLogWidget = nullptr;
 };

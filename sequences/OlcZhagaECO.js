@@ -42,9 +42,9 @@ ZhagaECO =
 
     downloadRailtest: function ()
     {
-        let jlink = JlinkList[currentJLinkIndex];
+        let jlink = JlinkList[0];
         jlink.startJlinkCommands([
-                                    "eoe 1",
+                                    "power on perm",
                                     "swdselect",
                                     "si swd",
                                     "speed 5000",
@@ -53,7 +53,9 @@ ZhagaECO =
                                     "erase",
                                     "loadfile dummy_btl_efr32xg12.s37",
                                     "loadfile olc_zhaga_railtest.hex",
-                                    "r"
+                                    "r",
+                                    "g",
+                                    "q"
                                  ]);
     },
 

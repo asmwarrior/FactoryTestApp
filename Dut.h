@@ -106,6 +106,6 @@ private:
     int m_no;
     int m_testPanel;
     int m_pos;
-    bool m_checked = true;
+    bool m_checked = false;
     QStringList m_errorList;
 };

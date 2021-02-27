@@ -2,6 +2,7 @@
 
 #include <QDebug>
 
+#include <QCoreApplication>
 #include <QStandardPaths>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -31,40 +32,40 @@ MainWindow::MainWindow(QWidget *parent)
     evaluateScriptsFromDirectory(_workDirectory + "/sequences");
     _scriptEngine->globalObject().setProperty("logger", _scriptEngine->newQObject(_logger));
 
-    // Creating threads for run the tests for each test panel
-    for (int i = 0; i < 5; i++)
+    //Setting number of active test panels (max - 5)
+    const int MAX_PANELS_COUNT = 5;
+
+    // Creating objects for controlling JLinks & Test clients
+    for (int i = 0; i < MAX_PANELS_COUNT; i++)
     {
-        auto newThread = new QThread(this);
-        newThread->setObjectName(QString("Thread %1").arg(i + 1));
-        _threads.push_back(newThread);
+        if(_settings->value(QString("TestBoard/state" + QString().setNum(i + 1))).toBool())
+        {
+            // Creating threads for run the tests for each test panel
+            auto newThread = new QThread(this);
+            newThread->setObjectName(QString("Thread %1").arg(i + 1));
+            _threads.push_back(newThread);
+
+            auto newJlink = new JLinkManager(_settings);
+            newJlink->setSN(_settings->value(QString("JLink/SN" + QString().setNum(i + 1))).toString());
+            newJlink->setLogger(_logger);
+            _JLinkList.push_back(newJlink);
+            _JLinkList.last()->moveToThread(_threads.last());
+            QJSValue jlink = _scriptEngine->newQObject(newJlink);
+            _scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
+
+            auto testClient = new TestClient(_settings, _session);
+            testClient->setLogger(_logger);
+            _testClientList.push_back(testClient);
+            _testClientList.last()->setDutsNumbers(_settings->value(QString("TestBoard/duts" + QString().setNum(i + 1))).toString());
+            _testClientList.last()->setPort(_settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
+            _testClientList.last()->moveToThread(_threads.last());
+            _scriptEngine->globalObject().property("testClientList").setProperty(i, _scriptEngine->newQObject(testClient));
+
+            _threads.last()->start();
+            _testClientList.last()->open();
+            delay(100);
+        }
     }
-
-    // Creating objects for controlling JLinks, Rail Test & Slip clients
-    for (int i = 0; i < 5; i++)
-    {
-        auto newJlink = new JLinkManager(_settings);
-        newJlink->setSN(_settings->value(QString("JLink/SN" + QString().setNum(i + 1))).toString());
-        newJlink->setLogger(_logger);
-        _JLinkList.push_back(newJlink);
-        _JLinkList[i]->moveToThread(_threads[i]);
-        QJSValue jlink = _scriptEngine->newQObject(newJlink);
-        _scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
-
-        auto testClient = new TestClient(_settings, _session);
-        testClient->setLogger(_logger);
-        testClient->setPort(_settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
-        _testClientList.push_back(testClient);
-        _testClientList[i]->moveToThread(_threads[i]);
-        _scriptEngine->globalObject().property("testClientList").setProperty(i, _scriptEngine->newQObject(testClient));
-
-        _threads[i]->start();
-    }
-
-    _testClientList[0]->setDutsNumbers({1, 2, 3});
-    _testClientList[1]->setDutsNumbers({4, 5, 6});
-    _testClientList[2]->setDutsNumbers({7, 8, 9});
-    _testClientList[3]->setDutsNumbers({10, 11, 12});
-    _testClientList[4]->setDutsNumbers({13, 14, 15});
 
 //--- GUI Layouts---
     QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -269,6 +270,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_clearLogWidgetButton, &QPushButton::clicked, _logWidget, &QListWidget::clear);
     connect(_clearLogWidgetButton, &QPushButton::clicked, _childProcessOutputLogWidget, &QListWidget::clear);
 
+    for (auto & testClient : _testClientList)
+    {
+        connect(testClient, &TestClient::dutsStateChanged, _testFixtureWidget, &TestFixtureWidget::refreshButtonsState);
+    }
+
     connect(_newSessionButton, &QPushButton::clicked, this, &MainWindow::startNewSession);
     connect(_finishSessionButton, &QPushButton::clicked, this, &MainWindow::finishSession);
     connect(_startFullCycleTestingButton, &QPushButton::clicked, this, &MainWindow::startFullCycleTesting);
@@ -345,6 +351,20 @@ void MainWindow::startNewSession()
     {
         testClient->checkBoardCurrent();
     }
+
+    delay(5000);
+
+    for(auto & testClient : _testClientList)
+    {
+        testClient->checkDutsCurrent();
+    }
+
+//    delay(30000);
+
+//    for(auto & testClient : _testClientList)
+//    {
+//        testClient->readIdForAllDuts();
+//    }
 }
 
 void MainWindow::finishSession()
@@ -425,4 +445,13 @@ QList<QJSValue> MainWindow::evaluateScriptsFromDirectory(const QString& director
 QJSValue MainWindow::runScript(const QString& scriptName, const QJSValueList& args)
 {
     return _scriptEngine->globalObject().property(scriptName).call(args);
+}
+
+void MainWindow::delay(int msec)
+{
+    QTime expire = QTime::currentTime().addMSecs(msec);
+    while (QTime::currentTime() <= expire)
+    {
+        QCoreApplication::processEvents();
+    }
 }
