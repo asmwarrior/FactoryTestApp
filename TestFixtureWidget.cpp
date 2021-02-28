@@ -26,11 +26,12 @@ TestFixtureWidget::TestFixtureWidget(SessionManager* session, QWidget* parent) :
     _buttonGroup = new QButtonGroup;
     _buttonGroup->setExclusive(false);
 
-    for(auto & dut : _session->getDutList())
+    for(int i = 1; i < 16; i++)
     {
-        DutButton* button = new DutButton(dut->getNo(), dut->getTestPanel(), dut->getPos());
+        DutButton* button = new DutButton(this);
+        button->setText(QString().setNum(i));
         _buttons.push_back(button);
-        _buttonGroup->addButton(button, dut->getNo());
+        _buttonGroup->addButton(button, i);
     }
 
     int counter = 0;
@@ -50,7 +51,7 @@ TestFixtureWidget::TestFixtureWidget(SessionManager* session, QWidget* parent) :
     });
     connect(_buttonGroup, QOverload<QAbstractButton *, bool>::of(&QButtonGroup::buttonToggled), [=](QAbstractButton *button, bool checked)
     {
-        _session->getDutList()[(dynamic_cast<DutButton*>(button))->getNo() - 1]->setChecked(checked);
+//        _session->getDutList()[(dynamic_cast<DutButton*>(button))->getNo() - 1]->setChecked(checked);
     });
 
 
@@ -85,9 +86,15 @@ TestFixtureWidget::TestFixtureWidget(SessionManager* session, QWidget* parent) :
 
 void TestFixtureWidget::refreshButtonsState()
 {
-    for(int i = 0; i < _buttons.size(); i++)
-    {
-        _buttons.at(i)->setButtonState(_session->getDutList().at(i)->getState());
-        _buttons.at(i)->setChecked(_session->getDutList().at(i)->isChecked());
-    }
+//    for(int i = 0; i < _buttons.size(); i++)
+//    {
+//        _buttons.at(i)->setButtonState(_session->getDutList().at(i)->getState());
+//        _buttons.at(i)->setChecked(_session->getDutList().at(i)->isChecked());
+//    }
+}
+
+void TestFixtureWidget::refreshButtonState(Dut dut)
+{
+    _buttons.at(dut["no"].toInt() - 1)->setButtonState(dut["state"].toInt());
+    _buttons.at(dut["no"].toInt() - 1)->setChecked(dut["checked"].toBool());
 }

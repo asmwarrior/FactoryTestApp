@@ -79,9 +79,6 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
     connect(this, &TestClient::checkDutsCurrent, [this](){_mode = slipMode;});
     connect(this, &TestClient::checkDutsCurrent, this, &TestClient::on_checkDutsCurrent);
 
-    connect(this, &TestClient::readIdForAllDuts, [this](){_mode = railMode;});
-    connect(this, &TestClient::readIdForAllDuts, this, &TestClient::on_readIdForAllDuts);
-
     //Slip commands
 
     connect(this, &TestClient::sendRailtestCommand, this, &TestClient::on_sendRailtestCommand);
@@ -128,6 +125,10 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
 //    connect(this, &TestClient::testLightSensor, &_rail, &RailtestClient::on_testLightSensor);
 //    connect(this, &TestClient::testDALI, &_rail, &RailtestClient::on_testDALI);
 //    connect(this, &TestClient::testGNSS, &_rail, &RailtestClient::on_testGNSS);
+
+    _duts[1] = dutTemplate;
+    _duts[2] = dutTemplate;
+    _duts[3] = dutTemplate;
 }
 
 TestClient::~TestClient()
@@ -140,17 +141,14 @@ void TestClient::setLogger(Logger *logger)
     _logger = logger;
 }
 
-void TestClient::setDutsNumbers(QList<int> numbers)
-{
-    _dutsNumbers = numbers;
-}
-
 void TestClient::setDutsNumbers(QString numbers)
 {
     auto numberList = numbers.simplified().split("|");
+    int slot = 1;
     for(auto & i : numberList)
     {
-        _dutsNumbers.push_back(i.toInt());
+        _duts[slot]["no"] = i.toInt();
+        slot++;
     }
 }
 
@@ -558,13 +556,13 @@ void TestClient::on_readTemperature()
     sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void TestClient::on_readChipId(int dut)
+void TestClient::on_readChipId(int slot)
 {
     _currentCommand = readChipIdCommand;
-    sendRailtestCommand(dut, "getmemw", "0x0FE081F0 2");
-    delay(50);
-    _session->getDut(getDutNo(dut))->setId(_currentChipID);
-    qDebug() << _session->getDut(getDutNo(dut))->getId();
+    sendRailtestCommand(slot, "getmemw", "0x0FE081F0 2");
+    delay(1000);
+    _duts[slot]["id"] = _currentChipID;
+    qDebug() << _duts[slot]["id"];
 }
 
 void TestClient::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
@@ -870,12 +868,6 @@ void TestClient::processFrameFromRail(QByteArray frame)
 
 void TestClient::on_checkBoardCurrent()
 {
-    for (int i = 0; i < _dutsNumbers.size(); i++)
-    {
-        powerOff(i + 1);
-    }
-
-    delay(3000);
     readCSA(0);
 
     if((_CSA < 140) && (_CSA > 110))
@@ -886,51 +878,36 @@ void TestClient::on_checkBoardCurrent()
 
 void TestClient::on_checkDutsCurrent()
 {
-    for (int i = 1; i < _dutsNumbers.size() + 1; i++)
+    for (int slot = 1; slot < _duts.size() + 1; slot++)
     {
-        powerOff(i);
+        powerOff(slot);
     }
 
     delay(3000);
 
-    for(int i = 1; i < _dutsNumbers.size() + 1; i++)
+    for(int slot = 1; slot < _duts.size() + 1; slot++)
     {
         readCSA(0);
         delay(100);
         int currentCSA = _CSA;
 
-        powerOn(i);
+        powerOn(slot);
         delay(3000);
 
         readCSA(0);
         delay(100);
         if((_CSA - currentCSA) > 20)
         {
-            _logger->logSuccess(QString("Device connected to the slot %1 of the test board on port %2").arg(i).arg(_serial.portName()));
-            _session->getDut(getDutNo(i))->setState(Dut::untested);
-            _session->getDut(getDutNo(i))->setChecked(true);
+            _logger->logSuccess(QString("Device connected to the slot %1 of the test board on port %2").arg(slot).arg(_serial.portName()));
+            _duts[slot]["state"] = DutState::untested;
+            _duts[slot]["checked"] = true;
+            emit dutChanged(_duts[slot]);
         }
 
-        powerOff(i);
+        powerOff(slot);
         delay(3000);
     }
 
-    emit dutsStateChanged();
-}
-
-void TestClient::on_readIdForAllDuts()
-{
-    for(int slot = 1; slot < _dutsNumbers.size() + 1; slot++)
-    {
-        if(_session->getDut(getDutNo(slot))->isChecked())
-        {
-            powerOn(slot);
-            delay(5000);
-            readChipId(slot);
-//            delay(100);
-            //_session->getDut(getDutNo(slot))->setId(_currentChipID);
-        }
-    }
 }
 
 void TestClient::delay(int msec)

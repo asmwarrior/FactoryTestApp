@@ -37,13 +37,13 @@ public slots:
     void finishSession();
     void startFullCycleTesting();
     void resetDutListInScriptEnv();
+    void delay(int msec);
 
 private:
 
     QJSValue evaluateScriptFromFile(const QString& scriptFileName);
     QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
     QJSValue runScript(const QString& scriptName, const QJSValueList& args);
-    void delay(int msec);
 
     //QString _workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
     QString _workDirectory = QDir(".").absolutePath(); //For test version

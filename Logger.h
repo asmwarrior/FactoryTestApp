@@ -20,11 +20,19 @@ public:
 
 public slots:
 
-    void logInfo(const QString &message);
-    void logError(const QString &message);
-    void logSuccess(const QString &message);
+    void on_logInfo(const QString message);
+    void on_logError(const QString message);
+    void on_logSuccess(const QString message);
 
-    void logDebug(const QString &message);
+    void on_logDebug(const QString message);
+
+signals:
+
+    void logInfo(const QString message);
+    void logError(const QString message);
+    void logSuccess(const QString message);
+
+    void logDebug(const QString message);
 
 private:
 

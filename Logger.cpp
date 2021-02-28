@@ -13,6 +13,11 @@ Logger::Logger(QSettings *settings, SessionManager *session, QObject *parent)
     _db = new DataBase(_settings, this);
     _db->connectToDataBase();
     //_db->insertIntoTable("test", QDateTime::currentDateTime().toString());
+
+    connect(this, &Logger::logDebug, this, &Logger::on_logDebug);
+    connect(this, &Logger::logInfo, this, &Logger::on_logInfo);
+    connect(this, &Logger::logError, this, &Logger::on_logError);
+    connect(this, &Logger::logSuccess, this, &Logger::on_logSuccess);
 }
 
 void Logger::setLogWidget(QListWidget *widget)
@@ -25,7 +30,7 @@ void Logger::setChildProcessLogWidget(QListWidget *widget)
     _debugLogWidget = widget;
 }
 
-void Logger::logInfo(const QString &message)
+void Logger::on_logInfo(const QString message)
 {
     QMutexLocker locker(&_logMutex);
 
@@ -42,7 +47,7 @@ void Logger::logInfo(const QString &message)
     qInfo().noquote() << message;
 }
 
-void Logger::logError(const QString &message)
+void Logger::on_logError(const QString message)
 {
     QMutexLocker locker(&_logMutex);
 
@@ -58,7 +63,7 @@ void Logger::logError(const QString &message)
     qCritical().noquote() << message;
 }
 
-void Logger::logSuccess(const QString &message)
+void Logger::on_logSuccess(const QString message)
 {
     QMutexLocker locker(&_logMutex);
 
@@ -74,7 +79,7 @@ void Logger::logSuccess(const QString &message)
     qInfo().noquote() << message;
 }
 
-void Logger::logDebug(const QString &message)
+void Logger::on_logDebug(const QString message)
 {
     QMutexLocker locker(&_debugLogMutex);
 

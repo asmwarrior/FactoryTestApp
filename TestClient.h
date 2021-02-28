@@ -14,14 +14,13 @@ class TestClient : public QObject
 public:
 
     enum Mode {idleMode, railMode, slipMode};
-
+    enum DutState {inactive, untested, tested, warning};
     enum RailTestCommand {noCommand, readChipIdCommand};
 
     explicit TestClient(QSettings* settings, SessionManager* session, QObject *parent = nullptr);
     ~TestClient();
 
     void setLogger(Logger* logger);
-    void setDutsNumbers(QList<int> numbers);
     void setDutsNumbers(QString numbers);
 
     void setPort(const QString &name,
@@ -33,8 +32,8 @@ public:
 
     void close();
 
-    Q_INVOKABLE int getDutCount() const {return _dutsNumbers.size();}
-    Q_INVOKABLE int getDutNo(int dut) const {return _dutsNumbers.at(dut - 1);}
+public slots:
+    bool isDutAvailable(int slot) {return _duts[slot]["state"].toBool();}
 
 private slots:
 
@@ -48,7 +47,6 @@ private slots:
 
     void on_checkBoardCurrent();
     void on_checkDutsCurrent();
-    void on_readIdForAllDuts();
 
     void on_sendRailtestCommand(int channel, const QByteArray& cmd, const QByteArray& args);
     void on_reset();
@@ -69,7 +67,7 @@ private slots:
     void on_read3V();
     void on_readTemperature();
 
-    void on_readChipId(int dut);
+    void on_readChipId(int slot);
 //    void on_testRadio();
 //    void on_testAccelerometer();
 //    void on_testLightSensor();
@@ -81,9 +79,8 @@ signals:
     void open();
     void checkBoardCurrent();
     void checkDutsCurrent();
-    void readIdForAllDuts();
 
-    void dutsStateChanged();
+    void dutChanged(Dut);
 
     //Slip commands
     void sendRailtestCommand(int channel, const QByteArray& cmd, const QByteArray& args);
@@ -128,11 +125,10 @@ private:
     SessionManager* _session;
     Logger* _logger;
 
-    QList<int> _dutsNumbers;
+//    QList<int> _dutsNumbers;
+    QMap<int, Dut> _duts;
 
     QSerialPort _serial;
-//    RailtestClient _rail;
-//    SlipClient _slip;
 
     bool _frameStarted;
     QByteArray _recvBuffer;

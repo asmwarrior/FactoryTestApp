@@ -25,12 +25,12 @@ public:
     explicit SessionManager(QObject *parent = nullptr);
     ~SessionManager();
 
-    QList<Dut*>& getDutList()
-    {
-        return m_dutList;
-    }
+//    QList<Dut*>& getDutList()
+//    {
+//        return m_dutList;
+//    }
 
-    Dut* getDut(int no) const {return m_dutList.at(no - 1);}
+//    Dut* getDut(int no) const {return m_dutList.at(no - 1);}
 
     QString getOperatorName() const
     {
@@ -79,8 +79,8 @@ public:
 
 public slots:
 
-    void resetDutList();
-    void uncheckAllDuts();
+//    void resetDutList();
+//    void uncheckAllDuts();
 
     void setOperatorName(QString operatorName)
     {
@@ -139,7 +139,7 @@ private:
     int m_successCount = 0;
     int m_failedCount = 0;
 
-    QList<Dut*> m_dutList;
+//    QList<Dut*> m_dutList;
 };
 
 #endif // SESSIONMANAGER_H

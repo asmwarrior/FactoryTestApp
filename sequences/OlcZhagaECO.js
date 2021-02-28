@@ -85,16 +85,19 @@ ZhagaECO =
 
     readChipID: function ()
     {
-        let test = testClientList[0];
-//        test.powerOn(3);
-//        test.switchSWD(3);
-//        test.waitCommandPrompt();
-        test.readChipId(3);
-//        for(var i = 0; i < 3; i++)
-//        {
-//            test.switchSWD(i + 1);
-//            test.readChipId();
-//        }
+        testClientList.forEach(
+        function(item)
+        {
+            for(var slot = 1; slot < 4; slot++)
+            {
+                if(item.isDutAvailable(slot))
+                {
+                    item.readChipId(slot);
+                }
+            }
+
+            mainWindow.delay(100);
+        });
     },
 
     initDali: function ()
@@ -142,7 +145,7 @@ testSequenceManager.addFunctionToGeneralList("Power off DUTs", ZhagaECO.dutsPowe
 testSequenceManager.addFunctionToGeneralList("Test connection to JLink", ZhagaECO.testConnection);
 testSequenceManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
 testSequenceManager.addFunctionToGeneralList("Open and check Railtest Client", ZhagaECO.openRailTestClient);
-testSequenceManager.addFunctionToGeneralList("Read unique device identifier (ID)", ZhagaECO.readChipID);
+testSequenceManager.addFunctionToGeneralList("Read unique device identifiers (ID)", ZhagaECO.readChipID);
 testSequenceManager.addFunctionToGeneralList("Initialize Dali test", ZhagaECO.initDali);
 testSequenceManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio);
 testSequenceManager.addFunctionToGeneralList("Test accelerometer", ZhagaECO.testAccelerometer);
@@ -153,7 +156,7 @@ testSequenceManager.addFunctionToGeneralList("Download Software", ZhagaECO.downl
 
 testSequenceManager.addFunctionToTestSequence("Download Railtest", ZhagaECO.downloadRailtest);
 testSequenceManager.addFunctionToTestSequence("Open and check Railtest Client", ZhagaECO.openRailTestClient);
-testSequenceManager.addFunctionToTestSequence("Read unique device identifier (ID)", ZhagaECO.readChipID);
+testSequenceManager.addFunctionToTestSequence("Read unique device identifiers (ID)", ZhagaECO.readChipID);
 testSequenceManager.addFunctionToTestSequence("Initialize Dali test", ZhagaECO.initDali);
 testSequenceManager.addFunctionToTestSequence("Test radio interface", ZhagaECO.testRadio);
 testSequenceManager.addFunctionToTestSequence("Test accelerometer", ZhagaECO.testAccelerometer);

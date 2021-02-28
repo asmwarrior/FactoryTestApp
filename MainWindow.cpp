@@ -21,6 +21,8 @@ MainWindow::MainWindow(QWidget *parent)
     _scriptEngine = _scriptEngine = new QJSEngine(this);
     _scriptEngine->installExtensions(QJSEngine::ConsoleExtension);
 
+    _scriptEngine->globalObject().setProperty("mainWindow", _scriptEngine->newQObject(this));
+
     _session = new SessionManager(this);
     _scriptEngine->globalObject().setProperty("session", _scriptEngine->newQObject(_session));
 
@@ -272,7 +274,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     for (auto & testClient : _testClientList)
     {
-        connect(testClient, &TestClient::dutsStateChanged, _testFixtureWidget, &TestFixtureWidget::refreshButtonsState);
+        connect(testClient, &TestClient::dutChanged, _testFixtureWidget, &TestFixtureWidget::refreshButtonState, Qt::QueuedConnection);
     }
 
     connect(_newSessionButton, &QPushButton::clicked, this, &MainWindow::startNewSession);
@@ -309,8 +311,8 @@ void MainWindow::startNewSession()
     _session->setBatchNumber(_batchNumberEdit->text());
     _session->setBatchInfo(_batchInfoEdit->text());
 
-    _session->resetDutList();
-    resetDutListInScriptEnv();
+//    _session->resetDutList();
+//    resetDutListInScriptEnv();
 
     //------------------------------------------------------------------------------------------
     _selectMetodBox->setEnabled(true);
@@ -347,24 +349,27 @@ void MainWindow::startNewSession()
         jlink->establishConnection();
     }
 
+    _testSequenceManager->runTestFunction("Power off DUTs");
+    delay(3000);
+
     for(auto & testClient : _testClientList)
     {
         testClient->checkBoardCurrent();
     }
 
-    delay(5000);
+    delay(6000);
 
     for(auto & testClient : _testClientList)
     {
         testClient->checkDutsCurrent();
     }
 
-//    delay(30000);
+    delay(20000);
 
-//    for(auto & testClient : _testClientList)
-//    {
-//        testClient->readIdForAllDuts();
-//    }
+    _testSequenceManager->runTestFunction("Supply power to DUTs");
+    delay(5000);
+
+    _testSequenceManager->runTestFunction("Read unique device identifiers (ID)");
 }
 
 void MainWindow::finishSession()
@@ -374,7 +379,7 @@ void MainWindow::finishSession()
     _session->setStartTime("");
     _session->setBatchNumber("");
     _session->setBatchInfo("");
-    _session->uncheckAllDuts();
+//    _session->uncheckAllDuts();
 
     _selectMetodBox->clear();
     _selectMetodBox->setEnabled(false);
@@ -408,13 +413,13 @@ void MainWindow::startFullCycleTesting()
 
 void MainWindow::resetDutListInScriptEnv()
 {
-    int counter = 0;
-    for(auto & dut : _session->getDutList())
-    {
-        QJSValue currentDut = _scriptEngine->newQObject(dut);
-        _scriptEngine->globalObject().property("dutList").setProperty(counter, currentDut);
-        counter++;
-    }
+//    int counter = 0;
+//    for(auto & dut : _session->getDutList())
+//    {
+//        QJSValue currentDut = _scriptEngine->newQObject(dut);
+//        _scriptEngine->globalObject().property("dutList").setProperty(counter, currentDut);
+//        counter++;
+//    }
 }
 
 QJSValue MainWindow::evaluateScriptFromFile(const QString &scriptFileName)

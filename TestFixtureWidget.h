@@ -20,6 +20,7 @@ public:
 public slots:
 
     void refreshButtonsState();
+    void refreshButtonState(Dut dut);
 
 signals:
 

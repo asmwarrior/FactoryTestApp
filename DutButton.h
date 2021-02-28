@@ -12,28 +12,19 @@ class DutButton : public QPushButton
 
 public:
 
-    explicit DutButton(int no, int panelNo, int pos, QWidget *parent = nullptr);
+    explicit DutButton(QWidget *parent = nullptr);
 
     void setChecked(bool checked = true);
-    void setTestPanelNo(int No);
-    void setPos(int pos);
-    int getNo();
-    int getTestPanelNo();
-    int getPos();
 
 signals:
     void clicked(bool checked);
 
 public slots:
 
-    void setButtonState(Dut::DutState state);
+    void setButtonState(int state);
 
 private:
 
-    Dut::DutState _state;
+    int _state;
     QMap<int, QString> _stateStyles;
-    int _no;
-    int _testPanelNo;
-    int _pos;
-
 };

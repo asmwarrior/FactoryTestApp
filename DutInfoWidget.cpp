@@ -51,51 +51,51 @@ void DutInfoWidget::showDutInfo(int no)
     if(no < 1)
         return;
 
-    Dut* dut = _session->getDutList()[no - 1];
+//    Dut* dut = _session->getDutList()[no - 1];
 
-    _slot->setText(_slotTemplate.arg(no));
-    _id->setText(_idTemplate.arg(dut->getId()));
+//    _slot->setText(_slotTemplate.arg(no));
+//    _id->setText(_idTemplate.arg(dut->getId()));
 
-    QString stateDescription;
-    switch (dut->getState())
-    {
-        case Dut::DutState::inactive:
-        stateDescription = "The device is not avaliable now.";
-        break;
+//    QString stateDescription;
+//    switch (dut->getState())
+//    {
+//        case Dut::DutState::inactive:
+//        stateDescription = "The device is not avaliable now.";
+//        break;
 
-        case Dut::DutState::untested:
-        stateDescription = "The device is not tested yet.</p>";
-        break;
+//        case Dut::DutState::untested:
+//        stateDescription = "The device is not tested yet.</p>";
+//        break;
 
-        case Dut::DutState::tested:
-        stateDescription = "The device passes testing successfully.";
-        break;
+//        case Dut::DutState::tested:
+//        stateDescription = "The device passes testing successfully.";
+//        break;
 
-        case Dut::DutState::warning:
-        stateDescription = "An error occures during the testing.";
-        break;
-    }
+//        case Dut::DutState::warning:
+//        stateDescription = "An error occures during the testing.";
+//        break;
+//    }
 
 
-    _status->setText(_statusTemplate.arg(stateDescription));
+//    _status->setText(_statusTemplate.arg(stateDescription));
 
-    if(!dut->getErrorList().isEmpty())
-    {
-        _errorDesc->setText(_errorDescTemplate.arg(dut->getErrorList().last()));
-    }
+//    if(!dut->getErrorList().isEmpty())
+//    {
+//        _errorDesc->setText(_errorDescTemplate.arg(dut->getErrorList().last()));
+//    }
 
-    else
-    {
-        _errorDesc->setText("");
-    }
+//    else
+//    {
+//        _errorDesc->setText("");
+//    }
 
-    if(dut->isChecked())
-    {
-        _checkState->setText("CHECKED for a further testing.");
-    }
+//    if(dut->isChecked())
+//    {
+//        _checkState->setText("CHECKED for a further testing.");
+//    }
 
-    else
-    {
-        _checkState->setText("NOT CHECKED for a further testing.");
-    }
+//    else
+//    {
+//        _checkState->setText("NOT CHECKED for a further testing.");
+//    }
 }
