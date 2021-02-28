@@ -154,7 +154,7 @@ MainWindow::MainWindow(QWidget *parent)
     leftPanelLayout->addWidget(_selectMetodBox);
 
     //Test functions list widget
-    QLabel* testFunctionsListLabel = new QLabel("Avaliable testing steps:", this);
+    QLabel* testFunctionsListLabel = new QLabel("Avaliable testing commands:", this);
     _testFunctionsListWidget = new QListWidget(this);
     _testFunctionsListWidget->setEnabled(false);
     _testFunctionsListWidget->setFixedWidth(350);
@@ -173,7 +173,7 @@ MainWindow::MainWindow(QWidget *parent)
     _startFullCycleTestingButton->setEnabled(false);
     startTestingButtonsLayout->addWidget(_startFullCycleTestingButton);
 
-    _startSelectedTestButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/checked")), tr("Start Selected Test"), this);
+    _startSelectedTestButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/checked")), tr("Start Command"), this);
     _startSelectedTestButton->setFixedSize(165, 40);
     _startSelectedTestButton->setEnabled(false);
     startTestingButtonsLayout->addWidget(_startSelectedTestButton);
@@ -316,6 +316,32 @@ MainWindow::~MainWindow()
 
 void MainWindow::startNewSession()
 {
+    for(auto & jlink : _JLinkList)
+    {
+        jlink->establishConnection();
+    }
+
+    _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
+
+    _testSequenceManager->runTestFunction("Power off DUTs");
+    delay(3000);
+
+//    for(auto & testClient : _testClientList)
+//    {
+//        testClient->checkBoardCurrent();
+//    }
+
+    delay(6000);
+
+    for(auto & testClient : _testClientList)
+    {
+        testClient->checkDutsCurrent();
+    }
+
+    delay(20000);
+
+    //------------------------------------------------------------------------------------------
+
     _session->setStarted(true);
     _session->setOperatorName(_operatorNameEdit->text().simplified());
     _session->setStartTime(QDateTime::currentDateTime().toString());
@@ -353,34 +379,6 @@ void MainWindow::startNewSession()
     {
         _operatorList.push_back(_session->getOperatorName());
     }
-
-    //--------------------------------------------------------------------------------------
-    for(auto & jlink : _JLinkList)
-    {
-        jlink->establishConnection();
-    }
-
-    _testSequenceManager->runTestFunction("Power off DUTs");
-    delay(3000);
-
-    for(auto & testClient : _testClientList)
-    {
-        testClient->checkBoardCurrent();
-    }
-
-    delay(6000);
-
-    for(auto & testClient : _testClientList)
-    {
-        testClient->checkDutsCurrent();
-    }
-
-    delay(20000);
-
-    _testSequenceManager->runTestFunction("Supply power to DUTs");
-    delay(5000);
-
-    _testSequenceManager->runTestFunction("Read unique device identifiers (ID)");
 }
 
 void MainWindow::finishSession()
@@ -416,10 +414,21 @@ void MainWindow::finishSession()
 
 void MainWindow::startFullCycleTesting()
 {
-    for (auto & funcName : _testSequenceManager->currentMethodSequenceFunctionNames())
-    {
-        qDebug() << funcName;
-    }
+    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
+    _testSequenceManager->runTestFunction("Supply power to DUTs");
+    delay(5000);
+
+    _testSequenceManager->runTestFunction("Download Railtest");
+    delay(10000);
+
+    _actionHintWidget->showProgressHint(HINT_DEVICE_ID);
+    _testSequenceManager->runTestFunction("Read unique device identifiers (ID)");
+
+    _actionHintWidget->showProgressHint(HINT_READY);
+//    for (auto & funcName : _testSequenceManager->currentMethodSequenceFunctionNames())
+//    {
+//        qDebug() << funcName;
+//    }
 }
 
 void MainWindow::resetDutListInScriptEnv()

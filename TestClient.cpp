@@ -79,6 +79,8 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
     connect(this, &TestClient::checkDutsCurrent, [this](){_mode = slipMode;});
     connect(this, &TestClient::checkDutsCurrent, this, &TestClient::on_checkDutsCurrent);
 
+    connect(this, &TestClient::delay, this, &TestClient::on_delay);
+
     //Slip commands
 
     connect(this, &TestClient::sendRailtestCommand, this, &TestClient::on_sendRailtestCommand);
@@ -756,7 +758,7 @@ void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
                             switch (gr->header.sequence)
                             {
                             case 1:
-                                //_logger->logDebug(QString("Reply to switchSWD command to board on %1: %2").arg(_serial.portName()).arg(gr->errorCode));
+                                _logger->logDebug(QString("Reply to switchSWD command to board on %1: %2").arg(_serial.portName()).arg(gr->errorCode));
                                 break;
 
                             case 2:
@@ -923,7 +925,7 @@ void TestClient::on_checkDutsCurrent()
 
 }
 
-void TestClient::delay(int msec)
+void TestClient::on_delay(int msec)
 {
     QTime expire = QTime::currentTime().addMSecs(msec);
     while (QTime::currentTime() <= expire)

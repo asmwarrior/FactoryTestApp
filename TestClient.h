@@ -43,6 +43,7 @@ private slots:
     void on_open();
     void onSerialPortReadyRead();
     void onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode);
+    void on_delay(int msec);
 
     void sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW;
     void processResponsePacket();
@@ -82,6 +83,7 @@ signals:
     void open();
     void checkBoardCurrent();
     void checkDutsCurrent();
+    void delay(int msec);
 
     void dutChanged(Dut);
 
@@ -120,7 +122,6 @@ private:
     void decodeFrame() Q_DECL_NOTHROW;
     void decodeRailtestReply(const QByteArray &reply);
     void processFrameFromRail(QByteArray frame);
-    void delay(int msec);
 
     Mode _mode = idleMode;
     RailTestCommand _currentCommand = noCommand;

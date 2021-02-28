@@ -41,22 +41,37 @@ ZhagaECO =
     },
 
     downloadRailtest: function ()
-    {
-        let jlink = JlinkList[0];
-        jlink.startJlinkCommands([
-                                    "power on perm",
-                                    "swdselect",
-                                    "si swd",
-                                    "speed 5000",
-                                    "Device = EFR32FG12PXXXF1024",
-                                    "connect",
-                                    "erase",
-                                    "loadfile dummy_btl_efr32xg12.s37",
-                                    "loadfile olc_zhaga_railtest.hex",
-                                    "r",
-                                    "g",
-                                    "q"
-                                 ]);
+    {  
+        for(let i = 0; i < testClientList.length; i++)
+        {
+            testClient = testClientList[i];
+            for (let slot = 1; slot < 4; slot++)
+            {
+                if(testClient.isDutAvailable(slot))
+                {
+                    testClient.switchSWD(slot);
+                    testClient.delay(500);
+                    mainWindow.delay(500);
+                    JlinkList[i].startJlinkCommands([]);
+                }
+            }
+        }
+
+//        let jlink = JlinkList[0];
+//        jlink.startJlinkCommands([
+//                                    "power on perm",
+//                                    "swdselect",
+//                                    "si swd",
+//                                    "speed 5000",
+//                                    "Device = EFR32FG12PXXXF1024",
+//                                    "connect",
+//                                    "erase",
+//                                    "loadfile dummy_btl_efr32xg12.s37",
+//                                    "loadfile olc_zhaga_railtest.hex",
+//                                    "r",
+//                                    "g",
+//                                    "q"
+//                                 ]);
     },
 
     downloadSoftware: function ()

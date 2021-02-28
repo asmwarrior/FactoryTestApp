@@ -12,10 +12,12 @@ public:
     ActionHintWidget(QWidget* parent = nullptr);
 
     void showNormalHint(const QString& text);
+    void showProgressHint(const QString& text);
 
 private:
 
     QLabel* _hintLabel;
-    QString _hintLabelTemplate = "NEXT ACTION: %1";
+    QString _hintActionTemplate = "NEXT ACTION: %1";
+    QString _hintProgressTemplate = "NOW IN PROGRESS: %1";
     QString _normalStyle = "color: #689F38; font-size:10pt; font-weight: bold;";
 };

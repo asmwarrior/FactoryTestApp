@@ -12,7 +12,7 @@ SessionInfoWidget::SessionInfoWidget(SessionManager* session, QWidget* parent) :
     QVBoxLayout* mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
 
-    QGroupBox* widgetBox = new QGroupBox("_session summary");
+    QGroupBox* widgetBox = new QGroupBox("Session summary");
     widgetBox->setStyleSheet("QGroupBox{color: #595959; font-size:10pt; font-weight: bold;}");
     widgetBox->setFixedSize(350, 200);
     mainLayout->addWidget(widgetBox);
