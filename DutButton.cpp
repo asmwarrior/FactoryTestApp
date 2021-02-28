@@ -1,6 +1,6 @@
 #include "DutButton.h"
 
-DutButton::DutButton(QWidget *parent) : QPushButton(parent)
+DutButton::DutButton(int no, QWidget *parent) : QPushButton(parent), _no(no)
 {
     _stateStyles =
     {

@@ -264,9 +264,10 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-    connect(_testFixtureWidget, &TestFixtureWidget::dutStateChanged, [=]()
+    connect(_testFixtureWidget, &TestFixtureWidget::dutClicked, _dutInfoWidget, &DutInfoWidget::setDutChecked);
+    connect(_testFixtureWidget, &TestFixtureWidget::dutClicked, [=](int no)
     {
-        _dutInfoWidget->showDutInfo(_session->getCurrentDut());
+        _dutInfoWidget->showDutInfo(no);
     });
 
     connect(_clearLogWidgetButton, &QPushButton::clicked, _logWidget, &QListWidget::clear);
@@ -275,6 +276,16 @@ MainWindow::MainWindow(QWidget *parent)
     for (auto & testClient : _testClientList)
     {
         connect(testClient, &TestClient::dutChanged, _testFixtureWidget, &TestFixtureWidget::refreshButtonState, Qt::QueuedConnection);
+    }
+
+    for (auto & testClient : _testClientList)
+    {
+        connect(_testFixtureWidget, &TestFixtureWidget::dutClicked, testClient, &TestClient::setDutChecked, Qt::QueuedConnection);
+    }
+
+    for (auto & testClient : _testClientList)
+    {
+        connect(testClient, &TestClient::dutChanged, _dutInfoWidget, &DutInfoWidget::updateDut, Qt::QueuedConnection);
     }
 
     connect(_newSessionButton, &QPushButton::clicked, this, &MainWindow::startNewSession);
@@ -459,4 +470,18 @@ void MainWindow::delay(int msec)
     {
         QCoreApplication::processEvents();
     }
+}
+
+Dut MainWindow::getDut(int no)
+{
+    for (auto & testClient : _testClientList)
+    {
+        for(auto & dut : testClient->getDuts())
+        {
+            if(dut["no"].toInt() == no)
+                return dut;
+        }
+    }
+
+    return dutTemplate;
 }

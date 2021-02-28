@@ -32,8 +32,11 @@ public:
 
     void close();
 
+    QMap<int, Dut> getDuts() {return _duts;}
+
 public slots:
     bool isDutAvailable(int slot) {return _duts[slot]["state"].toBool();}
+    void setDutChecked(int no, bool checked);
 
 private slots:
 

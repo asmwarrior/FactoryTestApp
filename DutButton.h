@@ -12,9 +12,10 @@ class DutButton : public QPushButton
 
 public:
 
-    explicit DutButton(QWidget *parent = nullptr);
+    explicit DutButton(int no, QWidget *parent = nullptr);
 
     void setChecked(bool checked = true);
+    int getNo() {return _no;}
 
 signals:
     void clicked(bool checked);
@@ -25,6 +26,7 @@ public slots:
 
 private:
 
+    int _no;
     int _state;
     QMap<int, QString> _stateStyles;
 };

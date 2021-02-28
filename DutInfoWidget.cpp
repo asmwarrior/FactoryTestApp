@@ -44,6 +44,11 @@ DutInfoWidget::DutInfoWidget(SessionManager *session, QWidget *parent) : QWidget
     labelsLayout->addWidget(_checkState);
 
     labelsLayout->addStretch();
+
+    for (int no = 1; no < 16; no++)
+    {
+        _duts.insert(no, dutTemplate);
+    }
 }
 
 void DutInfoWidget::showDutInfo(int no)
@@ -51,33 +56,33 @@ void DutInfoWidget::showDutInfo(int no)
     if(no < 1)
         return;
 
-//    Dut* dut = _session->getDutList()[no - 1];
+    auto dut = _duts[no];
 
-//    _slot->setText(_slotTemplate.arg(no));
-//    _id->setText(_idTemplate.arg(dut->getId()));
+    _slot->setText(_slotTemplate.arg(no));
+    _id->setText(_idTemplate.arg(dut["id"].toString()));
 
-//    QString stateDescription;
-//    switch (dut->getState())
-//    {
-//        case Dut::DutState::inactive:
-//        stateDescription = "The device is not avaliable now.";
-//        break;
+    QString stateDescription;
+    switch (dut["state"].toInt())
+    {
+        case DutState::inactive:
+        stateDescription = "The device is not avaliable now.";
+        break;
 
-//        case Dut::DutState::untested:
-//        stateDescription = "The device is not tested yet.</p>";
-//        break;
+        case DutState::untested:
+        stateDescription = "The device is not tested yet.</p>";
+        break;
 
-//        case Dut::DutState::tested:
-//        stateDescription = "The device passes testing successfully.";
-//        break;
+        case DutState::tested:
+        stateDescription = "The device passes testing successfully.";
+        break;
 
-//        case Dut::DutState::warning:
-//        stateDescription = "An error occures during the testing.";
-//        break;
-//    }
+        case DutState::warning:
+        stateDescription = "An error occures during the testing.";
+        break;
+    }
 
 
-//    _status->setText(_statusTemplate.arg(stateDescription));
+    _status->setText(_statusTemplate.arg(stateDescription));
 
 //    if(!dut->getErrorList().isEmpty())
 //    {
@@ -89,13 +94,23 @@ void DutInfoWidget::showDutInfo(int no)
 //        _errorDesc->setText("");
 //    }
 
-//    if(dut->isChecked())
-//    {
-//        _checkState->setText("CHECKED for a further testing.");
-//    }
+    if(dut["checked"].toBool())
+    {
+        _checkState->setText("CHECKED for a further testing.");
+    }
 
-//    else
-//    {
-//        _checkState->setText("NOT CHECKED for a further testing.");
-//    }
+    else
+    {
+        _checkState->setText("NOT CHECKED for a further testing.");
+        }
+}
+
+void DutInfoWidget::updateDut(Dut dut)
+{
+    _duts[dut["no"].toInt()] = dut;
+}
+
+void DutInfoWidget::setDutChecked(int no, bool checked)
+{
+    _duts[no]["checked"] = checked;
 }

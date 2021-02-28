@@ -24,7 +24,7 @@ public slots:
 
 signals:
 
-    void dutStateChanged();
+    void dutClicked(int id, bool checked);
 
 private:
 

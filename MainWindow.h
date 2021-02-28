@@ -38,6 +38,7 @@ public slots:
     void startFullCycleTesting();
     void resetDutListInScriptEnv();
     void delay(int msec);
+    Dut getDut(int no);
 
 private:
 

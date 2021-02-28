@@ -194,6 +194,18 @@ void TestClient::close()
     }
 }
 
+void TestClient::setDutChecked(int no, bool checked)
+{
+    for(auto & dut : _duts)
+    {
+        if(dut["no"].toInt() == no)
+        {
+            dut["no"] = checked;
+            break;
+        }
+    }
+}
+
 void TestClient::onSerialPortReadyRead()
 {
     switch (_mode)
@@ -562,6 +574,7 @@ void TestClient::on_readChipId(int slot)
     sendRailtestCommand(slot, "getmemw", "0x0FE081F0 2");
     delay(1000);
     _duts[slot]["id"] = _currentChipID;
+    emit dutChanged(_duts[slot]);
     qDebug() << _duts[slot]["id"];
 }
 

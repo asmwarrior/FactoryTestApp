@@ -19,6 +19,8 @@ public:
 public slots:
 
     void showDutInfo(int no);
+    void updateDut(Dut dut);
+    void setDutChecked(int no, bool checked);
 
 private:
 
@@ -37,4 +39,6 @@ private:
     QString _errorDescTemplate = "<b>Last error description:</b> %1";
 
     QLabel* _checkState;
+
+    QMap<int, Dut> _duts;
 };
