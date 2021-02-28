@@ -2,7 +2,12 @@
 
 #include <QDebug>
 
-Logger::Logger(QSettings *settings, SessionManager *session, QObject *parent) : QObject(parent), _settings(settings), _session(session)
+Logger::Logger(QSettings *settings, SessionManager *session, QObject *parent)
+    : QObject(parent),
+      _settings(settings),
+      _session(session),
+      _logMutex(QMutex::Recursive),
+      _debugLogMutex(QMutex::Recursive)
 {
     //Database
     _db = new DataBase(_settings, this);
@@ -17,7 +22,7 @@ void Logger::setLogWidget(QListWidget *widget)
 
 void Logger::setChildProcessLogWidget(QListWidget *widget)
 {
-    _childProcessLogWidget = widget;
+    _debugLogWidget = widget;
 }
 
 void Logger::logInfo(const QString &message)
@@ -71,12 +76,12 @@ void Logger::logSuccess(const QString &message)
 
 void Logger::logDebug(const QString &message)
 {
-    QMutexLocker locker(&_childProcessLogMutex);
+    QMutexLocker locker(&_debugLogMutex);
 
-    if(!_childProcessLogWidget)
+    if(!_debugLogWidget)
         return;
 
-    _childProcessLogWidget->addItem(message);
-    _childProcessLogWidget->scrollToBottom();
+    _debugLogWidget->addItem(message);
+    _debugLogWidget->scrollToBottom();
     qInfo().noquote() << message;
 }

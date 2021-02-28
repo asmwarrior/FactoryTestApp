@@ -33,7 +33,7 @@ private:
     DataBase *_db;
 
     QMutex _logMutex;
-    QMutex _childProcessLogMutex;
+    QMutex _debugLogMutex;
     QListWidget* _logWidget = nullptr;
-    QListWidget* _childProcessLogWidget = nullptr;
+    QListWidget* _debugLogWidget = nullptr;
 };
