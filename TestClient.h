@@ -54,6 +54,7 @@ private slots:
     void on_checkBoardCurrent();
     void on_checkDutsCurrent();
 
+    void sendSlipPacket(int channel, const QByteArray &frame);
     void on_sendRailtestCommand(int channel, const QByteArray& cmd, const QByteArray& args);
     void on_reset();
     void on_switchSWD(int DUT);
@@ -73,7 +74,7 @@ private slots:
     void on_read3V();
     void on_readTemperature();
 
-    void on_readChipId(int slot);
+    void on_readChipId();
 //    void on_testRadio();
     void on_testAccelerometer(int slot);
     void on_testLightSensor(int slot);
@@ -112,7 +113,7 @@ signals:
     //Railtest commands
     void waitCommandPrompt(int timeout = 1000);
     void syncCommand(const QByteArray &cmd, const QByteArray &args = QByteArray(), int timeout = 5000);
-    void readChipId(int dut);
+    void readChipId();
     void testRadio();
     void testAccelerometer(int slot);
     void testLightSensor(int slot);
@@ -142,7 +143,7 @@ private:
     QByteArray _syncCommand;
     QVariantList _syncReplies;
 
-    int _CSA = 0; //Board current (mA)
+    int _CSA = -1; //Board current (mA)
 
     int _currentSlot = 0;
     QString _currentChipID = "";

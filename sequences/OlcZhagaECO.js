@@ -89,7 +89,9 @@ ZhagaECO =
             {
                 if(item.isDutAvailable(slot) && item.isDutChecked(slot))
                 {
-                    item.readChipId(slot);
+                    item.switchSWD(slot);
+                    item.delay(500);
+                    item.readChipId();
                 }
             }
 

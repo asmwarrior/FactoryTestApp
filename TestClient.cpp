@@ -73,10 +73,8 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
 
     connect(this, &TestClient::open, this, &TestClient::on_open);
 
-    connect(this, &TestClient::checkBoardCurrent, [this](){_mode = slipMode;});
     connect(this, &TestClient::checkBoardCurrent, this, &TestClient::on_checkBoardCurrent);
 
-    connect(this, &TestClient::checkDutsCurrent, [this](){_mode = slipMode;});
     connect(this, &TestClient::checkDutsCurrent, this, &TestClient::on_checkDutsCurrent);
 
     connect(this, &TestClient::delay, this, &TestClient::on_delay);
@@ -86,29 +84,15 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
     connect(this, &TestClient::sendRailtestCommand, this, &TestClient::on_sendRailtestCommand);
     connect(this, &TestClient::reset, this, &TestClient::on_reset);
 
-    connect(this, &TestClient::switchSWD, [this](){_mode = slipMode;});
     connect(this, &TestClient::switchSWD, this, &TestClient::on_switchSWD);
-
-    connect(this, &TestClient::powerOn, [this](){_mode = slipMode;});
     connect(this, &TestClient::powerOn, this, &TestClient::on_powerOn);
-
-    connect(this, &TestClient::powerOff, [this](){_mode = slipMode;});
     connect(this, &TestClient::powerOff, this, &TestClient::on_powerOff);
-
     connect(this, &TestClient::readDIN, this, &TestClient::on_readDIN);
     connect(this, &TestClient::setDOUT, this, &TestClient::on_setDOUT);
     connect(this, &TestClient::clearDOUT, this, &TestClient::on_clearDOUT);
-
-    connect(this, &TestClient::readCSA, [this](){_mode = slipMode;});
     connect(this, &TestClient::readCSA, this, &TestClient::on_readCSA);
-
-    connect(this, &TestClient::readAIN, [this](){_mode = slipMode;});
     connect(this, &TestClient::readAIN, this, &TestClient::on_readAIN);
-
-    connect(this, &TestClient::daliOn, [this](){_mode = slipMode;});
     connect(this, &TestClient::daliOn, this, &TestClient::on_DaliOn);
-
-    connect(this, &TestClient::daliOff, [this](){_mode = slipMode;});
     connect(this, &TestClient::daliOff, this, &TestClient::on_DaliOff);
 
     connect(this, &TestClient::configDebugSerial, this, &TestClient::on_configDebugSerial);
@@ -268,6 +252,12 @@ void TestClient::onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCod
         _logger->logError("Serial port error occurred " + QString().setNum(errorCode) + " on port " + _serial.portName());
 }
 
+void TestClient::sendSlipPacket(int channel, const QByteArray &frame)
+{
+    _mode = slipMode;
+    sendFrame(channel, frame);
+}
+
 void TestClient::on_sendRailtestCommand(int channel, const QByteArray &cmd, const QByteArray &args)
 {
     _mode = railMode;
@@ -284,7 +274,7 @@ void TestClient::on_reset()
     pkt.type = qToBigEndian<uint16_t>(MB_SYSTEM_RESET);
     pkt.sequence = MB_SYSTEM_RESET;
     pkt.dataLen = 0;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_switchSWD(int DUT)
@@ -305,7 +295,7 @@ void TestClient::on_switchSWD(int DUT)
     pkt.h.sequence = 1;
     pkt.h.dataLen = 1;
     pkt.dut = DUT;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_powerOn(int DUT)
@@ -328,7 +318,7 @@ void TestClient::on_powerOn(int DUT)
     pkt.h.dataLen = 2;
     pkt.dut = DUT;
     pkt.state = 1;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_powerOff(int DUT)
@@ -351,7 +341,7 @@ void TestClient::on_powerOff(int DUT)
     pkt.h.dataLen = 2;
     pkt.dut = DUT;
     pkt.state = 0;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_readDIN(int DUT, int DIN)
@@ -373,7 +363,7 @@ void TestClient::on_readDIN(int DUT, int DIN)
     pkt.h.dataLen = 2;
     pkt.dut = DUT;
     pkt.din = DIN;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_setDOUT(int DUT, int DOUT)
@@ -397,7 +387,7 @@ void TestClient::on_setDOUT(int DUT, int DOUT)
     pkt.dut = DUT;
     pkt.dout = DOUT;
     pkt.state = 1;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_clearDOUT(int DUT, int DOUT)
@@ -421,7 +411,7 @@ void TestClient::on_clearDOUT(int DUT, int DOUT)
     pkt.dut = DUT;
     pkt.dout = DOUT;
     pkt.state = 0;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_readCSA(int gain)
@@ -441,7 +431,7 @@ void TestClient::on_readCSA(int gain)
     pkt.h.sequence = 7;
     pkt.h.dataLen = 1;
     pkt.gain = gain;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_readAIN(int DUT, int AIN, int gain)
@@ -468,7 +458,7 @@ void TestClient::on_readAIN(int DUT, int AIN, int gain)
 
     _currentSlot = DUT;
 
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_configDebugSerial(int DUT, int baudRate, unsigned char bits, unsigned char parity, unsigned char stopBits)
@@ -483,7 +473,7 @@ void TestClient::on_configDebugSerial(int DUT, int baudRate, unsigned char bits,
     pkt.bits = bits;
     pkt.parity = parity;
     pkt.stopBits = stopBits;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_DaliOn()
@@ -502,7 +492,7 @@ void TestClient::on_DaliOn()
     pkt.h.sequence = 10;
     pkt.h.dataLen = 1;
     pkt.state = 1;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_DaliOff()
@@ -521,7 +511,7 @@ void TestClient::on_DaliOff()
     pkt.h.sequence = 11;
     pkt.h.dataLen = 1;
     pkt.state = 0;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_readDaliADC()
@@ -538,7 +528,7 @@ void TestClient::on_readDaliADC()
     pkt.h.type = qToBigEndian<uint16_t>(MB_READ_DALI_ADC);
     pkt.h.sequence = 12;
     pkt.h.dataLen = 0;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_readDinADC(int DUT, int DIN)
@@ -560,7 +550,7 @@ void TestClient::on_readDinADC(int DUT, int DIN)
     pkt.h.dataLen = 2;
     pkt.dut = DUT;
     pkt.din = DIN;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_read24V()
@@ -577,7 +567,7 @@ void TestClient::on_read24V()
     pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_24V);
     pkt.h.sequence = 14;
     pkt.h.dataLen = 0;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_read3V()
@@ -594,7 +584,7 @@ void TestClient::on_read3V()
     pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_3V);
     pkt.h.sequence = 15;
     pkt.h.dataLen = 0;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
 void TestClient::on_readTemperature()
@@ -611,17 +601,18 @@ void TestClient::on_readTemperature()
     pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_TEMP);
     pkt.h.sequence = 16;
     pkt.h.dataLen = 0;
-    sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    sendSlipPacket(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
-void TestClient::on_readChipId(int slot)
+void TestClient::on_readChipId()
 {
+    qDebug() << "on_readChipId() called for slot " << _currentSlot;
     _currentCommand = readChipIdCommand;
-    sendRailtestCommand(slot, "getmemw", "0x0FE081F0 2");
+    sendRailtestCommand(_currentSlot, "getmemw", "0x0FE081F0 2");
     delay(1000);
-    _duts[slot]["id"] = _currentChipID;
-    emit dutChanged(_duts[slot]);
-    _logger->logSuccess(QString("ID for DUT %1 has been read: %2").arg(_duts[slot]["no"].toInt()).arg(_duts[slot]["id"].toString()));
+    _duts[_currentSlot]["id"] = _currentChipID;
+    emit dutChanged(_duts[_currentSlot]);
+    _logger->logSuccess(QString("ID for DUT %1 has been read: %2").arg(_duts[_currentSlot]["no"].toInt()).arg(_duts[_currentSlot]["id"].toString()));
     //qDebug() << _duts[slot]["id"];
 }
 
@@ -1097,15 +1088,18 @@ void TestClient::on_checkDutsCurrent()
     for(int slot = 1; slot < _duts.size() + 1; slot++)
     {
         readCSA(0);
-        delay(100);
+        delay(500);
+
         int currentCSA = _CSA;
 
         powerOn(slot);
         delay(1000);
 
         readCSA(0);
-        delay(100);
-        if((_CSA - currentCSA) > 20)
+        delay(500);
+
+        qDebug() << _serial.portName() << currentCSA << _CSA;
+        if((_CSA - currentCSA) > 30)
         {
             _logger->logSuccess(QString("Device connected to the slot %1 of the test board on port %2").arg(slot).arg(_serial.portName()));
             _duts[slot]["state"] = DutState::untested;
