@@ -102,7 +102,9 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
     connect(this, &TestClient::readCSA, [this](){_mode = slipMode;});
     connect(this, &TestClient::readCSA, this, &TestClient::on_readCSA);
 
+    connect(this, &TestClient::readAIN, [this](){_mode = slipMode;});
     connect(this, &TestClient::readAIN, this, &TestClient::on_readAIN);
+
     connect(this, &TestClient::configDebugSerial, this, &TestClient::on_configDebugSerial);
     connect(this, &TestClient::DaliOn, this, &TestClient::on_DaliOn);
     connect(this, &TestClient::DaliOff, this, &TestClient::on_DaliOff);
@@ -122,8 +124,11 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
     connect(this, &TestClient::readChipId, [this](){_mode = railMode;});
     connect(this, &TestClient::readChipId, this, &TestClient::on_readChipId);
 
+    connect(this, &TestClient::testAccelerometer, [this](){_mode = railMode;});
+    connect(this, &TestClient::testAccelerometer, this, &TestClient::on_testAccelerometer);
+
+
 //    connect(this, &TestClient::testRadio, &_rail, &RailtestClient::on_testRadio);
-//    connect(this, &TestClient::testAccelerometer, &_rail, &RailtestClient::on_testAccelerometer);
 //    connect(this, &TestClient::testLightSensor, &_rail, &RailtestClient::on_testLightSensor);
 //    connect(this, &TestClient::testDALI, &_rail, &RailtestClient::on_testDALI);
 //    connect(this, &TestClient::testGNSS, &_rail, &RailtestClient::on_testGNSS);
@@ -202,8 +207,28 @@ void TestClient::setDutChecked(int no, bool checked)
     {
         if(dut["no"].toInt() == no)
         {
-            dut["no"] = checked;
+            dut["checked"] = checked;
             break;
+        }
+    }
+}
+
+void TestClient::checkTestingCompletion()
+{
+    for(auto & dut : _duts)
+    {
+        if(dut["checked"].toBool())
+        {
+            bool result =   dut["id"].toString() != "" &&
+                            dut["voltageChecked"].toBool() &&
+                            dut["accelChecked"].toBool();
+
+            if(result)
+            {
+                dut["state"] = DutState::tested;
+            }
+
+            emit dutChanged(dut);
         }
     }
 }
@@ -232,6 +257,7 @@ void TestClient::onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCod
 void TestClient::on_sendRailtestCommand(int channel, const QByteArray &cmd, const QByteArray &args)
 {
     _mode = railMode;
+    _currentSlot = channel;
     _syncCommand = cmd;
     _syncReplies.clear();
     sendFrame(channel, cmd + " " + args + "\r\n\r\n");
@@ -424,6 +450,9 @@ void TestClient::on_readAIN(int DUT, int AIN, int gain)
     pkt.dut = DUT;
     pkt.ain = AIN;
     pkt.gain = gain;
+
+    _currentSlot = DUT;
+
     sendFrame(0, QByteArray((char*)&pkt, sizeof(pkt)));
 }
 
@@ -577,7 +606,23 @@ void TestClient::on_readChipId(int slot)
     delay(1000);
     _duts[slot]["id"] = _currentChipID;
     emit dutChanged(_duts[slot]);
-    qDebug() << _duts[slot]["id"];
+    _logger->logSuccess(QString("ID for DUT %1 has been read: %2").arg(_duts[slot]["no"].toInt()).arg(_duts[slot]["id"].toString()));
+    //qDebug() << _duts[slot]["id"];
+}
+
+void TestClient::on_testAccelerometer(int slot)
+{
+    _currentCommand = accelCommand;
+    sendRailtestCommand(slot, "accl", {});
+    delay(1000);
+    _duts[slot]["accelChecked"] = _currentAccelChecked;
+
+    if(_duts[slot]["accelChecked"].toBool())
+        _logger->logSuccess(QString("Accelerometer in DUT %1 has been tested successfully").arg(_duts[slot]["no"].toInt()));
+    else
+        _logger->logError(QString("Testing accelerometer in DUT %1 has been failed!").arg(_duts[slot]["no"].toInt()));
+
+    emit dutChanged(_duts[slot]);
 }
 
 void TestClient::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
@@ -773,6 +818,24 @@ void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
                                 _CSA = gr->errorCode;
                                 _logger->logDebug(QString("Reply to readCSA command to %1: %2").arg(_serial.portName()).arg(gr->errorCode));
                                 break;
+
+                            case 8:
+                                _currentVoltage = gr->errorCode;
+
+                                if(_currentVoltage > 70200 && _currentVoltage < 70800)
+                                {
+                                    _duts[_currentSlot]["voltageChecked"] = true;
+                                    _logger->logSuccess(QString("Voltage (3.3V) on AIN 1 in DUT %1 checked").arg(_duts[_currentSlot]["no"].toInt()));
+                                }
+                                else
+                                {
+                                    _duts[_currentSlot]["voltageChecked"] = false;
+                                    _logger->logError(QString("Error voltage value on AIN 1 in DUT %1 detected!").arg(_duts[_currentSlot]["no"].toInt()));
+                                }
+
+                                emit dutChanged(_duts[_currentSlot]);
+                                _currentVoltage = 0;
+                                break;
                             }
                         }
                         break;
@@ -846,37 +909,65 @@ void TestClient::decodeRailtestReply(const QByteArray &reply)
 
 void TestClient::processFrameFromRail(QByteArray frame)
 {
-    int idx = frame.indexOf("\r\n");
-    frame = frame.mid(idx + 2); // Delete first line
-    frame = frame.mid(1); // Delete '#' symbol
-
-    QString frameString(frame);
-
-    auto replyStringList = frameString.split("\r\n");
-    QList<QByteArray> replyList;
-    for (int i = 1; i < replyStringList.size() - 2; i++)
-    {
-        replyList.push_back(replyStringList.at(i).toLocal8Bit());
-    }
-
-    for(auto & reply : replyList)
-    {
-        decodeRailtestReply(reply);
-    }
-
     switch (_currentCommand)
     {
     case readChipIdCommand:
-        auto
-            llo = _syncReplies.at(0).toList(),
-            lhi = _syncReplies.at(1).toList();
+    {
+        //------------------------------------------------------------
+        int idx = frame.indexOf("\r\n");
+        frame = frame.mid(idx + 2); // Delete first line
+        frame = frame.mid(1); // Delete '#' symbol
 
-        auto
-           lo = llo.at(1).toByteArray().trimmed(),
-           hi = lhi.at(1).toByteArray().trimmed();
+        QString frameString(frame);
+
+        auto replyStringList = frameString.split("\r\n");
+        QList<QByteArray> replyList;
+        for (int i = 1; i < replyStringList.size() - 2; i++)
+        {
+            replyList.push_back(replyStringList.at(i).toLocal8Bit());
+        }
+
+        for(auto & reply : replyList)
+        {
+            decodeRailtestReply(reply);
+        }
+        //-------------------------------------------------------------
+
+        auto llo = _syncReplies.at(0).toList();
+        auto lhi = _syncReplies.at(1).toList();
+
+        auto lo = llo.at(1).toByteArray().trimmed();
+        auto hi = lhi.at(1).toByteArray().trimmed();
 
         _currentChipID = (hi.mid(2) + lo.mid(2)).toUpper();
+    }
+        break;
 
+    case accelCommand:
+    {
+        if (frame.contains("X") && frame.contains("Y") && frame.contains("Z"))
+        {
+               double x = frame.mid(frame.indexOf("X") + 2, 5).toDouble();
+               double y = frame.mid(frame.indexOf("Y") + 2, 5).toDouble();
+               double z = frame.mid(frame.indexOf("Z") + 2, 5).toDouble();
+
+               if (x > 10 || x < -10 || y > 10 || y < -10 || z < 80 || z > 100)
+               {
+                   //_logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+                   _currentAccelChecked = false;
+               }
+               else
+               {
+                   //_logger->logSuccess(QString("Accelerometer: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+                   _currentAccelChecked = true;
+               }
+        }
+
+        else
+        {
+            _currentAccelChecked = false;
+        }
+    }
         break;
     }
 }

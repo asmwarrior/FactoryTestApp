@@ -418,11 +418,20 @@ void MainWindow::startFullCycleTesting()
     _testSequenceManager->runTestFunction("Supply power to DUTs");
     delay(5000);
 
-    _testSequenceManager->runTestFunction("Download Railtest");
-    delay(10000);
+//    _testSequenceManager->runTestFunction("Download Railtest");
+//    delay(10000);
 
     _actionHintWidget->showProgressHint(HINT_DEVICE_ID);
     _testSequenceManager->runTestFunction("Read unique device identifiers (ID)");
+    delay(2000);
+
+    _testSequenceManager->runTestFunction("Check voltage on AIN 1 (3.3V)");
+    delay(2000);
+
+    _testSequenceManager->runTestFunction("Test accelerometer");
+    delay(2000);
+
+    _testSequenceManager->runTestFunction("Check Testing Completion");
 
     _actionHintWidget->showProgressHint(HINT_READY);
 //    for (auto & funcName : _testSequenceManager->currentMethodSequenceFunctionNames())

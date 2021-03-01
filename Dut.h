@@ -14,7 +14,9 @@ static Dut dutTemplate {
     {"state", DutState::inactive},
     {"id", ""},
     {"no", 0},
-    {"checked", false}
+    {"checked", false},
+    {"voltageChecked", false},
+    {"accelChecked", false}
 };
 
 //class Dut : public QObject

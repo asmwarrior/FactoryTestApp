@@ -73,7 +73,7 @@ void DutInfoWidget::showDutInfo(int no)
         break;
 
         case DutState::tested:
-        stateDescription = "The device passes testing successfully.";
+        stateDescription = "The device has been tested successfully.";
         break;
 
         case DutState::warning:
@@ -102,12 +102,14 @@ void DutInfoWidget::showDutInfo(int no)
     else
     {
         _checkState->setText("NOT CHECKED for a further testing.");
-        }
+    }
 }
 
 void DutInfoWidget::updateDut(Dut dut)
 {
+    QMutexLocker locker(&_updateMutex);
     _duts[dut["no"].toInt()] = dut;
+    showDutInfo(dut["no"].toInt());
 }
 
 void DutInfoWidget::setDutChecked(int no, bool checked)

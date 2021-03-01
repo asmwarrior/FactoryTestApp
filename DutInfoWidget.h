@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QLabel>
 #include <QSharedPointer>
+#include <QMutexLocker>
 
 #include "DutButton.h"
 #include "SessionManager.h"
@@ -23,6 +24,8 @@ public slots:
     void setDutChecked(int no, bool checked);
 
 private:
+
+    QMutex _updateMutex;
 
     SessionManager* _session;
 

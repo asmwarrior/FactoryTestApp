@@ -15,7 +15,7 @@ public:
 
     enum Mode {idleMode, railMode, slipMode};
     enum DutState {inactive, untested, tested, warning};
-    enum RailTestCommand {noCommand, readChipIdCommand};
+    enum RailTestCommand {noCommand, readChipIdCommand, accelCommand};
 
     explicit TestClient(QSettings* settings, SessionManager* session, QObject *parent = nullptr);
     ~TestClient();
@@ -36,7 +36,9 @@ public:
 
 public slots:
     bool isDutAvailable(int slot) {return _duts[slot]["state"].toBool();}
+    bool isDutChecked(int slot) {return _duts[slot]["checked"].toBool();}
     void setDutChecked(int no, bool checked);
+    void checkTestingCompletion();
 
 private slots:
 
@@ -73,7 +75,7 @@ private slots:
 
     void on_readChipId(int slot);
 //    void on_testRadio();
-//    void on_testAccelerometer();
+    void on_testAccelerometer(int slot);
 //    void on_testLightSensor();
 //    void on_testDALI();
 //    void on_testGNSS();
@@ -112,7 +114,7 @@ signals:
     void syncCommand(const QByteArray &cmd, const QByteArray &args = QByteArray(), int timeout = 5000);
     void readChipId(int dut);
     void testRadio();
-    void testAccelerometer();
+    void testAccelerometer(int slot);
     void testLightSensor();
     void testDALI();
     void testGNSS();
@@ -141,7 +143,11 @@ private:
     QVariantList _syncReplies;
 
     int _CSA = 0; //Board current (mA)
+
+    int _currentSlot = 0;
     QString _currentChipID = "";
+    int _currentVoltage = 0;
+    bool _currentAccelChecked = false;
 };
 
 #endif // TESTCLIENT_H
