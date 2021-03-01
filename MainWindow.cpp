@@ -338,7 +338,8 @@ void MainWindow::startNewSession()
         testClient->checkDutsCurrent();
     }
 
-    delay(15000);
+    waitForTestClientSequenceFinished();
+    //delay(15000);
 
     //------------------------------------------------------------------------------------------
 
@@ -417,15 +418,24 @@ void MainWindow::startFullCycleTesting()
     _startFullCycleTestingButton->setEnabled(false);
 
     _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
-    _testSequenceManager->runTestFunction("Supply power to DUTs");
-    delay(5000);
+
+//    for (auto & testClient : _testClientList)
+//    {
+//        for (int slot = 1; slot < 4; slot++)
+//        {
+//            testClient->powerOff(slot);
+
+//        }
+//    }
+//    _testSequenceManager->runTestFunction("Supply power to DUTs");
+//    delay(5000);
 
 //    _testSequenceManager->runTestFunction("Download Railtest");
 //    delay(10000);
 
     _actionHintWidget->showProgressHint(HINT_DEVICE_ID);
     _testSequenceManager->runTestFunction("Read unique device identifiers (ID)");
-    delay(5000);
+    waitForTestClientSequenceFinished();
 
     _actionHintWidget->showProgressHint(HINT_CHECK_VOLTAGE);
     _testSequenceManager->runTestFunction("Check voltage on AIN 1 (3.3V)");
@@ -499,6 +509,23 @@ void MainWindow::delay(int msec)
     while (QTime::currentTime() <= expire)
     {
         QCoreApplication::processEvents();
+    }
+}
+
+void MainWindow::waitForTestClientSequenceFinished()
+{
+    QTime expire = QTime::currentTime().addMSecs(100000);
+    while (QTime::currentTime() <= expire)
+    {
+        QCoreApplication::processEvents();
+        bool finished = true;
+        for(auto & testClient : _testClientList)
+        {
+            finished = finished && testClient->isSequenceFinished();
+        }
+
+        if(finished)
+            break;
     }
 }
 

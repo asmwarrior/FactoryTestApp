@@ -78,6 +78,7 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
     connect(this, &TestClient::checkDutsCurrent, this, &TestClient::on_checkDutsCurrent);
 
     connect(this, &TestClient::delay, this, &TestClient::on_delay);
+    connect(this, &TestClient::waitCommandFinishedAndDelay, this, &TestClient::on_waitCommandFinishedAndDelay);
 
     //Slip commands
 
@@ -202,6 +203,19 @@ void TestClient::setDutChecked(int no, bool checked)
             break;
         }
     }
+}
+
+void TestClient::on_waitCommandFinishedAndDelay(int delayAfterFinished)
+{
+    while(_mode != idleMode)
+    {
+        QCoreApplication::processEvents();
+    }
+
+    if(!delayAfterFinished)
+        return;
+
+    delay(delayAfterFinished);
 }
 
 void TestClient::checkTestingCompletion()
@@ -609,11 +623,10 @@ void TestClient::on_readChipId()
     qDebug() << "on_readChipId() called for slot " << _currentSlot;
     _currentCommand = readChipIdCommand;
     sendRailtestCommand(_currentSlot, "getmemw", "0x0FE081F0 2");
-    delay(1000);
-    _duts[_currentSlot]["id"] = _currentChipID;
-    emit dutChanged(_duts[_currentSlot]);
-    _logger->logSuccess(QString("ID for DUT %1 has been read: %2").arg(_duts[_currentSlot]["no"].toInt()).arg(_duts[_currentSlot]["id"].toString()));
-    //qDebug() << _duts[slot]["id"];
+    //delay(1000);
+//    _duts[_currentSlot]["id"] = _currentChipID;
+//    emit dutChanged(_duts[_currentSlot]);
+//    _logger->logSuccess(QString("ID for DUT %1 has been read: %2").arg(_duts[_currentSlot]["no"].toInt()).arg(_duts[_currentSlot]["id"].toString()));
 }
 
 void TestClient::on_testAccelerometer(int slot)
@@ -823,6 +836,7 @@ void TestClient::decodeFrame() Q_DECL_NOTHROW
 
 void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
 {
+    qDebug() << frame;
     switch (channel)
     {
         case 0:
@@ -982,6 +996,10 @@ void TestClient::processFrameFromRail(QByteArray frame)
         auto hi = lhi.at(1).toByteArray().trimmed();
 
         _currentChipID = (hi.mid(2) + lo.mid(2)).toUpper();
+
+        _duts[_currentSlot]["id"] = _currentChipID;
+        emit dutChanged(_duts[_currentSlot]);
+        _logger->logSuccess(QString("ID for DUT %1 has been read: %2").arg(_duts[_currentSlot]["no"].toInt()).arg(_duts[_currentSlot]["id"].toString()));
     }
         break;
 
@@ -1078,28 +1096,33 @@ void TestClient::on_checkBoardCurrent()
 
 void TestClient::on_checkDutsCurrent()
 {
+    _sequenceFinished = false;
+
     for (int slot = 1; slot < _duts.size() + 1; slot++)
     {
         powerOff(slot);
+        on_waitCommandFinishedAndDelay(500);
     }
 
-    delay(2000);
+    //delay(2000);
 
     for(int slot = 1; slot < _duts.size() + 1; slot++)
     {
         readCSA(0);
-        delay(500);
+        on_waitCommandFinishedAndDelay();
+//        delay(500);
 
         int currentCSA = _CSA;
 
         powerOn(slot);
-        delay(1000);
+        on_waitCommandFinishedAndDelay(300);
 
         readCSA(0);
-        delay(500);
+        on_waitCommandFinishedAndDelay();
+//        delay(500);
 
         qDebug() << _serial.portName() << currentCSA << _CSA;
-        if((_CSA - currentCSA) > 30)
+        if((_CSA - currentCSA) > 30 && currentCSA != -1)
         {
             _logger->logSuccess(QString("Device connected to the slot %1 of the test board on port %2").arg(slot).arg(_serial.portName()));
             _duts[slot]["state"] = DutState::untested;
@@ -1114,9 +1137,10 @@ void TestClient::on_checkDutsCurrent()
 
         emit dutChanged(_duts[slot]);
         powerOff(slot);
-        delay(2000);
+        on_waitCommandFinishedAndDelay(500);
     }
 
+    _sequenceFinished = true;
 }
 
 void TestClient::on_delay(int msec)

@@ -38,6 +38,10 @@ public slots:
     bool isDutAvailable(int slot) {return _duts[slot]["state"].toBool();}
     bool isDutChecked(int slot) {return _duts[slot]["checked"].toBool();}
     void setDutChecked(int no, bool checked);
+    void on_waitCommandFinishedAndDelay(int delayAfterFinished = 0);
+    void startSequence() {_sequenceFinished = false;}
+    void finishSequence() {_sequenceFinished = true;}
+    bool isSequenceFinished() {return _sequenceFinished;}
     void checkTestingCompletion();
 
 private slots:
@@ -87,6 +91,7 @@ signals:
     void checkBoardCurrent();
     void checkDutsCurrent();
     void delay(int msec);
+    void waitCommandFinishedAndDelay(int delayAfterFinished = 0);
 
     void dutChanged(Dut);
 
@@ -127,6 +132,7 @@ private:
     void processFrameFromRail(QByteArray frame);
 
     Mode _mode = idleMode;
+    bool _sequenceFinished = true;
     RailTestCommand _currentCommand = noCommand;
     QSettings* _settings;
     SessionManager* _session;
