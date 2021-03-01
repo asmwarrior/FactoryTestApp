@@ -15,7 +15,7 @@ public:
 
     enum Mode {idleMode, railMode, slipMode};
     enum DutState {inactive, untested, tested, warning};
-    enum RailTestCommand {noCommand, readChipIdCommand, accelCommand};
+    enum RailTestCommand {noCommand, readChipIdCommand, accelCommand, lightSensCommand, daliCommand};
 
     explicit TestClient(QSettings* settings, SessionManager* session, QObject *parent = nullptr);
     ~TestClient();
@@ -76,8 +76,8 @@ private slots:
     void on_readChipId(int slot);
 //    void on_testRadio();
     void on_testAccelerometer(int slot);
-//    void on_testLightSensor();
-//    void on_testDALI();
+    void on_testLightSensor(int slot);
+    void on_testDALI();
 //    void on_testGNSS();
 
 signals:
@@ -101,8 +101,8 @@ signals:
     void readCSA(int gain);
     void readAIN(int DUT, int AIN, int gain);
     void configDebugSerial(int DUT, int baudRate = QSerialPort::Baud115200, unsigned char bits = QSerialPort::Data8, unsigned char parity = QSerialPort::NoParity, unsigned char stopBits = QSerialPort::OneStop);
-    void DaliOn();
-    void DaliOff();
+    void daliOn();
+    void daliOff();
     void readDaliADC();
     void readDinADC(int DUT, int DIN);
     void read24V();
@@ -115,7 +115,7 @@ signals:
     void readChipId(int dut);
     void testRadio();
     void testAccelerometer(int slot);
-    void testLightSensor();
+    void testLightSensor(int slot);
     void testDALI();
     void testGNSS();
 
@@ -148,6 +148,8 @@ private:
     QString _currentChipID = "";
     int _currentVoltage = 0;
     bool _currentAccelChecked = false;
+    bool _currentLightSensChecked = false;
+    bool _currentDaliChecked = false;
 };
 
 #endif // TESTCLIENT_H

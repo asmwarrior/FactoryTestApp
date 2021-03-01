@@ -147,14 +147,45 @@ ZhagaECO =
 
     testLightSensor: function ()
     {
-        let rail = railTestClientList[currentRailTestClientIndex];
-        rail.testLightSensor();
+        testClientList.forEach(
+        function(item)
+        {
+            for(var slot = 1; slot < 4; slot++)
+            {
+                if(item.isDutAvailable(slot) && item.isDutChecked(slot))
+                {
+                    item.testLightSensor(slot);
+                }
+            }
+
+            mainWindow.delay(100);
+        });
     },
 
     testDALI: function ()
     {
-        let rail = railTestClientList[currentRailTestClientIndex];
-        rail.testDALI();
+        testClientList.forEach(
+        function(item)
+        {
+            for(var slot = 1; slot < 4; slot++)
+            {
+                if(item.isDutAvailable(slot) && item.isDutChecked(slot))
+                {
+                    item.switchSWD(slot);
+                    item.delay(500);
+                    item.daliOn();
+                    item.delay(2000);
+
+                    item.testDALI();
+                    item.delay(500);
+
+                    item.daliOff();
+                    item.delay(500);
+                }
+            }
+
+            mainWindow.delay(100);
+        });
     },
 
     testGNSS: function ()
@@ -180,23 +211,23 @@ testSequenceManager.addFunctionToGeneralList("Test connection to JLink", ZhagaEC
 testSequenceManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
 testSequenceManager.addFunctionToGeneralList("Read unique device identifiers (ID)", ZhagaECO.readChipID);
 testSequenceManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", ZhagaECO.checkAinVoltage);
-testSequenceManager.addFunctionToGeneralList("Initialize Dali test", ZhagaECO.initDali);
+//testSequenceManager.addFunctionToGeneralList("Initialize Dali test", ZhagaECO.initDali);
 testSequenceManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio);
 testSequenceManager.addFunctionToGeneralList("Test accelerometer", ZhagaECO.testAccelerometer);
 testSequenceManager.addFunctionToGeneralList("Test light sensor", ZhagaECO.testLightSensor);
 testSequenceManager.addFunctionToGeneralList("Test DALI", ZhagaECO.testDALI);
-testSequenceManager.addFunctionToGeneralList("Test GNSS", ZhagaECO.testGNSS);
+//testSequenceManager.addFunctionToGeneralList("Test GNSS", ZhagaECO.testGNSS);
 testSequenceManager.addFunctionToGeneralList("Download Software", ZhagaECO.downloadSoftware);
 testSequenceManager.addFunctionToGeneralList("Check Testing Completion", ZhagaECO.checkTestingCompletion);
 
 testSequenceManager.addFunctionToTestSequence("Download Railtest", ZhagaECO.downloadRailtest);
 testSequenceManager.addFunctionToTestSequence("Read unique device identifiers (ID)", ZhagaECO.readChipID);
 testSequenceManager.addFunctionToTestSequence("Check voltage on AIN 1 (3.3V)", ZhagaECO.checkAinVoltage);
-testSequenceManager.addFunctionToTestSequence("Initialize Dali test", ZhagaECO.initDali);
+//testSequenceManager.addFunctionToTestSequence("Initialize Dali test", ZhagaECO.initDali);
 testSequenceManager.addFunctionToTestSequence("Test radio interface", ZhagaECO.testRadio);
 testSequenceManager.addFunctionToTestSequence("Test accelerometer", ZhagaECO.testAccelerometer);
 testSequenceManager.addFunctionToTestSequence("Test light sensor", ZhagaECO.testLightSensor);
 testSequenceManager.addFunctionToTestSequence("Test DALI", ZhagaECO.testDALI);
-testSequenceManager.addFunctionToTestSequence("Test GNSS", ZhagaECO.testGNSS);
+//testSequenceManager.addFunctionToTestSequence("Test GNSS", ZhagaECO.testGNSS);
 testSequenceManager.addFunctionToTestSequence("Download Software", ZhagaECO.downloadSoftware);
 testSequenceManager.addFunctionToTestSequence("Check Testing Completion", ZhagaECO.checkTestingCompletion);

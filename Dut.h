@@ -16,7 +16,9 @@ static Dut dutTemplate {
     {"no", 0},
     {"checked", false},
     {"voltageChecked", false},
-    {"accelChecked", false}
+    {"accelChecked", false},
+    {"lightSensChecked", false},
+    {"daliChecked", false}
 };
 
 //class Dut : public QObject

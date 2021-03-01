@@ -91,6 +91,10 @@ private:
     const QString HINT_DETECT_DUTS = "Detecting DUTs in the test fixture...";
     const QString HINT_DOWNLOAD_RAILTEST = "Downloading Railtest...";
     const QString HINT_DEVICE_ID = "Reading device IDs...";
+    const QString HINT_CHECK_VOLTAGE = "Checking voltage on AIN1...";
+    const QString HINT_TEST_ACCEL = "Testing accelerometer...";
+    const QString HINT_TEST_LIGHT = "Testing light sensor...";
+    const QString HINT_TEST_DALI = "Testing DALI interface...";
     const QString HINT_READY = "READY";
 };
 

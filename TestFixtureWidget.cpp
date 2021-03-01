@@ -90,7 +90,16 @@ void TestFixtureWidget::refreshButtonsState()
 //    {
 //        _buttons.at(i)->setButtonState(_session->getDutList().at(i)->getState());
 //        _buttons.at(i)->setChecked(_session->getDutList().at(i)->isChecked());
-//    }
+    //    }
+}
+
+void TestFixtureWidget::reset()
+{
+    for (auto & button : _buttons)
+    {
+        (dynamic_cast<DutButton*>(button))->setButtonState(DutState::inactive);
+        (dynamic_cast<DutButton*>(button))->setChecked(false);
+    }
 }
 
 void TestFixtureWidget::refreshButtonState(Dut dut)

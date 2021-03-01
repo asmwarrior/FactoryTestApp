@@ -331,14 +331,14 @@ void MainWindow::startNewSession()
 //        testClient->checkBoardCurrent();
 //    }
 
-    delay(6000);
+//    delay(6000);
 
     for(auto & testClient : _testClientList)
     {
         testClient->checkDutsCurrent();
     }
 
-    delay(20000);
+    delay(15000);
 
     //------------------------------------------------------------------------------------------
 
@@ -388,7 +388,6 @@ void MainWindow::finishSession()
     _session->setStartTime("");
     _session->setBatchNumber("");
     _session->setBatchInfo("");
-//    _session->uncheckAllDuts();
 
     _selectMetodBox->clear();
     _selectMetodBox->setEnabled(false);
@@ -399,6 +398,7 @@ void MainWindow::finishSession()
     _startFullCycleTestingButton->setEnabled(false);
     _startSelectedTestButton->setEnabled(false);
     _newSessionButton->setEnabled(false);
+    _testFixtureWidget->reset();
     _testFixtureWidget->setEnabled(false);
     _finishSessionButton->setEnabled(false);
     _operatorNameEdit->clear();
@@ -414,6 +414,8 @@ void MainWindow::finishSession()
 
 void MainWindow::startFullCycleTesting()
 {
+    _startFullCycleTestingButton->setEnabled(false);
+
     _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
     _testSequenceManager->runTestFunction("Supply power to DUTs");
     delay(5000);
@@ -423,13 +425,23 @@ void MainWindow::startFullCycleTesting()
 
     _actionHintWidget->showProgressHint(HINT_DEVICE_ID);
     _testSequenceManager->runTestFunction("Read unique device identifiers (ID)");
-    delay(2000);
+    delay(5000);
 
+    _actionHintWidget->showProgressHint(HINT_CHECK_VOLTAGE);
     _testSequenceManager->runTestFunction("Check voltage on AIN 1 (3.3V)");
-    delay(2000);
+    delay(5000);
 
+    _actionHintWidget->showProgressHint(HINT_TEST_ACCEL);
     _testSequenceManager->runTestFunction("Test accelerometer");
-    delay(2000);
+    delay(5000);
+
+    _actionHintWidget->showProgressHint(HINT_TEST_LIGHT);
+    _testSequenceManager->runTestFunction("Test light sensor");
+    delay(5000);
+
+    _actionHintWidget->showProgressHint(HINT_TEST_DALI);
+    _testSequenceManager->runTestFunction("Test DALI");
+    delay(10000);
 
     _testSequenceManager->runTestFunction("Check Testing Completion");
 

@@ -105,9 +105,13 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
     connect(this, &TestClient::readAIN, [this](){_mode = slipMode;});
     connect(this, &TestClient::readAIN, this, &TestClient::on_readAIN);
 
+    connect(this, &TestClient::daliOn, [this](){_mode = slipMode;});
+    connect(this, &TestClient::daliOn, this, &TestClient::on_DaliOn);
+
+    connect(this, &TestClient::daliOff, [this](){_mode = slipMode;});
+    connect(this, &TestClient::daliOff, this, &TestClient::on_DaliOff);
+
     connect(this, &TestClient::configDebugSerial, this, &TestClient::on_configDebugSerial);
-    connect(this, &TestClient::DaliOn, this, &TestClient::on_DaliOn);
-    connect(this, &TestClient::DaliOff, this, &TestClient::on_DaliOff);
     connect(this, &TestClient::readDaliADC, this, &TestClient::on_readDaliADC);
     connect(this, &TestClient::readDinADC, this, &TestClient::on_readDinADC);
     connect(this, &TestClient::read24V, this, &TestClient::on_read24V);
@@ -127,10 +131,13 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
     connect(this, &TestClient::testAccelerometer, [this](){_mode = railMode;});
     connect(this, &TestClient::testAccelerometer, this, &TestClient::on_testAccelerometer);
 
+    connect(this, &TestClient::testLightSensor, [this](){_mode = railMode;});
+    connect(this, &TestClient::testLightSensor, this, &TestClient::on_testLightSensor);
+
+    connect(this, &TestClient::testDALI, [this](){_mode = railMode;});
+    connect(this, &TestClient::testDALI, this, &TestClient::on_testDALI);
 
 //    connect(this, &TestClient::testRadio, &_rail, &RailtestClient::on_testRadio);
-//    connect(this, &TestClient::testLightSensor, &_rail, &RailtestClient::on_testLightSensor);
-//    connect(this, &TestClient::testDALI, &_rail, &RailtestClient::on_testDALI);
 //    connect(this, &TestClient::testGNSS, &_rail, &RailtestClient::on_testGNSS);
 
     _duts[1] = dutTemplate;
@@ -221,11 +228,18 @@ void TestClient::checkTestingCompletion()
         {
             bool result =   dut["id"].toString() != "" &&
                             dut["voltageChecked"].toBool() &&
+                            dut["lightSensChecked"].toBool() &&
+                            dut["daliChecked"].toBool() &&
                             dut["accelChecked"].toBool();
 
             if(result)
             {
                 dut["state"] = DutState::tested;
+            }
+
+            else
+            {
+                dut["state"] = DutState::warning;
             }
 
             emit dutChanged(dut);
@@ -275,6 +289,7 @@ void TestClient::on_reset()
 
 void TestClient::on_switchSWD(int DUT)
 {
+    _currentSlot = DUT;
    //_logger->logDebug(QString("switchSWD called with arg %1").arg(DUT));
 #pragma pack (push, 1)
     struct Pkt
@@ -625,6 +640,42 @@ void TestClient::on_testAccelerometer(int slot)
     emit dutChanged(_duts[slot]);
 }
 
+void TestClient::on_testLightSensor(int slot)
+{
+    _currentCommand = lightSensCommand;
+    sendRailtestCommand(slot, "lsen", {});
+    delay(1000);
+    _duts[slot]["lightSensChecked"] = _currentLightSensChecked;
+
+    if(_duts[slot]["lightSensChecked"].toBool())
+        _logger->logSuccess(QString("Light sensor in DUT %1 has been tested successfully").arg(_duts[slot]["no"].toInt()));
+    else
+        _logger->logError(QString("Testing light sensor in DUT %1 has been failed!").arg(_duts[slot]["no"].toInt()));
+
+    emit dutChanged(_duts[slot]);
+}
+
+void TestClient::on_testDALI()
+{
+    sendRailtestCommand(_currentSlot, "dali", {"0xFE80 16 0 0"});
+    delay(2000);
+
+    _currentCommand = daliCommand;
+    sendRailtestCommand(_currentSlot, "dali", {"0xFF90 16 0 1000000"});
+    delay(2500);
+    _duts[_currentSlot]["daliChecked"] = _currentDaliChecked;
+
+    if(_duts[_currentSlot]["daliChecked"].toBool())
+        _logger->logSuccess(QString("DALI for DUT %1 has been tested successfully").arg(_duts[_currentSlot]["no"].toInt()));
+    else
+        _logger->logError(QString("Testing DALI for DUT %1 has been failed!").arg(_duts[_currentSlot]["no"].toInt()));
+
+    sendRailtestCommand(_currentSlot, "dali", {"0xFE80 16 0 0"});
+    delay(2000);
+
+    emit dutChanged(_duts[_currentSlot]);
+}
+
 void TestClient::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
 {
     QByteArray encodedBuffer;
@@ -816,7 +867,7 @@ void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
 
                             case 7:
                                 _CSA = gr->errorCode;
-                                _logger->logDebug(QString("Reply to readCSA command to %1: %2").arg(_serial.portName()).arg(gr->errorCode));
+                                //_logger->logDebug(QString("Reply to readCSA command to %1: %2").arg(_serial.portName()).arg(gr->errorCode));
                                 break;
 
                             case 8:
@@ -969,7 +1020,59 @@ void TestClient::processFrameFromRail(QByteArray frame)
         }
     }
         break;
+
+    case lightSensCommand:
+    {
+        if (frame.contains("opwr"))
+        {
+               double opwr = frame.mid(frame.indexOf("opwr") + 5, 5).toDouble();
+
+               if (opwr < 0)
+               {
+                   //_logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+                   _currentLightSensChecked = false;
+               }
+               else
+               {
+                   //_logger->logSuccess(QString("Accelerometer: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+                   _currentLightSensChecked = true;
+               }
+        }
+
+        else
+        {
+            _currentAccelChecked = false;
+        }
     }
+        break;
+
+    case daliCommand:
+    {
+        if (frame.contains("error"))
+        {
+               int code = frame.mid(frame.indexOf("error") + 6, 1).toInt();
+               qDebug() << "error code:" << code;
+               if (code != 0)
+               {
+                   //_logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+                   _currentDaliChecked = false;
+               }
+               else
+               {
+                   //_logger->logSuccess(QString("Accelerometer: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+                   _currentDaliChecked = true;
+               }
+        }
+
+        else
+        {
+            _currentDaliChecked = false;
+        }
+    }
+        break;
+    }
+
+    _currentCommand = noCommand;
 }
 
 void TestClient::on_checkBoardCurrent()
@@ -989,7 +1092,7 @@ void TestClient::on_checkDutsCurrent()
         powerOff(slot);
     }
 
-    delay(3000);
+    delay(2000);
 
     for(int slot = 1; slot < _duts.size() + 1; slot++)
     {
@@ -998,7 +1101,7 @@ void TestClient::on_checkDutsCurrent()
         int currentCSA = _CSA;
 
         powerOn(slot);
-        delay(3000);
+        delay(1000);
 
         readCSA(0);
         delay(100);
@@ -1007,11 +1110,17 @@ void TestClient::on_checkDutsCurrent()
             _logger->logSuccess(QString("Device connected to the slot %1 of the test board on port %2").arg(slot).arg(_serial.portName()));
             _duts[slot]["state"] = DutState::untested;
             _duts[slot]["checked"] = true;
-            emit dutChanged(_duts[slot]);
         }
 
+        else
+        {
+            _duts[slot]["state"] = DutState::inactive;
+            _duts[slot]["checked"] = false;
+        }
+
+        emit dutChanged(_duts[slot]);
         powerOff(slot);
-        delay(3000);
+        delay(2000);
     }
 
 }
