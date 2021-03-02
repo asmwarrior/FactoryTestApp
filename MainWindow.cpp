@@ -1,7 +1,5 @@
 #include "MainWindow.h"
 
-#include <QDebug>
-
 #include <QCoreApplication>
 #include <QStandardPaths>
 #include <QVBoxLayout>

@@ -103,4 +103,5 @@ private:
     const QString HINT_READY = "READY";
 };
 
+
 #endif // MAINWINDOW_H
