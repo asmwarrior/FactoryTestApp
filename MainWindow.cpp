@@ -297,6 +297,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    _session->writeDutRecordsToDatabase();
     for(auto & jlink : _JLinkList)
     {
         jlink->deleteLater();
@@ -446,10 +447,7 @@ void MainWindow::startFullCycleTesting()
 //    _testSequenceManager->runTestFunction("Check Testing Completion");
 
     _actionHintWidget->showProgressHint(HINT_READY);
-//    for (auto & funcName : _testSequenceManager->currentMethodSequenceFunctionNames())
-//    {
-//        qDebug() << funcName;
-//    }
+    _session->writeDutRecordsToDatabase();
 }
 
 void MainWindow::resetDutListInScriptEnv()

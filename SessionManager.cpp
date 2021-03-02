@@ -1,6 +1,6 @@
 #include "SessionManager.h"
 
-SessionManager::SessionManager(QSettings *settings, QObject *parent) : QObject(parent)
+SessionManager::SessionManager(QSettings *settings, QObject *parent) : QObject(parent), _settings(settings)
 {
     //Database
     _db = new DataBase(settings, this);
@@ -56,6 +56,17 @@ void SessionManager::writeDutRecordsToDatabase()
     {
         _db->insertIntoTable(record);
     }
+
+    QFile file(_settings->value("workDirectory").toString() + "/log.txt");
+
+    file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+
+    for(auto & record : _records)
+    {
+        file.write(record.id.toLocal8Bit() + " " + record.batchNumber.toLocal8Bit() + " " + record.operatorName.toLocal8Bit() + " " + record.timeStamp.toLocal8Bit() + " " + record.state.toLocal8Bit() + "\n");
+    }
+
+    file.close();
 
     _records.clear();
 }

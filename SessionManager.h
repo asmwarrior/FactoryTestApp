@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QList>
+#include <QSettings>
 
 #include "Database.h"
 
@@ -48,6 +49,8 @@ private:
 //        {"successCount", 0},
 //        {"failedCount", 0}
 //    };
+
+        QSettings* _settings;
 
         QString _operatorName = "";
         QString _startTime = "";
