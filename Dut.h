@@ -20,3 +20,12 @@ static Dut dutTemplate {
     {"lightSensChecked", false},
     {"daliChecked", false}
 };
+
+struct DutRecord
+{
+    QString id;
+    QString batchNumber;
+    QString timeStamp;
+    QString operatorName;
+    QString state;
+};

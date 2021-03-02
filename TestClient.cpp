@@ -1206,6 +1206,8 @@ void TestClient::on_startTesting()
     }
 
     checkTestingCompletion();
+
+    emit commandSequenceFinished();
 }
 
 void TestClient::on_delay(int msec)

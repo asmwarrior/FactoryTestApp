@@ -5,7 +5,6 @@
 #include <QSettings>
 
 #include "SessionManager.h"
-#include "Database.h"
 
 class Logger : public QObject
 {
@@ -38,7 +37,6 @@ private:
 
     QSettings* _settings;
     SessionManager* _session;
-    DataBase *_db;
 
     QMutex _logMutex;
     QMutex _debugLogMutex;

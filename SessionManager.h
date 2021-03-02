@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QList>
 
-#include "Dut.h"
+#include "Database.h"
 
 class SessionManager : public QObject
 {
@@ -12,13 +12,14 @@ class SessionManager : public QObject
 
 public:
 
-    explicit SessionManager(QObject *parent = nullptr);
+    explicit SessionManager(QSettings* settings, QObject *parent = nullptr);
     ~SessionManager();
 
 public slots:
 
     void logDutInfo(Dut dut);
     void clear();
+    void writeDutRecordsToDatabase();
 
     QString operatorName() const {return _operatorName;}
     QString startTime() const {return _startTime;}
@@ -54,6 +55,10 @@ private:
         QString _batchInfo = "";
         int _successCount = 0;
         int _failedCount = 0;
+
+        QList<DutRecord> _records;
+
+        DataBase *_db;
 };
 
 #endif // SESSIONMANAGER_H

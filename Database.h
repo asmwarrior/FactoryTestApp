@@ -11,9 +11,14 @@
 #include <QSharedPointer>
 #include <QDebug>
 
+#include "Dut.h"
+
 #define TABLE "TestTable"
-#define TABLE_DEVICE_ID "DeviceID"
-#define TABLE_INFO "Info"
+#define ID "deviceID"
+#define BATCH_NUMBER "batchNumber"
+#define TIMESTAMP "timeStamp"
+#define OPERATOR "operatorName"
+#define STATE "state"
 
 class DataBase : public QObject
 {
@@ -28,15 +33,14 @@ public:
 
 public slots:
 
-    bool insertIntoTable(const QVariantList &data);
-    bool insertIntoTable(const QString &name, const QString &info);
+    bool insertIntoTable(const DutRecord& record);
+    bool createTable();
 
 private:
 
     bool openDataBase();
     bool restoreDataBase();
     void closeDataBase();
-    bool createTable();
 
     QSqlDatabase _db;
     QSettings* _settings;

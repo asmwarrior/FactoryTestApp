@@ -58,8 +58,11 @@ bool DataBase::createTable()
     QSqlQuery query;
     if(!query.exec( "CREATE TABLE " TABLE " ("
                             "id SERIAL PRIMARY KEY, "
-                            TABLE_DEVICE_ID     " CHARACTER VARYING(255),"
-                            TABLE_INFO      " CHARACTER VARYING(255)"
+                            ID     " CHARACTER VARYING(255),"
+                            BATCH_NUMBER      " CHARACTER VARYING(255),"
+                            TIMESTAMP      " CHARACTER VARYING(255),"
+                            OPERATOR      " CHARACTER VARYING(255),"
+                            STATE      " CHARACTER VARYING(255)"
                         " )"
                     ))
     {
@@ -75,14 +78,20 @@ bool DataBase::createTable()
     return false;
 }
 
-bool DataBase::insertIntoTable(const QVariantList &data)
+bool DataBase::insertIntoTable(const DutRecord &record)
 {
     QSqlQuery query;
-    query.prepare("INSERT INTO " TABLE " ( " TABLE_DEVICE_ID ", "
-                                             TABLE_INFO " ) "
-                  "VALUES (:DeviceID, :Info)");
-    query.bindValue(":DeviceID",        data[0].toString());
-    query.bindValue(":Info",         data[1].toString());
+    query.prepare("INSERT INTO " TABLE " ( " ID ", "
+                                             BATCH_NUMBER ", "
+                                             TIMESTAMP ", "
+                                             OPERATOR ", "
+                                             STATE " ) "
+                  "VALUES (:deviceID, :batchNumber, :timeStamp, :operatorName, :state)");
+    query.bindValue(":deviceID", record.id);
+    query.bindValue(":batchNumber", record.batchNumber);
+    query.bindValue(":timeStamp", record.timeStamp);
+    query.bindValue(":operatorName", record.operatorName);
+    query.bindValue(":state", record.state);
 
     if(!query.exec())
     {
@@ -95,16 +104,4 @@ bool DataBase::insertIntoTable(const QVariantList &data)
         return true;
     }
     return false;
-}
-
-bool DataBase::insertIntoTable(const QString &name, const QString &info)
-{
-    QVariantList data;
-    data.append(name);
-    data.append(info);
-
-    if(insertIntoTable(data))
-        return true;
-    else
-        return false;
 }

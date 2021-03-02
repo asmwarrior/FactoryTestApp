@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     _scriptEngine->globalObject().setProperty("mainWindow", _scriptEngine->newQObject(this));
 
-    _session = new SessionManager(this);
+    _session = new SessionManager(_settings, this);
     _scriptEngine->globalObject().setProperty("session", _scriptEngine->newQObject(_session));
 
     _testSequenceManager = new TestMethodManager(this);
@@ -333,8 +333,7 @@ void MainWindow::startNewSession()
         testClient->checkDutsCurrent();
     }
 
-    if(_settings->value("multithread").toBool())
-        waitAllThreadsSequencesFinished();
+    waitAllThreadsSequencesFinished();
 
     //------------------------------------------------------------------------------------------
 
@@ -378,10 +377,8 @@ void MainWindow::startNewSession()
 
 void MainWindow::finishSession()
 {
-    _session->setOperatorName("");
-    _session->setStartTime("");
-    _session->setBatchNumber("");
-    _session->setBatchInfo("");
+    _session->writeDutRecordsToDatabase();
+    _session->clear();
 
     _selectMetodBox->clear();
     _selectMetodBox->setEnabled(false);
@@ -417,11 +414,14 @@ void MainWindow::startFullCycleTesting()
 //    _testSequenceManager->runTestFunction("Download Railtest");
 //    delay(12000);
 
+    _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
     for(auto & testClient : _testClientList)
     {
         testClient->startTesting();
         delay(100);
     }
+
+    waitAllThreadsSequencesFinished();
 
 //    _actionHintWidget->showProgressHint(HINT_DEVICE_ID);
 //    _testSequenceManager->runTestFunction("Read unique device identifiers (ID)");
@@ -495,6 +495,9 @@ QJSValue MainWindow::runScript(const QString& scriptName, const QJSValueList& ar
 
 void MainWindow::waitAllThreadsSequencesFinished()
 {
+    if(!_settings->value("multithread").toBool())
+        return;
+
     _waitingThreadSequenceFinished = true;
     _finishSignalsCount = 0;
     while(_finishSignalsCount < _testClientList.size())

@@ -9,11 +9,6 @@ Logger::Logger(QSettings *settings, SessionManager *session, QObject *parent)
       _logMutex(QMutex::Recursive),
       _debugLogMutex(QMutex::Recursive)
 {
-    //Database
-    _db = new DataBase(_settings, this);
-    _db->connectToDataBase();
-    //_db->insertIntoTable("test", QDateTime::currentDateTime().toString());
-
     connect(this, &Logger::logDebug, this, &Logger::on_logDebug);
     connect(this, &Logger::logInfo, this, &Logger::on_logInfo);
     connect(this, &Logger::logError, this, &Logger::on_logError);
