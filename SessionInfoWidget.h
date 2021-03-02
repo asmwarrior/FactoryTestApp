@@ -17,7 +17,7 @@ public:
 
 public slots:
 
-    void update();
+    void refresh();
 
 
 private:

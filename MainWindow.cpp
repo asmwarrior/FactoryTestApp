@@ -58,7 +58,10 @@ MainWindow::MainWindow(QWidget *parent)
             _testClientList.push_back(testClient);
             _testClientList.last()->setDutsNumbers(_settings->value(QString("TestBoard/duts" + QString().setNum(i + 1))).toString());
             _testClientList.last()->setPort(_settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
-            _testClientList.last()->moveToThread(_threads.last());
+
+            if(_settings->value("multithread").toBool())
+                _testClientList.last()->moveToThread(_threads.last());
+
             _scriptEngine->globalObject().property("testClientList").setProperty(i, _scriptEngine->newQObject(testClient));
 
             _threads.last()->start();
@@ -219,7 +222,7 @@ MainWindow::MainWindow(QWidget *parent)
     //Connections
     connect(_operatorNameEdit, &QLineEdit::textEdited, [=](const QString& text)
     {
-        if(!text.isEmpty() && !_batchNumberEdit->text().isEmpty() && !_session->isStarted())
+        if(!text.isEmpty() && !_batchNumberEdit->text().isEmpty())
         {
             _newSessionButton->setEnabled(true);
         }
@@ -232,7 +235,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(_batchNumberEdit, &QLineEdit::textEdited, [=](const QString& text)
     {
-        if(!text.isEmpty() && !_operatorNameEdit->text().isEmpty() && !_session->isStarted())
+        if(!text.isEmpty() && !_operatorNameEdit->text().isEmpty())
         {
             _newSessionButton->setEnabled(true);
         }
@@ -276,6 +279,7 @@ MainWindow::MainWindow(QWidget *parent)
         connect(testClient, &TestClient::dutChanged, _testFixtureWidget, &TestFixtureWidget::refreshButtonState, Qt::QueuedConnection);
         connect(_testFixtureWidget, &TestFixtureWidget::dutClicked, testClient, &TestClient::setDutChecked, Qt::QueuedConnection);
         connect(testClient, &TestClient::dutChanged, _dutInfoWidget, &DutInfoWidget::updateDut, Qt::QueuedConnection);
+        connect(testClient, &TestClient::dutFullyTested, _session, &SessionManager::logDutInfo, Qt::QueuedConnection);
 
         connect(testClient, &TestClient::commandSequenceFinished, [this]()
         {
@@ -314,6 +318,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::startNewSession()
 {
+    _newSessionButton->setEnabled(false);
+
     for(auto & jlink : _JLinkList)
     {
         jlink->establishConnection();
@@ -322,27 +328,16 @@ void MainWindow::startNewSession()
 
     _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
 
-//    _testSequenceManager->runTestFunction("Power off DUTs");
-//    delay(3000);
-
-//    for(auto & testClient : _testClientList)
-//    {
-//        testClient->checkBoardCurrent();
-//    }
-
-//    delay(6000);
-
     for(auto & testClient : _testClientList)
     {
         testClient->checkDutsCurrent();
     }
 
-    waitAllThreadsSequencesFinished();
-    //delay(15000);
+    if(_settings->value("multithread").toBool())
+        waitAllThreadsSequencesFinished();
 
     //------------------------------------------------------------------------------------------
 
-    _session->setStarted(true);
     _session->setOperatorName(_operatorNameEdit->text().simplified());
     _session->setStartTime(QDateTime::currentDateTime().toString());
     _session->setBatchNumber(_batchNumberEdit->text());
@@ -372,18 +367,17 @@ void MainWindow::startNewSession()
     _finishSessionButton->setEnabled(true);
 
     _actionHintWidget->showNormalHint(HINT_CHOOSE_METHOD);
-    _sessionInfoWidget->update();
+    _sessionInfoWidget->refresh();
     _testFixtureWidget->refreshButtonsState();
 
-    if(!_operatorList.contains(_session->getOperatorName(), Qt::CaseInsensitive))
+    if(!_operatorList.contains(_session->operatorName(), Qt::CaseInsensitive))
     {
-        _operatorList.push_back(_session->getOperatorName());
+        _operatorList.push_back(_session->operatorName());
     }
 }
 
 void MainWindow::finishSession()
 {
-    _session->setStarted(false);
     _session->setOperatorName("");
     _session->setStartTime("");
     _session->setBatchNumber("");
@@ -408,7 +402,7 @@ void MainWindow::finishSession()
     _childProcessOutputLogWidget->clear();
 
     _actionHintWidget->showNormalHint(HINT_START);
-    _sessionInfoWidget->update();
+    _sessionInfoWidget->refresh();
     _testFixtureWidget->refreshButtonsState();
 }
 
@@ -421,7 +415,7 @@ void MainWindow::startFullCycleTesting()
 //    delay(5000);
 
 //    _testSequenceManager->runTestFunction("Download Railtest");
-//    delay(10000);
+//    delay(12000);
 
     for(auto & testClient : _testClientList)
     {

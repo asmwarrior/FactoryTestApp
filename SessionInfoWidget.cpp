@@ -47,33 +47,21 @@ SessionInfoWidget::SessionInfoWidget(SessionManager* session, QWidget* parent) :
     labelsLayout->addWidget(_batchInfo);
 
     labelsLayout->addStretch();
+
+    connect(_session, &SessionManager::sessionStatsChanged, this, &SessionInfoWidget::refresh);
 }
 
-void SessionInfoWidget::update()
+void SessionInfoWidget::refresh()
 {
-    if(_session->isStarted())
-    {
-        _startTime->setText(_startTimeTemplate.arg(_session->getStartTime()));
-        _operatorName->setText(_operatorNameTemplate.arg(_session->getOperatorName()));
-        _batchNumber->setText(_batchNumberTemplate.arg(_session->getBatchNumber()));
-        _totalTested->setText(_totalTestedTemplate.arg(_session->getTotalTested()));
-        _success->setText(_successTemplate.arg(_session->getSuccessCount()));
-        _failtures->setText(_failturesTemplate.arg(_session->getFailedCount()));
+    _startTime->setText(_startTimeTemplate.arg(_session->startTime()));
+    _operatorName->setText(_operatorNameTemplate.arg(_session->operatorName()));
+    _batchNumber->setText(_batchNumberTemplate.arg(_session->batchNumber()));
+    _totalTested->setText(_totalTestedTemplate.arg(_session->successCount() + _session->failedCount()));
+    _success->setText(_successTemplate.arg(_session->successCount()));
+    _failtures->setText(_failturesTemplate.arg(_session->failedCount()));
 
-        if(_session->getBatchInfo().length())
-        {
-            _batchInfo->setText(_session->getBatchInfo());
-        }
-    }
-
-    else
+    if(_session->batchInfo().length())
     {
-        _startTime->clear();
-        _operatorName->clear();
-        _batchNumber->clear();
-        _totalTested->clear();
-        _success->clear();
-        _failtures->clear();
-        _batchInfo->clear();
+        _batchInfo->setText(_session->batchInfo());
     }
 }

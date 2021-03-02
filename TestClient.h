@@ -90,6 +90,7 @@ signals:
     void delay(int msec);
 
     void dutChanged(Dut);
+    void dutFullyTested(Dut);
     void commandSequenceFinished();
 
     //Slip commands

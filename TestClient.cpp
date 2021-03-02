@@ -245,6 +245,7 @@ void TestClient::checkTestingCompletion()
             }
 
             emit dutChanged(dut);
+            emit dutFullyTested(dut);
         }
     }
 }
@@ -856,7 +857,7 @@ void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
                             switch (gr->header.sequence)
                             {
                             case 1:
-                                _logger->logDebug(QString("Reply to switchSWD command to board on %1: %2").arg(_serial.portName()).arg(gr->errorCode));
+                                //_logger->logDebug(QString("Reply to switchSWD command to board on %1: %2").arg(_serial.portName()).arg(gr->errorCode));
                                 break;
 
                             case 2:
