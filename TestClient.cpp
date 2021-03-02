@@ -79,6 +79,8 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
     connect(this, &TestClient::checkDutsCurrent, [this](){_mode = slipMode;});
     connect(this, &TestClient::checkDutsCurrent, this, &TestClient::on_checkDutsCurrent);
 
+    connect(this, &TestClient::startTesting, this, &TestClient::on_startTesting);
+
     connect(this, &TestClient::delay, this, &TestClient::on_delay);
 
     //Slip commands
@@ -1097,15 +1099,18 @@ void TestClient::on_checkDutsCurrent()
     for(int slot = 1; slot < _duts.size() + 1; slot++)
     {
         readCSA(0);
+        waitCommandFinished();
         delay(100);
         int currentCSA = _CSA;
 
         powerOn(slot);
-        delay(1000);
+        delay(100);
+        waitCommandFinished();
 
         readCSA(0);
+        waitCommandFinished();
         delay(100);
-        if((_CSA - currentCSA) > 20)
+        if((_CSA - currentCSA) > 20 && currentCSA != -1)
         {
             _logger->logSuccess(QString("Device connected to the slot %1 of the test board on port %2").arg(slot).arg(_serial.portName()));
             _duts[slot]["state"] = DutState::untested;
@@ -1120,15 +1125,100 @@ void TestClient::on_checkDutsCurrent()
 
         emit dutChanged(_duts[slot]);
         powerOff(slot);
+        waitCommandFinished();
         delay(2000);
     }
 
+    emit commandSequenceFinished();
+}
+
+void TestClient::on_startTesting()
+{
+    //Supply power to all DUTs
+    for(int slot = 1; slot < _duts.size() + 1; slot++)
+    {
+        powerOn(slot);
+        waitCommandFinished();
+    }
+
+    delay(1000);
+
+    //Read ID for all DUTs
+    for(int slot = 1; slot < _duts.size() + 1; slot++)
+    {
+        if(isDutAvailable(slot) && isDutChecked(slot))
+        {
+            readChipId(slot);
+            waitCommandFinished();
+        }
+    }
+
+    //Read AIN1 for all DUTs
+    for(int slot = 1; slot < _duts.size() + 1; slot++)
+    {
+        if(isDutAvailable(slot) && isDutChecked(slot))
+        {
+            readAIN(slot, 1, 0);
+            waitCommandFinished();
+        }
+    }
+
+    //Test accelerometer for all DUTs
+    for(int slot = 1; slot < _duts.size() + 1; slot++)
+    {
+        if(isDutAvailable(slot) && isDutChecked(slot))
+        {
+            testAccelerometer(slot);
+            waitCommandFinished();
+        }
+    }
+
+    //Test light sensor for all DUTs
+    for(int slot = 1; slot < _duts.size() + 1; slot++)
+    {
+        if(isDutAvailable(slot) && isDutChecked(slot))
+        {
+            testLightSensor(slot);
+            waitCommandFinished();
+        }
+    }
+
+    //Test DALI interface for all DUTs
+    for(int slot = 1; slot < _duts.size() + 1; slot++)
+    {
+        if(isDutAvailable(slot) && isDutChecked(slot))
+        {
+            switchSWD(slot);
+            waitCommandFinished();
+            delay(500);
+            daliOn();
+            waitCommandFinished();
+
+            testDALI();
+            waitCommandFinished();
+            delay(500);
+
+            daliOff();
+            waitCommandFinished();
+            delay(500);
+        }
+    }
+
+    checkTestingCompletion();
 }
 
 void TestClient::on_delay(int msec)
 {
     QTime expire = QTime::currentTime().addMSecs(msec);
     while (QTime::currentTime() <= expire)
+    {
+        QCoreApplication::processEvents();
+    }
+}
+
+void TestClient::waitCommandFinished()
+{
+    while(_mode != idleMode)
     {
         QCoreApplication::processEvents();
     }

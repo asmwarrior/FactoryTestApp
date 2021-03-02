@@ -53,6 +53,7 @@ private slots:
 
     void on_checkBoardCurrent();
     void on_checkDutsCurrent();
+    void on_startTesting();
 
     void on_sendRailtestCommand(int channel, const QByteArray& cmd, const QByteArray& args);
     void on_reset();
@@ -85,9 +86,11 @@ signals:
     void open();
     void checkBoardCurrent();
     void checkDutsCurrent();
+    void startTesting();
     void delay(int msec);
 
     void dutChanged(Dut);
+    void commandSequenceFinished();
 
     //Slip commands
     void sendRailtestCommand(int channel, const QByteArray& cmd, const QByteArray& args);
@@ -124,6 +127,7 @@ private:
     void decodeFrame() Q_DECL_NOTHROW;
     void decodeRailtestReply(const QByteArray &reply);
     void processFrameFromRail(QByteArray frame);
+    void waitCommandFinished();
 
     Mode _mode = idleMode;
     RailTestCommand _currentCommand = noCommand;
@@ -142,7 +146,7 @@ private:
     QByteArray _syncCommand;
     QVariantList _syncReplies;
 
-    int _CSA = 0; //Board current (mA)
+    int _CSA = -1; //Board current (mA)
 
     int _currentSlot = 0;
     QString _currentChipID = "";

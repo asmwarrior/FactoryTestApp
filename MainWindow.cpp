@@ -276,16 +276,16 @@ MainWindow::MainWindow(QWidget *parent)
     for (auto & testClient : _testClientList)
     {
         connect(testClient, &TestClient::dutChanged, _testFixtureWidget, &TestFixtureWidget::refreshButtonState, Qt::QueuedConnection);
-    }
-
-    for (auto & testClient : _testClientList)
-    {
         connect(_testFixtureWidget, &TestFixtureWidget::dutClicked, testClient, &TestClient::setDutChecked, Qt::QueuedConnection);
-    }
-
-    for (auto & testClient : _testClientList)
-    {
         connect(testClient, &TestClient::dutChanged, _dutInfoWidget, &DutInfoWidget::updateDut, Qt::QueuedConnection);
+
+        connect(testClient, &TestClient::commandSequenceFinished, [this]()
+        {
+            if(_waitingThreadSequenceFinished)
+            {
+                _finishSignalsCount++;
+            }
+        });
     }
 
     connect(_newSessionButton, &QPushButton::clicked, this, &MainWindow::startNewSession);
@@ -319,12 +319,13 @@ void MainWindow::startNewSession()
     for(auto & jlink : _JLinkList)
     {
         jlink->establishConnection();
+        delay(100);
     }
 
     _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
 
-    _testSequenceManager->runTestFunction("Power off DUTs");
-    delay(3000);
+//    _testSequenceManager->runTestFunction("Power off DUTs");
+//    delay(3000);
 
 //    for(auto & testClient : _testClientList)
 //    {
@@ -338,7 +339,8 @@ void MainWindow::startNewSession()
         testClient->checkDutsCurrent();
     }
 
-    delay(15000);
+    waitAllThreadsSequencesFinished();
+    //delay(15000);
 
     //------------------------------------------------------------------------------------------
 
@@ -416,34 +418,40 @@ void MainWindow::startFullCycleTesting()
 {
     _startFullCycleTestingButton->setEnabled(false);
 
-    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
-    _testSequenceManager->runTestFunction("Supply power to DUTs");
-    delay(5000);
+//    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
+//    _testSequenceManager->runTestFunction("Supply power to DUTs");
+//    delay(5000);
 
 //    _testSequenceManager->runTestFunction("Download Railtest");
 //    delay(10000);
 
-    _actionHintWidget->showProgressHint(HINT_DEVICE_ID);
-    _testSequenceManager->runTestFunction("Read unique device identifiers (ID)");
-    delay(5000);
+    for(auto & testClient : _testClientList)
+    {
+        testClient->startTesting();
+        delay(100);
+    }
 
-    _actionHintWidget->showProgressHint(HINT_CHECK_VOLTAGE);
-    _testSequenceManager->runTestFunction("Check voltage on AIN 1 (3.3V)");
-    delay(5000);
+//    _actionHintWidget->showProgressHint(HINT_DEVICE_ID);
+//    _testSequenceManager->runTestFunction("Read unique device identifiers (ID)");
+//    delay(5000);
 
-    _actionHintWidget->showProgressHint(HINT_TEST_ACCEL);
-    _testSequenceManager->runTestFunction("Test accelerometer");
-    delay(5000);
+//    _actionHintWidget->showProgressHint(HINT_CHECK_VOLTAGE);
+//    _testSequenceManager->runTestFunction("Check voltage on AIN 1 (3.3V)");
+//    delay(5000);
 
-    _actionHintWidget->showProgressHint(HINT_TEST_LIGHT);
-    _testSequenceManager->runTestFunction("Test light sensor");
-    delay(5000);
+//    _actionHintWidget->showProgressHint(HINT_TEST_ACCEL);
+//    _testSequenceManager->runTestFunction("Test accelerometer");
+//    delay(5000);
 
-    _actionHintWidget->showProgressHint(HINT_TEST_DALI);
-    _testSequenceManager->runTestFunction("Test DALI");
-    delay(10000);
+//    _actionHintWidget->showProgressHint(HINT_TEST_LIGHT);
+//    _testSequenceManager->runTestFunction("Test light sensor");
+//    delay(5000);
 
-    _testSequenceManager->runTestFunction("Check Testing Completion");
+//    _actionHintWidget->showProgressHint(HINT_TEST_DALI);
+//    _testSequenceManager->runTestFunction("Test DALI");
+//    delay(10000);
+
+//    _testSequenceManager->runTestFunction("Check Testing Completion");
 
     _actionHintWidget->showProgressHint(HINT_READY);
 //    for (auto & funcName : _testSequenceManager->currentMethodSequenceFunctionNames())
@@ -491,6 +499,17 @@ QList<QJSValue> MainWindow::evaluateScriptsFromDirectory(const QString& director
 QJSValue MainWindow::runScript(const QString& scriptName, const QJSValueList& args)
 {
     return _scriptEngine->globalObject().property(scriptName).call(args);
+}
+
+void MainWindow::waitAllThreadsSequencesFinished()
+{
+    _waitingThreadSequenceFinished = true;
+    _finishSignalsCount = 0;
+    while(_finishSignalsCount < _testClientList.size())
+    {
+        QCoreApplication::processEvents();
+    }
+    _waitingThreadSequenceFinished = false;
 }
 
 void MainWindow::delay(int msec)

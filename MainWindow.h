@@ -46,6 +46,8 @@ private:
     QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
     QJSValue runScript(const QString& scriptName, const QJSValueList& args);
 
+    void waitAllThreadsSequencesFinished();
+
     //QString _workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
     QString _workDirectory = QDir(".").absolutePath(); //For test version
 //    QString _workDirectory = QDir("../..").absolutePath(); //For development
@@ -84,6 +86,9 @@ private:
     TestFixtureWidget* _testFixtureWidget;
     SessionInfoWidget* _sessionInfoWidget;
     DutInfoWidget* _dutInfoWidget;
+
+    bool _waitingThreadSequenceFinished = false;
+    int _finishSignalsCount = 0;
 
     ActionHintWidget* _actionHintWidget;
     const QString HINT_START = "Place DUTs into the test fixture, enter information for the Step 1 and start test session";
