@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include <QFormLayout>
 #include <QCompleter>
+#include <QSerialPortInfo>
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -34,6 +35,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     _printerManager = new PrinterManager(_settings, this);
     _printerManager->setLogger(_logger);
+
+//    auto availablePorts = QSerialPortInfo::availablePorts();
+//    for(auto & portInfo : availablePorts)
+//    {
+//        qDebug() << portInfo.portName() << portInfo.productIdentifier();
+//    }
 
     //Setting number of active test panels (max - 5)
     const int MAX_PANELS_COUNT = 5;
@@ -398,9 +405,12 @@ void MainWindow::startFullCycleTesting()
     _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
     _testFixtureWidget->reset();
 
+    _activeTestClientsCount = 0;
     for(auto & testClient : _testClientList)
     {
         testClient->checkDutsCurrent();
+        if(testClient->isActive())
+            _activeTestClientsCount++;
     }
 
     waitAllThreadsSequencesFinished();
@@ -409,14 +419,17 @@ void MainWindow::startFullCycleTesting()
     _testSequenceManager->runTestFunction("Supply power to DUTs");
     delay(5000);
 
-    _testSequenceManager->runTestFunction("Download Railtest");
-    delay(12000);
+//    _testSequenceManager->runTestFunction("Download Railtest");
+//    delay(12000);
 
     _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
     for(auto & testClient : _testClientList)
     {
-        testClient->startTesting();
-        delay(100);
+        if(testClient->isActive())
+        {
+            testClient->startTesting();
+            delay(100);
+        }
     }
 
     waitAllThreadsSequencesFinished();
@@ -522,7 +535,7 @@ void MainWindow::waitAllThreadsSequencesFinished()
 
     _waitingThreadSequenceFinished = true;
     _finishSignalsCount = 0;
-    while(_finishSignalsCount < _testClientList.size())
+    while(_finishSignalsCount < _activeTestClientsCount)
     {
         QCoreApplication::processEvents();
     }

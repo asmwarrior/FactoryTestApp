@@ -876,7 +876,7 @@ void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
                             case 8:
                                 _currentVoltage = gr->errorCode;
 
-                                if(_currentVoltage > 70200 && _currentVoltage < 70800)
+                                if(_currentVoltage > 70200 && _currentVoltage < 72000)
                                 {
                                     _duts[_currentSlot]["voltageChecked"] = true;
                                     _logger->logSuccess(QString("Voltage (3.3V) on AIN 1 in DUT %1 checked").arg(_duts[_currentSlot]["no"].toInt()));
@@ -885,6 +885,7 @@ void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
                                 {
                                     _duts[_currentSlot]["voltageChecked"] = false;
                                     _logger->logError(QString("Error voltage value on AIN 1 in DUT %1 detected!").arg(_duts[_currentSlot]["no"].toInt()));
+                                    _logger->logError(QString("Code:%1").arg(gr->errorCode));
                                 }
 
                                 emit dutChanged(_duts[_currentSlot]);
@@ -1057,7 +1058,7 @@ void TestClient::processFrameFromRail(QByteArray frame)
                qDebug() << "error code:" << code;
                if (code != 0)
                {
-                   //_logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+                   _logger->logError(frame);
                    _currentDaliChecked = false;
                }
                else
@@ -1090,6 +1091,8 @@ void TestClient::on_checkBoardCurrent()
 
 void TestClient::on_checkDutsCurrent()
 {
+    _isActive = false;
+
     for (int slot = 1; slot < _duts.size() + 1; slot++)
     {
         powerOff(slot);
@@ -1111,11 +1114,12 @@ void TestClient::on_checkDutsCurrent()
         readCSA(0);
         waitCommandFinished();
         delay(100);
-        if((_CSA - currentCSA) > 20 && currentCSA != -1)
+        if((_CSA - currentCSA) > 15 && currentCSA != -1)
         {
             _logger->logSuccess(QString("Device connected to the slot %1 of the test board on port %2").arg(slot).arg(_serial.portName()));
             _duts[slot]["state"] = DutState::untested;
             _duts[slot]["checked"] = true;
+            _isActive = true;
         }
 
         else

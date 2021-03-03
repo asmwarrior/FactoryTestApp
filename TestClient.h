@@ -35,6 +35,7 @@ public:
     QMap<int, Dut> getDuts() {return _duts;}
 
 public slots:
+    bool isActive() const {return _isActive;}
     int dutState(int slot) const {return _duts[slot]["state"].toInt();}
     bool isDutAvailable(int slot) {return _duts[slot]["state"].toBool();}
     bool isDutChecked(int slot) {return _duts[slot]["checked"].toBool();}
@@ -148,8 +149,8 @@ private:
     QByteArray _syncCommand;
     QVariantList _syncReplies;
 
+    bool _isActive = false; //True, if at least one DUT connected
     int _CSA = -1; //Board current (mA)
-
     int _currentSlot = 0;
     QString _currentChipID = "";
     int _currentVoltage = 0;
