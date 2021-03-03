@@ -30,6 +30,7 @@ set(SOURCES
     SessionInfoWidget.cpp
     DutInfoWidget.cpp
     ActionHintWidget.cpp
+    PrinterManager.cpp
 )
 
 

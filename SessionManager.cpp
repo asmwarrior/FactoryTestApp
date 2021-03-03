@@ -55,6 +55,11 @@ void SessionManager::writeDutRecordsToDatabase()
     for(auto & record : _records)
     {
         _db->insertIntoTable(record);
+
+        if(record.state == DutState::tested)
+        {
+            emit printLabel(record);
+        }
     }
 
     QFile file(_settings->value("workDirectory").toString() + "/log.txt");

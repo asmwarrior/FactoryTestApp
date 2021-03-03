@@ -1,9 +1,5 @@
 #pragma once
 
-//#include <QObject>
-//#include <QStringList>
-//#include <QDebug>
-
 #include <QVariant>
 
 enum DutState {inactive, untested, tested, warning};

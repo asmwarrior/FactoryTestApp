@@ -22,6 +22,7 @@
 #include "SessionInfoWidget.h"
 #include "DutInfoWidget.h"
 #include "ActionHintWidget.h"
+#include "PrinterManager.h"
 
 class MainWindow : public QWidget
 {
@@ -53,6 +54,7 @@ private:
     QString _workDirectory = QDir(".").absolutePath(); //For test version
 //    QString _workDirectory = QDir("../..").absolutePath(); //For development
     QSettings* _settings;
+    PrinterManager* _printerManager;
     QJSEngine* _scriptEngine;
     SessionManager* _session;
     TestMethodManager* _testSequenceManager;

@@ -37,6 +37,7 @@ public slots:
 signals:
 
     void sessionStatsChanged();
+    void printLabel(DutRecord dutRecord);
 
 private:
 

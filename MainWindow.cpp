@@ -32,6 +32,9 @@ MainWindow::MainWindow(QWidget *parent)
     evaluateScriptsFromDirectory(_workDirectory + "/sequences");
     _scriptEngine->globalObject().setProperty("logger", _scriptEngine->newQObject(_logger));
 
+    _printerManager = new PrinterManager(_settings, this);
+    _printerManager->setLogger(_logger);
+
     //Setting number of active test panels (max - 5)
     const int MAX_PANELS_COUNT = 5;
 
@@ -219,7 +222,7 @@ MainWindow::MainWindow(QWidget *parent)
     logLayout->addWidget(_childProcessOutputLogWidget);
     _logger->setChildProcessLogWidget(_childProcessOutputLogWidget);
 
-    //Connections
+//Connections
     connect(_operatorNameEdit, &QLineEdit::textEdited, [=](const QString& text)
     {
         if(!text.isEmpty() && !_batchNumberEdit->text().isEmpty())
@@ -293,6 +296,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_newSessionButton, &QPushButton::clicked, this, &MainWindow::startNewSession);
     connect(_finishSessionButton, &QPushButton::clicked, this, &MainWindow::finishSession);
     connect(_startFullCycleTestingButton, &QPushButton::clicked, this, &MainWindow::startFullCycleTesting);
+
+    connect(_session, &SessionManager::printLabel, _printerManager, &PrinterManager::addLabel);
 }
 
 MainWindow::~MainWindow()
