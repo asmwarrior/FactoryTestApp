@@ -319,7 +319,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::startNewSession()
 {
-    _newSessionButton->setEnabled(false);
+    setControlsEnabled(false);
 
     for(auto & jlink : _JLinkList)
     {
@@ -327,24 +327,12 @@ void MainWindow::startNewSession()
         delay(100);
     }
 
-    _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
-
-    for(auto & testClient : _testClientList)
-    {
-        testClient->checkDutsCurrent();
-    }
-
-    waitAllThreadsSequencesFinished();
-
     //------------------------------------------------------------------------------------------
 
     _session->setOperatorName(_operatorNameEdit->text().simplified());
     _session->setStartTime(QDateTime::currentDateTime().toString());
     _session->setBatchNumber(_batchNumberEdit->text());
     _session->setBatchInfo(_batchInfoEdit->text());
-
-//    _session->resetDutList();
-//    resetDutListInScriptEnv();
 
     //------------------------------------------------------------------------------------------
     _selectMetodBox->setEnabled(true);
@@ -362,7 +350,6 @@ void MainWindow::startNewSession()
 
     _startFullCycleTestingButton->setEnabled(true);
     _startSelectedTestButton->setEnabled(true);
-    _newSessionButton->setEnabled(false);
     _testFixtureWidget->setEnabled(true);
     _finishSessionButton->setEnabled(true);
 
@@ -378,21 +365,12 @@ void MainWindow::startNewSession()
 
 void MainWindow::finishSession()
 {
+    setControlsEnabled(false);
     _session->writeDutRecordsToDatabase();
     _session->clear();
 
     _selectMetodBox->clear();
-    _selectMetodBox->setEnabled(false);
-
-    _testFunctionsListWidget->clear();
-    _testFunctionsListWidget->setEnabled(false);
-
-    _startFullCycleTestingButton->setEnabled(false);
-    _startSelectedTestButton->setEnabled(false);
-    _newSessionButton->setEnabled(false);
     _testFixtureWidget->reset();
-    _testFixtureWidget->setEnabled(false);
-    _finishSessionButton->setEnabled(false);
     _operatorNameEdit->clear();
     _batchNumberEdit->clear();
     _batchInfoEdit->clear();
@@ -402,11 +380,25 @@ void MainWindow::finishSession()
     _actionHintWidget->showNormalHint(HINT_START);
     _sessionInfoWidget->refresh();
     _testFixtureWidget->refreshButtonsState();
+
+    _operatorNameEdit->setEnabled(true);
+    _batchNumberEdit->setEnabled(true);
+    _batchInfoEdit->setEnabled(true);
 }
 
 void MainWindow::startFullCycleTesting()
 {
-    _startFullCycleTestingButton->setEnabled(false);
+    setControlsEnabled(false);
+
+    _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
+    _testFixtureWidget->reset();
+
+    for(auto & testClient : _testClientList)
+    {
+        testClient->checkDutsCurrent();
+    }
+
+    waitAllThreadsSequencesFinished();
 
 //    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
 //    _testSequenceManager->runTestFunction("Supply power to DUTs");
@@ -448,6 +440,13 @@ void MainWindow::startFullCycleTesting()
 
     _actionHintWidget->showProgressHint(HINT_READY);
     _session->writeDutRecordsToDatabase();
+
+    setControlsEnabled(true);
+    _newSessionButton->setEnabled(false);
+    _operatorNameEdit->setEnabled(false);
+    _batchNumberEdit->setEnabled(false);
+    _batchInfoEdit->setEnabled(false);
+
 }
 
 void MainWindow::resetDutListInScriptEnv()
@@ -489,6 +488,23 @@ QList<QJSValue> MainWindow::evaluateScriptsFromDirectory(const QString& director
 QJSValue MainWindow::runScript(const QString& scriptName, const QJSValueList& args)
 {
     return _scriptEngine->globalObject().property(scriptName).call(args);
+}
+
+void MainWindow::setControlsEnabled(bool state)
+{
+    _operatorNameEdit->setEnabled(state);
+    _batchNumberEdit->setEnabled(state);
+    _batchInfoEdit->setEnabled(state);
+
+    _newSessionButton->setEnabled(state);
+    _finishSessionButton->setEnabled(state);
+
+    _selectMetodBox->setEnabled(state);
+    _testFunctionsListWidget->setEnabled(state);
+    _startFullCycleTestingButton->setEnabled(state);
+    _startSelectedTestButton->setEnabled(state);
+
+    _testFixtureWidget->setEnabled(state);
 }
 
 void MainWindow::waitAllThreadsSequencesFinished()

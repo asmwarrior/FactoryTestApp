@@ -46,6 +46,7 @@ private:
     QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
     QJSValue runScript(const QString& scriptName, const QJSValueList& args);
 
+    void setControlsEnabled(bool state);
     void waitAllThreadsSequencesFinished();
 
     //QString _workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
