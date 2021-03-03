@@ -400,12 +400,12 @@ void MainWindow::startFullCycleTesting()
 
     waitAllThreadsSequencesFinished();
 
-//    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
-//    _testSequenceManager->runTestFunction("Supply power to DUTs");
-//    delay(5000);
+    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
+    _testSequenceManager->runTestFunction("Supply power to DUTs");
+    delay(5000);
 
-//    _testSequenceManager->runTestFunction("Download Railtest");
-//    delay(12000);
+    _testSequenceManager->runTestFunction("Download Railtest");
+    delay(12000);
 
     _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
     for(auto & testClient : _testClientList)
@@ -415,6 +415,9 @@ void MainWindow::startFullCycleTesting()
     }
 
     waitAllThreadsSequencesFinished();
+
+//    _testSequenceManager->runTestFunction("Download Software");
+//    delay(60000);
 
 //    _actionHintWidget->showProgressHint(HINT_DEVICE_ID);
 //    _testSequenceManager->runTestFunction("Read unique device identifiers (ID)");

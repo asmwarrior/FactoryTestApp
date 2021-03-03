@@ -10,8 +10,10 @@
 JLinkManager::JLinkManager(QSettings *settings, QObject *parent)
     : QObject(parent), _settings(settings), _proc(this)
 {
+    _proc.setProgram(_settings->value("JLink/path").toString());
     connect(&_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
     connect(this, &JLinkManager::startJlinkCommands, this, &JLinkManager::on_startJlinkCommands);
+    connect(this, &JLinkManager::startScript, this, &JLinkManager::on_startScript);
     connect(this, &JLinkManager::establishConnection, this, &JLinkManager::on_establishConnection);
     clearErrorBuffer();
 }
@@ -61,7 +63,6 @@ void JLinkManager::on_establishConnection()
 
 void JLinkManager::on_startJlinkCommands(const QStringList &commands)
 {
-    _proc.setProgram("c:/Program Files (x86)/SEGGER/JLink/JLink.exe");
     _proc.setArguments({"-USB", _SN, "-CommanderScript", "download.jlink"});
     //proc.startDetached();
     _proc.start();
@@ -84,6 +85,13 @@ void JLinkManager::on_startJlinkCommands(const QStringList &commands)
 //            break;
 //        }
     //    }
+}
+
+void JLinkManager::on_startScript(const QString &scriptFile)
+{
+    _proc.setArguments({"-USB", _SN, "-CommanderScript", QString(_settings->value("workDirectory").toString() + "/" + scriptFile)});
+    _proc.start();
+    _proc.waitForStarted(2000);
 }
 
 void JLinkManager::readStandardOutput()

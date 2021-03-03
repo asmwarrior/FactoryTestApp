@@ -25,12 +25,14 @@ public slots:
 
         void on_establishConnection();
         void on_startJlinkCommands(const QStringList& commands);
+        void on_startScript(const QString& scriptFile);
         void readStandardOutput();
 
 signals:
 
     void establishConnection();
     void startJlinkCommands(const QStringList& commands);
+    void startScript(const QString& scriptFile);
 
 private:
 

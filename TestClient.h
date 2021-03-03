@@ -35,6 +35,7 @@ public:
     QMap<int, Dut> getDuts() {return _duts;}
 
 public slots:
+    int dutState(int slot) const {return _duts[slot]["state"].toInt();}
     bool isDutAvailable(int slot) {return _duts[slot]["state"].toBool();}
     bool isDutChecked(int slot) {return _duts[slot]["checked"].toBool();}
     void setDutChecked(int no, bool checked);

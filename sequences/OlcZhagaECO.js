@@ -51,8 +51,7 @@ ZhagaECO =
                 {
                     testClient.switchSWD(slot);
                     testClient.delay(500);
-                    mainWindow.delay(500);
-                    JlinkList[i].startJlinkCommands([]);
+                    JlinkList[i].startScript("sequences/OLCZhagaECO/download_railtest.jlink");
                 }
             }
         }
@@ -76,8 +75,19 @@ ZhagaECO =
 
     downloadSoftware: function ()
     {
-        let jlink = JlinkList[currentJLinkIndex];
-        jlink.startJLinkScript("/sequences/OlcZhagaECO/olc_zhaga_software.jlink");
+        for(let i = 0; i < testClientList.length; i++)
+        {
+            testClient = testClientList[i];
+            for (let slot = 1; slot < 4; slot++)
+            {
+                if(testClient.dutState(slot) === 2)
+                {
+                    testClient.switchSWD(slot);
+                    testClient.delay(500);
+                    JlinkList[i].startScript("sequences/OLCZhagaECO/download_software.jlink");
+                }
+            }
+        }
     },
 
     readChipID: function ()
@@ -89,12 +99,8 @@ ZhagaECO =
             {
                 if(item.isDutAvailable(slot) && item.isDutChecked(slot))
                 {
-                    item.startSequence();
                     item.switchSWD(slot);
-                    item.waitCommandFinishedAndDelay(100);
-                    item.readChipId();
-                    item.waitCommandFinishedAndDelay();
-                    item.finishSequence();
+                    item.readChipId(slot);
                 }
             }
 
