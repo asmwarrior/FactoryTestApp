@@ -17,7 +17,7 @@ TestFixtureWidget::TestFixtureWidget(SessionManager* session, QWidget* parent) :
     mainLayout->addWidget(_title);
     _groupBox = new QGroupBox();
     _groupBox->setStyleSheet("QGroupBox{font-weight: bold;}");
-    _groupBox->setFixedSize(250, 450);
+    _groupBox->setFixedSize(450, 250);
     QGridLayout* boxLayout = new QGridLayout;
     _groupBox->setLayout(boxLayout);
     mainLayout->addWidget(_groupBox);
@@ -34,15 +34,35 @@ TestFixtureWidget::TestFixtureWidget(SessionManager* session, QWidget* parent) :
         _buttonGroup->addButton(button, i);
     }
 
-    int counter = 0;
-    for(int i = 0; i < 5; i++)
-    {
-        for(int j = 0; j < 3; j++)
-        {
-            boxLayout->addWidget(_buttons[counter], i, j);
-            counter++;
-        }
-    }
+//    int counter = 0;
+//    for(int i = 0; i < 5; i++)
+//    {
+//        for(int j = 0; j < 3; j++)
+//        {
+//            boxLayout->addWidget(_buttons[counter], i, j);
+//            counter++;
+//        }
+//    }
+
+    boxLayout->addWidget(_buttons[0], 2, 0);
+    boxLayout->addWidget(_buttons[1], 1, 0);
+    boxLayout->addWidget(_buttons[2], 0, 0);
+
+    boxLayout->addWidget(_buttons[3], 2, 1);
+    boxLayout->addWidget(_buttons[4], 1, 1);
+    boxLayout->addWidget(_buttons[5], 0, 1);
+
+    boxLayout->addWidget(_buttons[6], 2, 2);
+    boxLayout->addWidget(_buttons[7], 1, 2);
+    boxLayout->addWidget(_buttons[8], 0, 2);
+
+    boxLayout->addWidget(_buttons[9], 2, 3);
+    boxLayout->addWidget(_buttons[10], 1, 3);
+    boxLayout->addWidget(_buttons[11], 0, 3);
+
+    boxLayout->addWidget(_buttons[12], 2, 4);
+    boxLayout->addWidget(_buttons[13], 1, 4);
+    boxLayout->addWidget(_buttons[14], 0, 4);
 
     connect(_buttonGroup, &QButtonGroup::idClicked, [=](int id)
     {
@@ -59,7 +79,7 @@ TestFixtureWidget::TestFixtureWidget(SessionManager* session, QWidget* parent) :
     mainLayout->addLayout(selectionButtonsLayout);
 
     _selectAllButton = new QPushButton("Select all DUTs");
-    _selectAllButton->setFixedHeight(40);
+    _selectAllButton->setFixedSize(120, 40);
     selectionButtonsLayout->addWidget(_selectAllButton);
     connect(_selectAllButton, &QPushButton::clicked, [=]()
     {
@@ -71,8 +91,9 @@ TestFixtureWidget::TestFixtureWidget(SessionManager* session, QWidget* parent) :
     });
 
     _reverseSelectionButton = new QPushButton("Reverse Selection");
-    _reverseSelectionButton->setFixedHeight(40);
+    _reverseSelectionButton->setFixedSize(120, 40);
     selectionButtonsLayout->addWidget(_reverseSelectionButton);
+    selectionButtonsLayout->addStretch();
 
     connect(_reverseSelectionButton, &QPushButton::clicked, [=]()
     {

@@ -1188,26 +1188,44 @@ void TestClient::on_startTesting()
         }
     }
 
+    //PowerOff all DUTs
+    for(int slot = 1; slot < _duts.size() + 1; slot++)
+    {
+        powerOff(slot);
+        waitCommandFinished();
+    }
+
     //Test DALI interface for all DUTs
+    daliOn();
+    waitCommandFinished();
+
     for(int slot = 1; slot < _duts.size() + 1; slot++)
     {
         if(isDutAvailable(slot) && isDutChecked(slot))
         {
             switchSWD(slot);
             waitCommandFinished();
-            delay(500);
-            daliOn();
+//            delay(500);
+            powerOn(slot);
             waitCommandFinished();
+            delay(1000);
+//            daliOn();
+//            waitCommandFinished();
 
             testDALI();
             waitCommandFinished();
             delay(500);
 
-            daliOff();
+//            daliOff();
+//            waitCommandFinished();
+            powerOff(slot);
             waitCommandFinished();
-            delay(500);
+//            delay(500);
         }
     }
+
+    daliOff();
+    waitCommandFinished();
 
     checkTestingCompletion();
 

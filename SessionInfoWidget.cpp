@@ -14,7 +14,7 @@ SessionInfoWidget::SessionInfoWidget(SessionManager* session, QWidget* parent) :
 
     QGroupBox* widgetBox = new QGroupBox("Session summary");
     widgetBox->setStyleSheet("QGroupBox{color: #595959; font-size:10pt; font-weight: bold;}");
-    widgetBox->setFixedSize(350, 200);
+    widgetBox->setFixedSize(350, 180);
     mainLayout->addWidget(widgetBox);
     mainLayout->addStretch();
 

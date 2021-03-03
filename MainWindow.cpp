@@ -94,11 +94,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     QVBoxLayout* leftPanelLayout = new QVBoxLayout;
     panelsLayout->addLayout(leftPanelLayout);
-    panelsLayout->addStretch();
 
-    QVBoxLayout* middlePanelLayout = new QVBoxLayout;
-    panelsLayout->addLayout(middlePanelLayout);
-    panelsLayout->addStretch();
+//    QVBoxLayout* middlePanelLayout = new QVBoxLayout;
+//    panelsLayout->addLayout(middlePanelLayout);
+    panelsLayout->addSpacing(30);
 
     QVBoxLayout* rightPanelLayout = new QVBoxLayout;
     panelsLayout->addLayout(rightPanelLayout);
@@ -159,7 +158,7 @@ MainWindow::MainWindow(QWidget *parent)
     QLabel* selectSequenceBoxLabel = new QLabel("<b>Step 2.</b> Choose test method", this);
     _selectMetodBox = new QComboBox(this);
     _selectMetodBox->setEnabled(false);
-    _selectMetodBox->setFixedSize(350, 30);
+    _selectMetodBox->setFixedHeight(30);
 
     leftPanelLayout->addWidget(selectSequenceBoxLabel);
     leftPanelLayout->addWidget(_selectMetodBox);
@@ -168,7 +167,6 @@ MainWindow::MainWindow(QWidget *parent)
     QLabel* testFunctionsListLabel = new QLabel("Avaliable testing commands:", this);
     _testFunctionsListWidget = new QListWidget(this);
     _testFunctionsListWidget->setEnabled(false);
-    _testFunctionsListWidget->setFixedWidth(350);
 
     leftPanelLayout->addWidget(testFunctionsListLabel);
     leftPanelLayout->addWidget(_testFunctionsListWidget);
@@ -189,19 +187,29 @@ MainWindow::MainWindow(QWidget *parent)
     _startSelectedTestButton->setEnabled(false);
     startTestingButtonsLayout->addWidget(_startSelectedTestButton);
 
+    //Session info widget
+
+    QHBoxLayout* sessionWidgetLayout = new QHBoxLayout;
+    rightPanelLayout->addLayout(sessionWidgetLayout);
+
+    _sessionInfoWidget = new SessionInfoWidget(_session, this);
+    sessionWidgetLayout->addWidget(_sessionInfoWidget);
+
     //Test fixture representation widget
+
+    QHBoxLayout* dutsLayout = new QHBoxLayout;
+    rightPanelLayout->addLayout(dutsLayout);
     _testFixtureWidget = new TestFixtureWidget(_session, this);
     _testFixtureWidget->setEnabled(false);
-    middlePanelLayout->addWidget(_testFixtureWidget);
-    middlePanelLayout->addStretch();
+    dutsLayout->addWidget(_testFixtureWidget);
 
-    //Info widgets
-    _sessionInfoWidget = new SessionInfoWidget(_session, this);
-    rightPanelLayout->addWidget(_sessionInfoWidget);
+    //DUTs info widget
 
+    QVBoxLayout* dutInfoWidgetLayout = new QVBoxLayout;
+    dutsLayout->addLayout(dutInfoWidgetLayout);
     _dutInfoWidget = new DutInfoWidget(_session, this);
-    rightPanelLayout->addWidget(_dutInfoWidget);
-    rightPanelLayout->addStretch();
+    dutInfoWidgetLayout->addSpacing(14);
+    dutInfoWidgetLayout->addWidget(_dutInfoWidget);
 
     //Log widget
     _logWidget = new QListWidget(this);
@@ -405,15 +413,20 @@ void MainWindow::startFullCycleTesting()
     _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
     _testFixtureWidget->reset();
 
-    _activeTestClientsCount = 0;
+    _activeTestClientsCount = _testClientList.size();
     for(auto & testClient : _testClientList)
     {
         testClient->checkDutsCurrent();
-        if(testClient->isActive())
-            _activeTestClientsCount++;
     }
 
     waitAllThreadsSequencesFinished();
+
+    _activeTestClientsCount = 0;
+    for(auto & testClient : _testClientList)
+    {
+        if(testClient->isActive())
+            _activeTestClientsCount++;
+    }
 
     _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
     _testSequenceManager->runTestFunction("Supply power to DUTs");

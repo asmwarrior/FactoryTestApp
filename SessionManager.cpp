@@ -56,7 +56,7 @@ void SessionManager::writeDutRecordsToDatabase()
     {
         _db->insertIntoTable(record);
 
-        if(record.state == DutState::tested)
+        if(record.state == "testing successfully")
         {
             emit printLabel(record);
         }
