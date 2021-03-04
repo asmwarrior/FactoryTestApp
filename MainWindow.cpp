@@ -42,11 +42,11 @@ MainWindow::MainWindow(QWidget *parent)
 //        qDebug() << portInfo.portName() << portInfo.productIdentifier();
 //    }
 
-    //Setting number of active test panels (max - 5)
-    const int MAX_PANELS_COUNT = 5;
+    //Setting number of active measuring boards (max - 5)
+    const int MAX_MEASBORD_COUNT = 5;
 
     // Creating objects for controlling JLinks & Test clients
-    for (int i = 0; i < MAX_PANELS_COUNT; i++)
+    for (int i = 0; i < MAX_MEASBORD_COUNT; i++)
     {
         if(_settings->value(QString("TestBoard/state" + QString().setNum(i + 1))).toBool())
         {
@@ -63,7 +63,7 @@ MainWindow::MainWindow(QWidget *parent)
             QJSValue jlink = _scriptEngine->newQObject(newJlink);
             _scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
 
-            auto testClient = new TestClient(_settings, _session);
+            auto testClient = new TestClient(_settings, _session, i + 1);
             testClient->setLogger(_logger);
             _testClientList.push_back(testClient);
             _testClientList.last()->setDutsNumbers(_settings->value(QString("TestBoard/duts" + QString().setNum(i + 1))).toString());

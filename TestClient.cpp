@@ -62,8 +62,9 @@ static inline void _encodeSymbol(QByteArray &buffer, char ch) Q_DECL_NOTHROW
     }
 }
 
-TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *parent)
+TestClient::TestClient(QSettings *settings, SessionManager *session, int no, QObject *parent)
     : QObject(parent),
+      _no(no),
       _settings(settings),
       _session(session),
       _serial(this)
@@ -73,15 +74,13 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, QObject *pa
 
     connect(this, &TestClient::open, this, &TestClient::on_open);
 
-    connect(this, &TestClient::checkBoardCurrent, [this](){_mode = slipMode;});
-    connect(this, &TestClient::checkBoardCurrent, this, &TestClient::on_checkBoardCurrent);
-
     connect(this, &TestClient::checkDutsCurrent, [this](){_mode = slipMode;});
     connect(this, &TestClient::checkDutsCurrent, this, &TestClient::on_checkDutsCurrent);
 
     connect(this, &TestClient::startTesting, this, &TestClient::on_startTesting);
 
     connect(this, &TestClient::delay, this, &TestClient::on_delay);
+    connect(this, &TestClient::waitCommandFinished, this, &TestClient::on_waitCommandFinished);
 
     //Slip commands
 
@@ -197,7 +196,6 @@ void TestClient::on_open()
     {
         _serial.readAll();
         readCSA(0);
-        //delay(100);
     }
 }
 
@@ -293,7 +291,6 @@ void TestClient::on_reset()
 void TestClient::on_switchSWD(int DUT)
 {
     _currentSlot = DUT;
-   //_logger->logDebug(QString("switchSWD called with arg %1").arg(DUT));
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -313,7 +310,6 @@ void TestClient::on_switchSWD(int DUT)
 
 void TestClient::on_powerOn(int DUT)
 {
-    //_logger->logDebug(QString("on_powerOn called for %1").arg(DUT));
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -336,7 +332,6 @@ void TestClient::on_powerOn(int DUT)
 
 void TestClient::on_powerOff(int DUT)
 {
-    //_logger->logDebug(QString("on_powerOff called for %1").arg(DUT));
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -429,7 +424,6 @@ void TestClient::on_clearDOUT(int DUT, int DOUT)
 
 void TestClient::on_readCSA(int gain)
 {
-    //_logger->logDebug(QString("on_readCSA called for board on %1").arg(_serial.portName()));
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -625,7 +619,6 @@ void TestClient::on_readChipId(int slot)
     _duts[slot]["id"] = _currentChipID;
     emit dutChanged(_duts[slot]);
     _logger->logSuccess(QString("ID for DUT %1 has been read: %2").arg(_duts[slot]["no"].toInt()).arg(_duts[slot]["id"].toString()));
-    //qDebug() << _duts[slot]["id"];
 }
 
 void TestClient::on_testAccelerometer(int slot)
@@ -712,6 +705,7 @@ void TestClient::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
 
     // Write encoded frame to serial port.
     _serial.write(encodedBuffer);
+    on_waitCommandFinished();
 }
 
 void TestClient::processResponsePacket()
@@ -811,9 +805,6 @@ void TestClient::decodeFrame() Q_DECL_NOTHROW
 
     QByteArray frame = decodedBuffer.mid(1, frameSize - 1);
 
-//    if(decodedBuffer.at(0) == 2 && _serial.portName() == "COM6")
-//        return;
-
     switch(_mode)
     {
     case slipMode:
@@ -829,8 +820,6 @@ void TestClient::decodeFrame() Q_DECL_NOTHROW
         }
         break;
     }
-
-    //onSlipPacketReceived(decodedBuffer.at(0), decodedBuffer.mid(1, frameSize - 1));
 }
 
 void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
@@ -940,8 +929,6 @@ void TestClient::decodeRailtestReply(const QByteArray &reply)
 
         if (_syncCommand == name)
             _syncReplies.append(decodedParams);
-        else
-            //emit replyReceived(name, decodedParams);
 
         return;
     }
@@ -1008,7 +995,7 @@ void TestClient::processFrameFromRail(QByteArray frame)
 
                if (x > 10 || x < -10 || y > 10 || y < -10 || z < 80 || z > 100)
                {
-                   //_logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+                   _logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
                    _currentAccelChecked = false;
                }
                else
@@ -1033,12 +1020,11 @@ void TestClient::processFrameFromRail(QByteArray frame)
 
                if (opwr < 0)
                {
-                   //_logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+                   _logger->logError(QString("Light sensor failure: opwr=%1.").arg(opwr));
                    _currentLightSensChecked = false;
                }
                else
                {
-                   //_logger->logSuccess(QString("Accelerometer: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
                    _currentLightSensChecked = true;
                }
         }
@@ -1055,7 +1041,6 @@ void TestClient::processFrameFromRail(QByteArray frame)
         if (frame.contains("error"))
         {
                int code = frame.mid(frame.indexOf("error") + 6, 1).toInt();
-               qDebug() << "error code:" << code;
                if (code != 0)
                {
                    _logger->logError(frame);
@@ -1063,7 +1048,6 @@ void TestClient::processFrameFromRail(QByteArray frame)
                }
                else
                {
-                   //_logger->logSuccess(QString("Accelerometer: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
                    _currentDaliChecked = true;
                }
         }
@@ -1077,16 +1061,6 @@ void TestClient::processFrameFromRail(QByteArray frame)
     }
 
     _currentCommand = noCommand;
-}
-
-void TestClient::on_checkBoardCurrent()
-{
-    readCSA(0);
-
-    if((_CSA < 140) && (_CSA > 110))
-        _logger->logSuccess("Test board on " + _serial.portName() + " works normally. Consumed current: " + QString().setNum(_CSA)  + " mA");
-    else
-        _logger->logError("Test board on " + _serial.portName() + " do not works normally!. Consumed current: " + QString().setNum(_CSA)  + " mA");
 }
 
 void TestClient::on_checkDutsCurrent()
@@ -1103,16 +1077,13 @@ void TestClient::on_checkDutsCurrent()
     for(int slot = 1; slot < _duts.size() + 1; slot++)
     {
         readCSA(0);
-        waitCommandFinished();
         delay(100);
         int currentCSA = _CSA;
 
         powerOn(slot);
         delay(100);
-        waitCommandFinished();
 
         readCSA(0);
-        waitCommandFinished();
         delay(100);
         if((_CSA - currentCSA) > 15 && currentCSA != -1)
         {
@@ -1130,7 +1101,6 @@ void TestClient::on_checkDutsCurrent()
 
         emit dutChanged(_duts[slot]);
         powerOff(slot);
-        waitCommandFinished();
         delay(2000);
     }
 
@@ -1143,7 +1113,6 @@ void TestClient::on_startTesting()
     for(int slot = 1; slot < _duts.size() + 1; slot++)
     {
         powerOn(slot);
-        waitCommandFinished();
     }
 
     delay(1000);
@@ -1154,7 +1123,6 @@ void TestClient::on_startTesting()
         if(isDutAvailable(slot) && isDutChecked(slot))
         {
             readChipId(slot);
-            waitCommandFinished();
         }
     }
 
@@ -1164,7 +1132,6 @@ void TestClient::on_startTesting()
         if(isDutAvailable(slot) && isDutChecked(slot))
         {
             readAIN(slot, 1, 0);
-            waitCommandFinished();
         }
     }
 
@@ -1174,7 +1141,6 @@ void TestClient::on_startTesting()
         if(isDutAvailable(slot) && isDutChecked(slot))
         {
             testAccelerometer(slot);
-            waitCommandFinished();
         }
     }
 
@@ -1184,7 +1150,6 @@ void TestClient::on_startTesting()
         if(isDutAvailable(slot) && isDutChecked(slot))
         {
             testLightSensor(slot);
-            waitCommandFinished();
         }
     }
 
@@ -1192,40 +1157,25 @@ void TestClient::on_startTesting()
     for(int slot = 1; slot < _duts.size() + 1; slot++)
     {
         powerOff(slot);
-        waitCommandFinished();
     }
 
     //Test DALI interface for all DUTs
     daliOn();
-    waitCommandFinished();
-
     for(int slot = 1; slot < _duts.size() + 1; slot++)
     {
         if(isDutAvailable(slot) && isDutChecked(slot))
         {
             switchSWD(slot);
-            waitCommandFinished();
-//            delay(500);
             powerOn(slot);
-            waitCommandFinished();
             delay(1000);
-//            daliOn();
-//            waitCommandFinished();
 
             testDALI();
-            waitCommandFinished();
             delay(500);
 
-//            daliOff();
-//            waitCommandFinished();
             powerOff(slot);
-            waitCommandFinished();
-//            delay(500);
         }
     }
-
     daliOff();
-    waitCommandFinished();
 
     checkTestingCompletion();
 
@@ -1241,7 +1191,7 @@ void TestClient::on_delay(int msec)
     }
 }
 
-void TestClient::waitCommandFinished()
+void TestClient::on_waitCommandFinished()
 {
     while(_mode != idleMode)
     {

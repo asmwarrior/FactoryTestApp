@@ -8,6 +8,7 @@ ZhagaECO =
         function(item)
         {
             item.readCSA(0);
+            GeneralCommands.test();
         });
     },
 
@@ -215,7 +216,7 @@ ZhagaECO =
     }
 }
 
-testSequenceManager.addFunctionToGeneralList("Read CSA", ZhagaECO.readCSA);
+testSequenceManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
 testSequenceManager.addFunctionToGeneralList("Supply power to DUTs", ZhagaECO.dutsPowerOn);
 testSequenceManager.addFunctionToGeneralList("Power off DUTs", ZhagaECO.dutsPowerOff);
 testSequenceManager.addFunctionToGeneralList("Test connection to JLink", ZhagaECO.testConnection);

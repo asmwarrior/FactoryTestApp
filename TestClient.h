@@ -17,7 +17,7 @@ public:
     enum DutState {inactive, untested, tested, warning};
     enum RailTestCommand {noCommand, readChipIdCommand, accelCommand, lightSensCommand, daliCommand};
 
-    explicit TestClient(QSettings* settings, SessionManager* session, QObject *parent = nullptr);
+    explicit TestClient(QSettings* settings, SessionManager* session, int no, QObject *parent = nullptr);
     ~TestClient();
 
     void setLogger(Logger* logger);
@@ -35,7 +35,9 @@ public:
     QMap<int, Dut> getDuts() {return _duts;}
 
 public slots:
+    int no() const {return _no;}
     bool isActive() const {return _isActive;}
+    int currentCSA() const {return _CSA;}
     int dutState(int slot) const {return _duts[slot]["state"].toInt();}
     bool isDutAvailable(int slot) {return _duts[slot]["state"].toBool();}
     bool isDutChecked(int slot) {return _duts[slot]["checked"].toBool();}
@@ -48,12 +50,12 @@ private slots:
     void onSerialPortReadyRead();
     void onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode);
     void on_delay(int msec);
+    void on_waitCommandFinished();
 
     void sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW;
     void processResponsePacket();
     void onSlipPacketReceived(quint8 channel, QByteArray frame) Q_DECL_NOTHROW;
 
-    void on_checkBoardCurrent();
     void on_checkDutsCurrent();
     void on_startTesting();
 
@@ -86,10 +88,10 @@ private slots:
 signals:
 
     void open();
-    void checkBoardCurrent();
     void checkDutsCurrent();
     void startTesting();
     void delay(int msec);
+    void waitCommandFinished();
 
     void dutChanged(Dut);
     void dutFullyTested(Dut);
@@ -130,8 +132,8 @@ private:
     void decodeFrame() Q_DECL_NOTHROW;
     void decodeRailtestReply(const QByteArray &reply);
     void processFrameFromRail(QByteArray frame);
-    void waitCommandFinished();
 
+    int _no;
     Mode _mode = idleMode;
     RailTestCommand _currentCommand = noCommand;
     QSettings* _settings;
