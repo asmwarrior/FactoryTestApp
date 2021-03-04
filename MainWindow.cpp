@@ -43,10 +43,10 @@ MainWindow::MainWindow(QWidget *parent)
 //    }
 
     //Setting number of active measuring boards (max - 5)
-    const int MAX_MEASBORD_COUNT = 5;
+    const int MAX_MEASBOARD_COUNT = 5;
 
     // Creating objects for controlling JLinks & Test clients
-    for (int i = 0; i < MAX_MEASBORD_COUNT; i++)
+    for (int i = 0; i < MAX_MEASBOARD_COUNT; i++)
     {
         if(_settings->value(QString("TestBoard/state" + QString().setNum(i + 1))).toBool())
         {
@@ -362,6 +362,7 @@ void MainWindow::startNewSession()
     _testSequenceManager->setCurrentMethod(_selectMetodBox->currentText());
 
     _testFunctionsListWidget->setEnabled(true);
+    _testFunctionsListWidget->clear();
     _testFunctionsListWidget->addItems(_testSequenceManager->currentMethodGeneralFunctionNames());
     if(_testFunctionsListWidget->count() > 0)
     {
@@ -428,9 +429,9 @@ void MainWindow::startFullCycleTesting()
             _activeTestClientsCount++;
     }
 
-    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
-    _testSequenceManager->runTestFunction("Supply power to DUTs");
-    delay(5000);
+//    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
+//    _testSequenceManager->runTestFunction("Supply power to DUTs");
+//    delay(5000);
 
 //    _testSequenceManager->runTestFunction("Download Railtest");
 //    delay(12000);

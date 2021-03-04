@@ -36,9 +36,18 @@ public:
 
 public slots:
     int no() const {return _no;}
+
     bool isActive() const {return _isActive;}
-    int currentCSA() const {return _CSA;}
+    void setActive(bool state) {_isActive = state;}
+
+    int currentCSA() {return _CSA;}
+    int dutsCount() const {return _duts.size();}
+
+    int dutNo(int slot) const {return _duts[slot]["no"].toInt();}
+
     int dutState(int slot) const {return _duts[slot]["state"].toInt();}
+    void setDutState(int slot, int state) {_duts[slot]["state"] = state;}
+
     bool isDutAvailable(int slot) {return _duts[slot]["state"].toBool();}
     bool isDutChecked(int slot) {return _duts[slot]["checked"].toBool();}
     void setDutChecked(int no, bool checked);

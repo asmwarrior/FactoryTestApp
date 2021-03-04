@@ -859,7 +859,7 @@ void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
 
                             case 7:
                                 _CSA = gr->errorCode;
-                                //_logger->logDebug(QString("Reply to readCSA command to %1: %2").arg(_serial.portName()).arg(gr->errorCode));
+                                //_logger->logDebug(QString("Reply to readCSA command to measuring board %1: %2").arg(_no).arg(gr->errorCode));
                                 break;
 
                             case 8:
