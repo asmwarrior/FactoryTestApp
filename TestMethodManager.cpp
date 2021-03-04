@@ -2,13 +2,13 @@
 
 #include <QDebug>
 
-TestMethodManager::TestMethodManager(QObject *parent) : QObject(parent)
+TestMethodManager::TestMethodManager(QSettings *settings, QObject *parent) : QObject(parent), _settings(settings),  _scriptEngine(this)
 {
-}
+    _scriptEngine.installExtensions(QJSEngine::ConsoleExtension);
 
-void TestMethodManager::setLogger(const QSharedPointer<Logger> &logger)
-{
-    _logger = logger;
+    _scriptEngine.globalObject().setProperty("methodManager", _scriptEngine.newQObject(this));
+//    evaluateScriptFromFile(settings->value("workDirectory").toString() + "/init.js");
+    evaluateScriptsFromDirectory(settings->value("workDirectory").toString() + "/sequences");
 }
 
 void TestMethodManager::addMethod(const QString& name)
@@ -49,13 +49,13 @@ QStringList TestMethodManager::currentMethodSequenceFunctionNames() const
     return names;
 }
 
-void TestMethodManager::runTestFunction(const QString &name, const QJSValueList &args)
+void TestMethodManager::runTestFunction(const QString &name)
 {
     for(auto & i : _methods[_currentMethod].generalFunctionList)
     {
         if(i.functionName == name)
         {
-            i.function.call(args);
+            i.function.call();
             break;
         }
     }
@@ -69,4 +69,34 @@ void TestMethodManager::addFunctionToGeneralList(const QString &name, const QJSV
 void TestMethodManager::addFunctionToTestSequence(const QString &name, const QJSValue &function)
 {
     _methods[_currentMethod].testSequenceFunctionList.push_back({name, function});
+}
+
+QJSValue TestMethodManager::evaluateScriptFromFile(const QString &scriptFileName)
+{
+    QFile scriptFile(scriptFileName);
+    scriptFile.open(QIODevice::ReadOnly | QIODevice::Text);
+    QTextStream in(&scriptFile);
+    in.setCodec("Utf-8");
+    QJSValue scriptResult = _scriptEngine.evaluate(QString(in.readAll()));
+    scriptFile.close();
+    return scriptResult;
+}
+
+QList<QJSValue> TestMethodManager::evaluateScriptsFromDirectory(const QString& directoryName)
+{
+    QDir scriptsDir = QDir(directoryName, "*.js", QDir::Name, QDir::Files);
+    QStringList fileNames = scriptsDir.entryList();
+    QList<QJSValue> results;
+
+    for (auto & i : fileNames)
+    {
+        results.push_back(evaluateScriptFromFile(scriptsDir.absoluteFilePath(i)));
+    }
+
+    return results;
+}
+
+QJSValue TestMethodManager::runScript(const QString& scriptName, const QJSValueList& args)
+{
+    return _scriptEngine.globalObject().property(scriptName).call(args);
 }

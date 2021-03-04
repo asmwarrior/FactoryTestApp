@@ -37,15 +37,14 @@ public slots:
     void startNewSession();
     void finishSession();
     void startFullCycleTesting();
-    void resetDutListInScriptEnv();
     void delay(int msec);
     Dut getDut(int no);
 
 private:
 
-    QJSValue evaluateScriptFromFile(const QString& scriptFileName);
-    QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
-    QJSValue runScript(const QString& scriptName, const QJSValueList& args);
+//    QJSValue evaluateScriptFromFile(const QString& scriptFileName);
+//    QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
+//    QJSValue runScript(const QString& scriptName, const QJSValueList& args);
 
     void setControlsEnabled(bool state);
     void waitAllThreadsSequencesFinished();
@@ -55,9 +54,9 @@ private:
 //    QString _workDirectory = QDir("../..").absolutePath(); //For development
     QSettings* _settings;
     PrinterManager* _printerManager;
-    QJSEngine* _scriptEngine;
+//    QJSEngine* _scriptEngine;
     SessionManager* _session;
-    TestMethodManager* _testSequenceManager;
+//    TestMethodManager* _testSequenceManager;
     Logger* _logger;
 
     QList<QThread*> _threads;

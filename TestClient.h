@@ -4,6 +4,8 @@
 #include <QSerialPort>
 
 #include "SlipProtocol.h"
+#include "JLinkManager.h"
+#include "TestMethodManager.h"
 #include "SessionManager.h"
 #include "Logger.h"
 
@@ -20,7 +22,10 @@ public:
     explicit TestClient(QSettings* settings, SessionManager* session, int no, QObject *parent = nullptr);
     ~TestClient();
 
+    void initTestMethodManager();
+    TestMethodManager* methodManager() {return _methodManager;}
     void setLogger(Logger* logger);
+    void setJlinkManager(JLinkManager* jlink) {_jlinkManager = jlink;}
     void setDutsNumbers(QString numbers);
 
     void setPort(const QString &name,
@@ -42,6 +47,8 @@ public slots:
 
     int currentCSA() {return _CSA;}
     int dutsCount() const {return _duts.size();}
+    Dut dut(int slot) const {return _duts[slot];}
+    void setCurrentSlot(int slot) {_currentSlot = slot;}
 
     int dutNo(int slot) const {return _duts[slot]["no"].toInt();}
 
@@ -60,6 +67,8 @@ private slots:
     void onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode);
     void on_delay(int msec);
     void on_waitCommandFinished();
+
+    void on_addJlinkToSriptEngine();
 
     void sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW;
     void processResponsePacket();
@@ -102,6 +111,10 @@ signals:
     void delay(int msec);
     void waitCommandFinished();
 
+    void addJlinkToSriptEngine();
+    void runTestFunction(const QString &name);
+
+    void currentDutChanged();
     void dutChanged(Dut);
     void dutFullyTested(Dut);
     void commandSequenceFinished();
@@ -142,6 +155,8 @@ private:
     void decodeRailtestReply(const QByteArray &reply);
     void processFrameFromRail(QByteArray frame);
 
+    JLinkManager* _jlinkManager;
+    TestMethodManager* _methodManager;
     int _no;
     Mode _mode = idleMode;
     RailTestCommand _currentCommand = noCommand;
