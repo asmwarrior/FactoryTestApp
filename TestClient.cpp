@@ -82,6 +82,10 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, int no, QOb
     connect(this, &TestClient::delay, this, &TestClient::on_delay);
     connect(this, &TestClient::waitCommandFinished, this, &TestClient::on_waitCommandFinished);
 
+    connect(this, &TestClient::addJlinkToSriptEngine, this, &TestClient::on_addJlinkToSriptEngine);
+
+    connect(this, &TestClient::setDutProperty, this, &TestClient::on_setDutProperty);
+
     //Slip commands
 
     connect(this, &TestClient::sendRailtestCommand, this, &TestClient::on_sendRailtestCommand);
@@ -149,6 +153,15 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, int no, QOb
 TestClient::~TestClient()
 {
 
+}
+
+void TestClient::initTestMethodManager()
+{
+    _methodManager = new TestMethodManager(_settings);
+    _methodManager->moveToThread(thread());
+    _methodManager->setLogger(_logger);
+    _methodManager->getScriptEngine()->globalObject().setProperty("testClient", _methodManager->getScriptEngine()->newQObject(this));
+    connect(this, &TestClient::runTestFunction, _methodManager, &TestMethodManager::runTestFunction);
 }
 
 void TestClient::setLogger(Logger *logger)
@@ -1197,4 +1210,15 @@ void TestClient::on_waitCommandFinished()
     {
         QCoreApplication::processEvents();
     }
+}
+
+void TestClient::on_addJlinkToSriptEngine()
+{
+    _methodManager->getScriptEngine()->globalObject().setProperty("jlink", _methodManager->getScriptEngine()->newQObject(_jlinkManager));
+}
+
+void TestClient::on_setDutProperty(int slot, const QString &property, const QVariant &value)
+{
+    _duts[slot][property] = value;
+    emit dutChanged(_duts[slot]);
 }

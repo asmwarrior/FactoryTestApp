@@ -29,9 +29,10 @@ public:
     };
 
 
-    TestMethodManager(QObject *parent = nullptr);
+    TestMethodManager(QSettings* settings, QObject *parent = nullptr);
 
-    void setLogger(const QSharedPointer<Logger>& logger);
+    void setLogger(Logger* logger) {_logger = logger; _scriptEngine.globalObject().setProperty("logger", _scriptEngine.newQObject(_logger));}
+    QJSEngine* getScriptEngine() {return &_scriptEngine;}
 
     Q_INVOKABLE void addMethod(const QString& name);
     Q_INVOKABLE void addFunctionToGeneralList(const QString& name, const QJSValue& function);
@@ -42,11 +43,17 @@ public:
 
 public slots:
     void setCurrentMethod(const QString& name);
-    void runTestFunction(const QString& name, const QJSValueList& args = {});
+    void runTestFunction(const QString& name);
 
 private:
 
-    QSharedPointer<Logger> _logger;
+    QJSValue evaluateScriptFromFile(const QString& scriptFileName);
+    QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
+    QJSValue runScript(const QString& scriptName, const QJSValueList& args);
+
+    QSettings* _settings;
+    QJSEngine _scriptEngine;
+    Logger* _logger;
     QString _currentMethod;
     QMap<QString, TestMethod> _methods;
 };

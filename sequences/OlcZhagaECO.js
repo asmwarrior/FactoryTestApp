@@ -1,77 +1,19 @@
-testSequenceManager.addMethod("OLC Zhaga ECO");
+methodManager.addMethod("OLC Zhaga ECO");
 
 ZhagaECO =
 {
-//    readCSA: function ()
-//    {
-//        testClientList.forEach(
-//        function(item)
-//        {
-//            item.readCSA(0);
-//            GeneralCommands.test();
-//        });
-//    },
-
-//    dutsPowerOn: function ()
-//    {
-//        testClientList.forEach(
-//        function(item)
-//        {
-//            for(var i = 0; i < 3; i++)
-//            {
-//                item.powerOn(i + 1);
-//            }
-//        });
-//    },
-
-    dutsPowerOff: function ()
-    {
-        testClientList.forEach(
-        function(item)
-        {
-            for(var i = 0; i < 3; i++)
-            {
-                item.powerOff(i + 1);
-            }
-        });
-    },
-
-    testConnection: function ()
-    {
-        JlinkList.forEach(function(item){item.testConnection()});
-    },
-
     downloadRailtest: function ()
     {  
-        for(let i = 0; i < testClientList.length; i++)
-        {
-            testClient = testClientList[i];
-            for (let slot = 1; slot < 4; slot++)
-            {
-                if(testClient.isDutAvailable(slot))
-                {
-                    testClient.switchSWD(slot);
-                    testClient.delay(500);
-                    JlinkList[i].startScript("sequences/OLCZhagaECO/download_railtest.jlink");
-                }
-            }
-        }
-
-//        let jlink = JlinkList[0];
-//        jlink.startJlinkCommands([
-//                                    "power on perm",
-//                                    "swdselect",
-//                                    "si swd",
-//                                    "speed 5000",
-//                                    "Device = EFR32FG12PXXXF1024",
-//                                    "connect",
-//                                    "erase",
-//                                    "loadfile dummy_btl_efr32xg12.s37",
-//                                    "loadfile olc_zhaga_railtest.hex",
-//                                    "r",
-//                                    "g",
-//                                    "q"
-//                                 ]);
+        GeneralCommands.downloadRailtest("sequences/OLCZhagaECO/download_railtest.jlink");
+//        for (let slot = 1; slot < 4; slot++)
+//        {
+//            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+//            {
+//                testClient.switchSWD(slot);
+//                testClient.delay(100);
+//                jlink.startScript("sequences/OLCZhagaECO/download_railtest.jlink");
+//            }
+//        }
     },
 
     downloadSoftware: function ()
@@ -216,14 +158,15 @@ ZhagaECO =
     }
 }
 
-testSequenceManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
-testSequenceManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
-testSequenceManager.addFunctionToGeneralList("Supply power to DUTs", GeneralCommands.powerOn);
-testSequenceManager.addFunctionToGeneralList("Power off DUTs", GeneralCommands.powerOff);
-testSequenceManager.addFunctionToGeneralList("Read unique device identifiers (ID)", GeneralCommands.readChipId);
+methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
+methodManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
+methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
+methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
+methodManager.addFunctionToGeneralList("Supply power to DUTs", GeneralCommands.powerOn);
+methodManager.addFunctionToGeneralList("Power off DUTs", GeneralCommands.powerOff);
+methodManager.addFunctionToGeneralList("Read unique device identifiers (ID)", GeneralCommands.readChipId);
 
 //testSequenceManager.addFunctionToGeneralList("Test connection to JLink", ZhagaECO.testConnection);
-//testSequenceManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
 //testSequenceManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", ZhagaECO.checkAinVoltage);
 //testSequenceManager.addFunctionToGeneralList("Initialize Dali test", ZhagaECO.initDali);
 //testSequenceManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio);
@@ -234,14 +177,14 @@ testSequenceManager.addFunctionToGeneralList("Read unique device identifiers (ID
 //testSequenceManager.addFunctionToGeneralList("Download Software", ZhagaECO.downloadSoftware);
 //testSequenceManager.addFunctionToGeneralList("Check Testing Completion", ZhagaECO.checkTestingCompletion);
 
-testSequenceManager.addFunctionToTestSequence("Download Railtest", ZhagaECO.downloadRailtest);
-testSequenceManager.addFunctionToTestSequence("Read unique device identifiers (ID)", ZhagaECO.readChipID);
-testSequenceManager.addFunctionToTestSequence("Check voltage on AIN 1 (3.3V)", ZhagaECO.checkAinVoltage);
+//testSequenceManager.addFunctionToTestSequence("Download Railtest", ZhagaECO.downloadRailtest);
+//testSequenceManager.addFunctionToTestSequence("Read unique device identifiers (ID)", ZhagaECO.readChipID);
+//testSequenceManager.addFunctionToTestSequence("Check voltage on AIN 1 (3.3V)", ZhagaECO.checkAinVoltage);
 //testSequenceManager.addFunctionToTestSequence("Initialize Dali test", ZhagaECO.initDali);
-testSequenceManager.addFunctionToTestSequence("Test radio interface", ZhagaECO.testRadio);
-testSequenceManager.addFunctionToTestSequence("Test accelerometer", ZhagaECO.testAccelerometer);
-testSequenceManager.addFunctionToTestSequence("Test light sensor", ZhagaECO.testLightSensor);
-testSequenceManager.addFunctionToTestSequence("Test DALI", ZhagaECO.testDALI);
+//testSequenceManager.addFunctionToTestSequence("Test radio interface", ZhagaECO.testRadio);
+//testSequenceManager.addFunctionToTestSequence("Test accelerometer", ZhagaECO.testAccelerometer);
+//testSequenceManager.addFunctionToTestSequence("Test light sensor", ZhagaECO.testLightSensor);
+//testSequenceManager.addFunctionToTestSequence("Test DALI", ZhagaECO.testDALI);
 //testSequenceManager.addFunctionToTestSequence("Test GNSS", ZhagaECO.testGNSS);
-testSequenceManager.addFunctionToTestSequence("Download Software", ZhagaECO.downloadSoftware);
-testSequenceManager.addFunctionToTestSequence("Check Testing Completion", ZhagaECO.checkTestingCompletion);
+//testSequenceManager.addFunctionToTestSequence("Download Software", ZhagaECO.downloadSoftware);
+//testSequenceManager.addFunctionToTestSequence("Check Testing Completion", ZhagaECO.checkTestingCompletion);
