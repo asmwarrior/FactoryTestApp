@@ -2,6 +2,7 @@
 
 #include <QCoreApplication>
 #include <QtEndian>
+#include <QThread>
 
 static constexpr char
     END_SLIP_OCTET  = 0xC0,
@@ -628,7 +629,7 @@ void TestClient::on_readChipId(int slot)
 {
     _currentCommand = readChipIdCommand;
     sendRailtestCommand(slot, "getmemw", "0x0FE081F0 2");
-    delay(1000);
+//    delay(1000);
     _duts[slot]["id"] = _currentChipID;
     emit dutChanged(_duts[slot]);
     _logger->logSuccess(QString("ID for DUT %1 has been read: %2").arg(_duts[slot]["no"].toInt()).arg(_duts[slot]["id"].toString()));
@@ -638,7 +639,7 @@ void TestClient::on_testAccelerometer(int slot)
 {
     _currentCommand = accelCommand;
     sendRailtestCommand(slot, "accl", {});
-    delay(1000);
+//    delay(1000);
     _duts[slot]["accelChecked"] = _currentAccelChecked;
 
     if(_duts[slot]["accelChecked"].toBool())
@@ -653,7 +654,7 @@ void TestClient::on_testLightSensor(int slot)
 {
     _currentCommand = lightSensCommand;
     sendRailtestCommand(slot, "lsen", {});
-    delay(1000);
+//    delay(1000);
     _duts[slot]["lightSensChecked"] = _currentLightSensChecked;
 
     if(_duts[slot]["lightSensChecked"].toBool())
@@ -726,7 +727,6 @@ void TestClient::processResponsePacket()
     while (_serial.bytesAvailable())
     {
         QByteArray buffer = _serial.readAll();
-
         foreach (char ch, buffer)
         {
             if (ch == END_SLIP_OCTET)

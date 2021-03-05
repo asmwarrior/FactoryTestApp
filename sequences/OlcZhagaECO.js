@@ -4,68 +4,25 @@ ZhagaECO =
 {
     downloadRailtest: function ()
     {  
-        GeneralCommands.downloadRailtest("sequences/OLCZhagaECO/download_railtest.jlink");
-//        for (let slot = 1; slot < 4; slot++)
-//        {
-//            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
-//            {
-//                testClient.switchSWD(slot);
-//                testClient.delay(100);
-//                jlink.startScript("sequences/OLCZhagaECO/download_railtest.jlink");
-//            }
-//        }
+        GeneralCommands.startJlinkScript("sequences/OLCZhagaECO/download_railtest.jlink");
     },
 
     downloadSoftware: function ()
     {
-        for(let i = 0; i < testClientList.length; i++)
-        {
-            testClient = testClientList[i];
-            for (let slot = 1; slot < 4; slot++)
-            {
-                if(testClient.dutState(slot) === 2)
-                {
-                    testClient.switchSWD(slot);
-                    testClient.delay(500);
-                    JlinkList[i].startScript("sequences/OLCZhagaECO/download_software.jlink");
-                }
-            }
-        }
-    },
-
-    readChipID: function ()
-    {
-        testClientList.forEach(
-        function(item)
-        {
-            for(var slot = 1; slot < 4; slot++)
-            {
-                if(item.isDutAvailable(slot) && item.isDutChecked(slot))
-                {
-                    item.switchSWD(slot);
-                    item.readChipId(slot);
-                }
-            }
-
-//            mainWindow.delay(100);
-        });
+        GeneralCommands.startJlinkScript("sequences/OLCZhagaECO/download_software.jlink");
     },
 
     checkAinVoltage: function ()
     {
-        testClientList.forEach(
-        function(item)
+        for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
         {
-            for(var slot = 1; slot < 4; slot++)
+            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
             {
-                if(item.isDutAvailable(slot) && item.isDutChecked(slot))
-                {
-                    item.readAIN(slot, 1, 0);
-                }
+                testClient.readAIN(slot, 1, 0);
             }
 
-            mainWindow.delay(100);
-        });
+            testClient.delay(100);
+        }
     },
 
     initDali: function ()
@@ -165,14 +122,12 @@ methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts
 methodManager.addFunctionToGeneralList("Supply power to DUTs", GeneralCommands.powerOn);
 methodManager.addFunctionToGeneralList("Power off DUTs", GeneralCommands.powerOff);
 methodManager.addFunctionToGeneralList("Read unique device identifiers (ID)", GeneralCommands.readChipId);
+methodManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", ZhagaECO.checkAinVoltage);
+methodManager.addFunctionToGeneralList("Test accelerometer", GeneralCommands.testAccelerometer);
+methodManager.addFunctionToGeneralList("Test light sensor", GeneralCommands.testLightSensor);
+methodManager.addFunctionToGeneralList("Test DALI", GeneralCommands.testDALI);
 
-//testSequenceManager.addFunctionToGeneralList("Test connection to JLink", ZhagaECO.testConnection);
-//testSequenceManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", ZhagaECO.checkAinVoltage);
-//testSequenceManager.addFunctionToGeneralList("Initialize Dali test", ZhagaECO.initDali);
 //testSequenceManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio);
-//testSequenceManager.addFunctionToGeneralList("Test accelerometer", ZhagaECO.testAccelerometer);
-//testSequenceManager.addFunctionToGeneralList("Test light sensor", ZhagaECO.testLightSensor);
-//testSequenceManager.addFunctionToGeneralList("Test DALI", ZhagaECO.testDALI);
 //testSequenceManager.addFunctionToGeneralList("Test GNSS", ZhagaECO.testGNSS);
 //testSequenceManager.addFunctionToGeneralList("Download Software", ZhagaECO.downloadSoftware);
 //testSequenceManager.addFunctionToGeneralList("Check Testing Completion", ZhagaECO.checkTestingCompletion);
