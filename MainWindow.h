@@ -90,6 +90,7 @@ private:
     DutInfoWidget* _dutInfoWidget;
 
     bool _waitingThreadSequenceFinished = false;
+    int _startedSequenceCount = 0;
     int _finishSignalsCount = 0;
 
     ActionHintWidget* _actionHintWidget;

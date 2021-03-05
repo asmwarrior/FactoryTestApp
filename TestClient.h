@@ -42,8 +42,8 @@ public:
 public slots:
     int no() const {return _no;}
 
-    //bool isActive() const {return _isActive;}
     void setActive(bool state) {_isActive = state;}
+    bool isActive() const; //True, if at least one DUT connected
 
     int currentCSA() {return _CSA;}
     int dutsCount() const {return _duts.size();}
@@ -119,6 +119,7 @@ signals:
 
     void dutChanged(Dut);
     void dutFullyTested(Dut);
+    void commandSequenceStarted();
     void commandSequenceFinished();
 
     //Slip commands
@@ -153,7 +154,6 @@ signals:
 
 private:
 
-    bool isActive() const; //True, if at least one DUT connected
     void decodeFrame() Q_DECL_NOTHROW;
     void decodeRailtestReply(const QByteArray &reply);
     void processFrameFromRail(QByteArray frame);
@@ -167,7 +167,6 @@ private:
     SessionManager* _session;
     Logger* _logger;
 
-//    QList<int> _dutsNumbers;
     QMap<int, Dut> _duts;
 
     QSerialPort _serial;

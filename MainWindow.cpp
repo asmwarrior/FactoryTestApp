@@ -182,6 +182,7 @@ MainWindow::MainWindow(QWidget *parent)
     _startFullCycleTestingButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/autoDownload")), tr("Start full cycle testing"), this);
     _startFullCycleTestingButton->setFixedSize(165, 40);
     _startFullCycleTestingButton->setEnabled(false);
+    _startFullCycleTestingButton->setVisible(false);
     startTestingButtonsLayout->addWidget(_startFullCycleTestingButton);
 
     _startSelectedTestButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/checked")), tr("Start Command"), this);
@@ -309,11 +310,18 @@ MainWindow::MainWindow(QWidget *parent)
         connect(testClient, &TestClient::dutChanged, _dutInfoWidget, &DutInfoWidget::updateDut, Qt::QueuedConnection);
         connect(testClient, &TestClient::dutFullyTested, _session, &SessionManager::logDutInfo, Qt::QueuedConnection);
 
+        connect(testClient, &TestClient::commandSequenceStarted, [this]()
+        {
+            _startedSequenceCount++;
+//            setControlsEnabled(false);
+        });
+
         connect(testClient, &TestClient::commandSequenceFinished, [this]()
         {
-            if(_waitingThreadSequenceFinished)
+            _startedSequenceCount--;
+            if(_startedSequenceCount == 0)
             {
-                _finishSignalsCount++;
+//                setControlsEnabled(true);
             }
         });
     }
