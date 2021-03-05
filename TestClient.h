@@ -42,7 +42,7 @@ public:
 public slots:
     int no() const {return _no;}
 
-    bool isActive() const {return _isActive;}
+    //bool isActive() const {return _isActive;}
     void setActive(bool state) {_isActive = state;}
 
     int currentCSA() {return _CSA;}
@@ -55,8 +55,8 @@ public slots:
     int dutState(int slot) const {return _duts[slot]["state"].toInt();}
     void setDutState(int slot, int state) {_duts[slot]["state"] = state;}
 
-    bool isDutAvailable(int slot) {return _duts[slot]["state"].toBool();}
-    bool isDutChecked(int slot) {return _duts[slot]["checked"].toBool();}
+    bool isDutAvailable(int slot) const {return _duts[slot]["state"].toBool();}
+    bool isDutChecked(int slot) const {return _duts[slot]["checked"].toBool();}
     void setDutChecked(int no, bool checked);
     void checkTestingCompletion();
 
@@ -153,6 +153,7 @@ signals:
 
 private:
 
+    bool isActive() const; //True, if at least one DUT connected
     void decodeFrame() Q_DECL_NOTHROW;
     void decodeRailtestReply(const QByteArray &reply);
     void processFrameFromRail(QByteArray frame);

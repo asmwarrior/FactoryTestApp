@@ -1122,6 +1122,12 @@ void TestClient::on_checkDutsCurrent()
 
 void TestClient::on_startTesting()
 {
+    if(!isActive())
+    {
+        emit commandSequenceFinished();
+        return;
+    }
+
     //Supply power to all DUTs
     for(int slot = 1; slot < _duts.size() + 1; slot++)
     {
@@ -1221,4 +1227,17 @@ void TestClient::on_setDutProperty(int slot, const QString &property, const QVar
 {
     _duts[slot][property] = value;
     emit dutChanged(_duts[slot]);
+}
+
+bool TestClient::isActive() const
+{
+    for(int slot = 1; slot < _duts.size() + 1; slot++)
+    {
+        if(isDutAvailable(slot) && isDutChecked(slot))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }

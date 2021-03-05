@@ -427,7 +427,6 @@ void MainWindow::startFullCycleTesting()
     _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
     _testFixtureWidget->reset();
 
-    _activeTestClientsCount = _testClientList.size();
     for(auto & testClient : _testClientList)
     {
         testClient->checkDutsCurrent();
@@ -435,12 +434,6 @@ void MainWindow::startFullCycleTesting()
 
     waitAllThreadsSequencesFinished();
 
-    _activeTestClientsCount = 0;
-    for(auto & testClient : _testClientList)
-    {
-        if(testClient->isActive())
-            _activeTestClientsCount++;
-    }
 
 //    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
 //    _testSequenceManager->runTestFunction("Supply power to DUTs");
@@ -452,11 +445,8 @@ void MainWindow::startFullCycleTesting()
     _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
     for(auto & testClient : _testClientList)
     {
-        if(testClient->isActive())
-        {
-            testClient->startTesting();
-            delay(100);
-        }
+        testClient->startTesting();
+        delay(100);
     }
 
     waitAllThreadsSequencesFinished();
@@ -521,7 +511,7 @@ void MainWindow::waitAllThreadsSequencesFinished()
 
     _waitingThreadSequenceFinished = true;
     _finishSignalsCount = 0;
-    while(_finishSignalsCount < _activeTestClientsCount)
+    while(_finishSignalsCount < _testClientList.size())
     {
         QCoreApplication::processEvents();
     }
