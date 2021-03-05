@@ -1,9 +1,29 @@
 GeneralCommands =
 {
+    testConnection: function ()
+    {
+        jlink.establishConnection();
+    },
+
     readCSA: function ()
     {
         testClient.readCSA(0);
         logger.logInfo("Measuring board " + testClient.no() + " current: " + testClient.currentCSA() + " mA");
+    },
+
+    //---
+
+    downloadRailtest: function (scriptFile)
+    {
+        for (let slot = 1; slot < 4; slot++)
+        {
+            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+            {
+                testClient.switchSWD(slot);
+                testClient.delay(100);
+                jlink.startScript(scriptFile);
+            }
+        }
     },
 
     //---
@@ -63,20 +83,19 @@ GeneralCommands =
             if((testClient.currentCSA() - currentCSA) > 15 && currentCSA !== -1)
             {
                 logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no());
-                testClient.setDutState(slot, 1);
-                testClient.setDutChecked(slot, true);
+                testClient.setDutProperty(slot, "state", 1);
+                testClient.setDutProperty(slot, "checked", true);
                 testClient.setActive(true);
             }
 
             else
             {
-                testClient.setDutState(slot, 0);
-                testClient.setDutChecked(slot, false);
+                testClient.setDutProperty(slot, "state", 0);
+                testClient.setDutProperty(slot, "checked", false);
             }
 
             testClient.powerOff(slot);
             testClient.delay(2000);
-            testClient.currentDutChanged();
         }
 
         testClient.commandSequenceFinished();

@@ -288,6 +288,7 @@ MainWindow::MainWindow(QWidget *parent)
             for(auto & testClient : _testClientList)
             {
                 testClient->runTestFunction(_testFunctionsListWidget->currentItem()->text());
+                delay(100);
             }
         }
     });

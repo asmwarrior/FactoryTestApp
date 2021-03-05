@@ -2,76 +2,18 @@ methodManager.addMethod("OLC Zhaga ECO");
 
 ZhagaECO =
 {
-//    readCSA: function ()
-//    {
-//        testClientList.forEach(
-//        function(item)
-//        {
-//            item.readCSA(0);
-//            GeneralCommands.test();
-//        });
-//    },
-
-//    dutsPowerOn: function ()
-//    {
-//        testClientList.forEach(
-//        function(item)
-//        {
-//            for(var i = 0; i < 3; i++)
-//            {
-//                item.powerOn(i + 1);
-//            }
-//        });
-//    },
-
-    dutsPowerOff: function ()
-    {
-        testClientList.forEach(
-        function(item)
-        {
-            for(var i = 0; i < 3; i++)
-            {
-                item.powerOff(i + 1);
-            }
-        });
-    },
-
-    testConnection: function ()
-    {
-        JlinkList.forEach(function(item){item.testConnection()});
-    },
-
     downloadRailtest: function ()
     {  
-        for(let i = 0; i < testClientList.length; i++)
-        {
-            testClient = testClientList[i];
-            for (let slot = 1; slot < 4; slot++)
-            {
-                if(testClient.isDutAvailable(slot))
-                {
-                    testClient.switchSWD(slot);
-                    testClient.delay(500);
-                    JlinkList[i].startScript("sequences/OLCZhagaECO/download_railtest.jlink");
-                }
-            }
-        }
-
-//        let jlink = JlinkList[0];
-//        jlink.startJlinkCommands([
-//                                    "power on perm",
-//                                    "swdselect",
-//                                    "si swd",
-//                                    "speed 5000",
-//                                    "Device = EFR32FG12PXXXF1024",
-//                                    "connect",
-//                                    "erase",
-//                                    "loadfile dummy_btl_efr32xg12.s37",
-//                                    "loadfile olc_zhaga_railtest.hex",
-//                                    "r",
-//                                    "g",
-//                                    "q"
-//                                 ]);
+        GeneralCommands.downloadRailtest("sequences/OLCZhagaECO/download_railtest.jlink");
+//        for (let slot = 1; slot < 4; slot++)
+//        {
+//            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+//            {
+//                testClient.switchSWD(slot);
+//                testClient.delay(100);
+//                jlink.startScript("sequences/OLCZhagaECO/download_railtest.jlink");
+//            }
+//        }
     },
 
     downloadSoftware: function ()
@@ -216,6 +158,8 @@ ZhagaECO =
     }
 }
 
+methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
+methodManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
 methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
 methodManager.addFunctionToGeneralList("Supply power to DUTs", GeneralCommands.powerOn);
@@ -223,7 +167,6 @@ methodManager.addFunctionToGeneralList("Power off DUTs", GeneralCommands.powerOf
 methodManager.addFunctionToGeneralList("Read unique device identifiers (ID)", GeneralCommands.readChipId);
 
 //testSequenceManager.addFunctionToGeneralList("Test connection to JLink", ZhagaECO.testConnection);
-//testSequenceManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
 //testSequenceManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", ZhagaECO.checkAinVoltage);
 //testSequenceManager.addFunctionToGeneralList("Initialize Dali test", ZhagaECO.initDali);
 //testSequenceManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio);

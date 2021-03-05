@@ -84,7 +84,7 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, int no, QOb
 
     connect(this, &TestClient::addJlinkToSriptEngine, this, &TestClient::on_addJlinkToSriptEngine);
 
-    connect(this, &TestClient::currentDutChanged, [this](){emit dutChanged(_duts[_currentSlot]);});
+    connect(this, &TestClient::setDutProperty, this, &TestClient::on_setDutProperty);
 
     //Slip commands
 
@@ -1215,4 +1215,10 @@ void TestClient::on_waitCommandFinished()
 void TestClient::on_addJlinkToSriptEngine()
 {
     _methodManager->getScriptEngine()->globalObject().setProperty("jlink", _methodManager->getScriptEngine()->newQObject(_jlinkManager));
+}
+
+void TestClient::on_setDutProperty(int slot, const QString &property, const QVariant &value)
+{
+    _duts[slot][property] = value;
+    emit dutChanged(_duts[slot]);
 }

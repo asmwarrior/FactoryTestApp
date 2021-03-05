@@ -70,6 +70,8 @@ private slots:
 
     void on_addJlinkToSriptEngine();
 
+    void on_setDutProperty(int slot, const QString& property, const QVariant& value);
+
     void sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW;
     void processResponsePacket();
     void onSlipPacketReceived(quint8 channel, QByteArray frame) Q_DECL_NOTHROW;
@@ -112,9 +114,9 @@ signals:
     void waitCommandFinished();
 
     void addJlinkToSriptEngine();
+    void setDutProperty(int slot, const QString& property, const QVariant& value);
     void runTestFunction(const QString &name);
 
-    void currentDutChanged();
     void dutChanged(Dut);
     void dutFullyTested(Dut);
     void commandSequenceFinished();
