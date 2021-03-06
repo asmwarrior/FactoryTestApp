@@ -68,6 +68,8 @@ GeneralCommands =
 
     detectDuts: function ()
     {
+        testClient.commandSequenceStarted();
+
         testClient.setActive(false);
 
         for (var slot = 1; slot < testClient.dutsCount() + 1; slot++)

@@ -313,7 +313,7 @@ MainWindow::MainWindow(QWidget *parent)
         connect(testClient, &TestClient::commandSequenceStarted, [this]()
         {
             _startedSequenceCount++;
-//            setControlsEnabled(false);
+            setControlsEnabled(false);
         });
 
         connect(testClient, &TestClient::commandSequenceFinished, [this]()
@@ -321,7 +321,11 @@ MainWindow::MainWindow(QWidget *parent)
             _startedSequenceCount--;
             if(_startedSequenceCount == 0)
             {
-//                setControlsEnabled(true);
+                setControlsEnabled(true);
+                _newSessionButton->setEnabled(false);
+                _operatorNameEdit->setEnabled(false);
+                _batchNumberEdit->setEnabled(false);
+                _batchInfoEdit->setEnabled(false);
             }
         });
     }
@@ -430,17 +434,17 @@ void MainWindow::finishSession()
 
 void MainWindow::startFullCycleTesting()
 {
-    setControlsEnabled(false);
+//    setControlsEnabled(false);
 
-    _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
-    _testFixtureWidget->reset();
+//    _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
+//    _testFixtureWidget->reset();
 
-    for(auto & testClient : _testClientList)
-    {
-        testClient->checkDutsCurrent();
-    }
+//    for(auto & testClient : _testClientList)
+//    {
+//        testClient->checkDutsCurrent();
+//    }
 
-    waitAllThreadsSequencesFinished();
+//    waitAllThreadsSequencesFinished();
 
 
 //    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
@@ -450,14 +454,14 @@ void MainWindow::startFullCycleTesting()
 //    _testSequenceManager->runTestFunction("Download Railtest");
 //    delay(12000);
 
-    _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
-    for(auto & testClient : _testClientList)
-    {
-        testClient->startTesting();
-        delay(100);
-    }
+//    _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
+//    for(auto & testClient : _testClientList)
+//    {
+//        testClient->startTesting();
+//        delay(100);
+//    }
 
-    waitAllThreadsSequencesFinished();
+//    waitAllThreadsSequencesFinished();
 
 //    _testSequenceManager->runTestFunction("Download Software");
 //    delay(60000);
@@ -510,20 +514,6 @@ void MainWindow::setControlsEnabled(bool state)
     _startSelectedTestButton->setEnabled(state);
 
     _testFixtureWidget->setEnabled(state);
-}
-
-void MainWindow::waitAllThreadsSequencesFinished()
-{
-    if(!_settings->value("multithread").toBool())
-        return;
-
-    _waitingThreadSequenceFinished = true;
-    _finishSignalsCount = 0;
-    while(_finishSignalsCount < _testClientList.size())
-    {
-        QCoreApplication::processEvents();
-    }
-    _waitingThreadSequenceFinished = false;
 }
 
 void MainWindow::delay(int msec)

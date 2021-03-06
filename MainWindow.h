@@ -42,12 +42,7 @@ public slots:
 
 private:
 
-//    QJSValue evaluateScriptFromFile(const QString& scriptFileName);
-//    QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
-//    QJSValue runScript(const QString& scriptName, const QJSValueList& args);
-
     void setControlsEnabled(bool state);
-    void waitAllThreadsSequencesFinished();
 
     //QString _workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
     QString _workDirectory = QDir(".").absolutePath(); //For test version
@@ -89,9 +84,7 @@ private:
     SessionInfoWidget* _sessionInfoWidget;
     DutInfoWidget* _dutInfoWidget;
 
-    bool _waitingThreadSequenceFinished = false;
     int _startedSequenceCount = 0;
-    int _finishSignalsCount = 0;
 
     ActionHintWidget* _actionHintWidget;
     const QString HINT_START = "Place DUTs into the test fixture, enter information for the Step 1 and start test session";
