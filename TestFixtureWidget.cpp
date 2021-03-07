@@ -29,7 +29,7 @@ TestFixtureWidget::TestFixtureWidget(SessionManager* session, QWidget* parent) :
     for(int i = 1; i < 16; i++)
     {
         DutButton* button = new DutButton(i, this);
-        button->setText(QString().setNum(i));
+        button->setText(QString(" \n  %1").arg(QString().setNum(i)));
         _buttons.push_back(button);
         _buttonGroup->addButton(button, i);
     }
