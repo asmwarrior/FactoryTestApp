@@ -4,7 +4,29 @@ ZhagaECO =
 {
     downloadRailtest: function ()
     {  
-        GeneralCommands.startJlinkScript("sequences/OLCZhagaECO/download_railtest.jlink");
+
+        for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
+        {
+            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+            {
+                testClient.powerOn(slot);
+                testClient.delay(1000);
+                testClient.switchSWD(slot);
+//                GeneralCommands.startJlinkScript("sequences/OLCZhagaECO/download_railtest.jlink");
+
+                jlink.selectByUSB();
+                jlink.setDevice("EFR32FG12PXXXF1024");
+                jlink.open();
+                jlink.select();
+                jlink.setSpeed(5000);
+                jlink.connect();
+                jlink.erase();
+//                jlink.downloadFile("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", 0);
+//                jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex", 0);
+                jlink.reset();
+                jlink.go();
+            }
+        }
     },
 
     //---
@@ -44,6 +66,7 @@ ZhagaECO =
 
         GeneralCommands.powerOn();
         testClient.delay(1000);
+//        ZhagaECO.downloadRailtest();
         GeneralCommands.readChipId();
         ZhagaECO.checkAinVoltage();
         GeneralCommands.testAccelerometer();
@@ -64,9 +87,9 @@ ZhagaECO =
 
 methodManager.addFunctionToGeneralList("Full cycle testing", ZhagaECO.startTesting);
 methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
+methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
 methodManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
-methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
 methodManager.addFunctionToGeneralList("Supply power to DUTs", GeneralCommands.powerOn);
 methodManager.addFunctionToGeneralList("Power off DUTs", GeneralCommands.powerOff);
 methodManager.addFunctionToGeneralList("Read unique device identifiers (ID)", GeneralCommands.readChipId);

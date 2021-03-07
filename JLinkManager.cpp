@@ -1,7 +1,5 @@
 #include "JLinkManager.h"
 
-#include "JLinkSDK/JLinkARMDLL.h"
-
 #include <QDebug>
 #include <QProcess>
 #include <QThread>
@@ -11,10 +9,9 @@ JLinkManager::JLinkManager(QSettings *settings, QObject *parent)
     : QObject(parent), _settings(settings), _proc(this)
 {
     _proc.setProgram(_settings->value("JLink/path").toString());
-    connect(&_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
-    connect(this, &JLinkManager::startJlinkCommands, this, &JLinkManager::on_startJlinkCommands);
-    connect(this, &JLinkManager::startScript, this, &JLinkManager::on_startScript);
-    connect(this, &JLinkManager::establishConnection, this, &JLinkManager::on_establishConnection);
+    QObject::connect(&_proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
+    QObject::connect(this, &JLinkManager::startScript, this, &JLinkManager::on_startScript);
+    QObject::connect(this, &JLinkManager::establishConnection, this, &JLinkManager::on_establishConnection);
     clearErrorBuffer();
 }
 
@@ -38,6 +35,93 @@ QString JLinkManager::getSN() const
     return _SN;
 }
 
+void JLinkManager::selectByUSB()
+{
+    if (JLINKARM_EMU_SelectByUSBSN(_SN.toUInt()) < 0)
+    {
+        _state = unknown;
+        _logger->logError("No connection to JLink with S/N " + _SN);
+    }
+}
+
+void JLinkManager::open()
+{
+    if(JLINKARM_Open())
+        _logger->logError("JLINK: An error occured when opening JLink programmer!");
+}
+
+void JLinkManager::setDevice(const QString &device)
+{
+    clearErrorBuffer();
+    char cmd[0x400];
+    strcpy_s(cmd, "device = ");
+    strcat_s(cmd, device.toLocal8Bit().data());
+    JLINKARM_ExecCommand(cmd, _errorBuffer.data(), _errorBuffer.size());
+    if(_errorBuffer.at(0) != 0)
+    {
+        _logger->logError("JLINK: " + _errorBuffer);
+    }
+}
+
+void JLinkManager::select(int interface)
+{
+    _targetInterface = interface;
+    JLINKARM_TIF_Select(_targetInterface);
+}
+
+void JLinkManager::setSpeed(int speed)
+{
+    _speed = speed;
+    JLINKARM_SetSpeed(_speed);
+}
+
+void JLinkManager::connect()
+{
+    if(JLINKARM_Connect())
+    {
+        _logger->logError("JLINK: Could not connect to target!");
+    }
+}
+
+void JLinkManager::erase()
+{
+    int error = 0;
+    error = JLINK_EraseChip();
+    if(error < 0)
+    {
+        _logger->logError("Error occured when earasing chip!");
+    }
+    else
+    {
+        _logger->logInfo("Chip flash has been earased.");
+    }
+}
+
+void JLinkManager::reset()
+{
+    JLINKARM_Reset();
+}
+
+void JLinkManager::go()
+{
+    JLINKARM_Go();
+}
+
+void JLinkManager::downloadFile(const QString &fileName, int adress)
+{
+    int error = 0;
+    JLINKARM_BeginDownload(0); // Indicates start of flash download
+    error = JLINK_DownloadFile(QString(_settings->value("workDirectory").toString() + "/" + fileName).toLocal8Bit().data(), adress); // Load the application binary to address 0
+    JLINKARM_EndDownload();
+    if(error < 0)
+        _logger->logError(QString("JLINK: Failed to load file %1!").arg(fileName));
+}
+
+void JLinkManager::close()
+{
+    JLINKARM_Close();
+}
+
 void JLinkManager::on_establishConnection()
 {
     if(_SN.isEmpty())
@@ -59,32 +143,6 @@ void JLinkManager::on_establishConnection()
         _state = connectionTested;
         _logger->logSuccess("JLink with S/N: " + _SN + " connected");
     }
-}
-
-void JLinkManager::on_startJlinkCommands(const QStringList &commands)
-{
-    _proc.setArguments({"-USB", _SN, "-CommanderScript", "download.jlink"});
-    //proc.startDetached();
-    _proc.start();
-    _proc.waitForStarted(2000);
-//    while(_proc.state() == QProcess::Running)
-//    {
-
-//    }
-//    _proc.waitForFinished();
-
-//    JLINKARM_EMU_SelectByUSBSN(_SN.toUInt());
-//    JLINKARM_Open();
-//    for(auto & command : commands)
-//    {
-//        clearErrorBuffer();
-//        JLINKARM_ExecCommand(command.toLatin1().data(), _errorBuffer.data(), _errorBuffer.size());
-//        if(_errorBuffer.at(0) != 0)
-//        {
-//            _logger->logError("JLINK: " + _errorBuffer);
-//            break;
-//        }
-    //    }
 }
 
 void JLinkManager::on_startScript(const QString &scriptFile)

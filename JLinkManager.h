@@ -2,8 +2,10 @@
 
 #include <QProcess>
 #include <QSettings>
-
 #include "Logger.h"
+
+#include "JLinkSDK/JLinkARMDLL.h"
+
 
 class JLinkManager : public QObject
 {
@@ -23,24 +25,42 @@ class JLinkManager : public QObject
 
 public slots:
 
-        void on_establishConnection();
-        void on_startJlinkCommands(const QStringList& commands);
-        void on_startScript(const QString& scriptFile);
-        void readStandardOutput();
+    void selectByUSB();
+    void open();
+    void setDevice(const QString& device);
+    void select(int interface = JLINKARM_TIF_SWD);
+    void setSpeed(int speed);
+    void connect();
+    void erase();
+    void reset();
+    void go();
+    void downloadFile(const QString& fileName, int adress);
+    void close();
+
+    void on_establishConnection();
+    void on_startScript(const QString& scriptFile);
+    void readStandardOutput();
 
 signals:
 
     void establishConnection();
-    void startJlinkCommands(const QStringList& commands);
     void startScript(const QString& scriptFile);
 
 private:
 
     void clearErrorBuffer();
 
+    void logOut(const char* log) {_logger->logInfo(log);}
+    void errorOut(const char* log) {_logger->logError(QString("JLINK ERROR: %1").arg(log));}
+
     QSettings* _settings;
     Logger* _logger;
     State _state = unknown;
+
+    QString _device;
+    int _targetInterface = JLINKARM_TIF_SWD;
+    int _speed = 5000;
+    int _hostInterface = JLINKARM_HOSTIF_USB;
     QString _SN; // JLink serial number
     QByteArray _errorBuffer;
 
