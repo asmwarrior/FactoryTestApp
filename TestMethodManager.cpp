@@ -22,7 +22,7 @@ void TestMethodManager::setCurrentMethod(const QString &name)
     _currentMethod = name;
 }
 
-QStringList TestMethodManager::avaliableSequencesNames() const
+QStringList TestMethodManager::avaliableMethodsNames() const
 {
     return _methods.keys();
 }

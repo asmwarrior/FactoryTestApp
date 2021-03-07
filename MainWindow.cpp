@@ -390,7 +390,7 @@ void MainWindow::startNewSession()
     //------------------------------------------------------------------------------------------
     _selectMetodBox->setEnabled(true);
     _selectMetodBox->clear();
-    _selectMetodBox->addItems(_testClientList.first()->methodManager()->avaliableSequencesNames());
+    _selectMetodBox->addItems(_testClientList.first()->methodManager()->avaliableMethodsNames());
 
     for(auto & testClient : _testClientList)
     {
