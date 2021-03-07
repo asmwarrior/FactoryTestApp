@@ -26,6 +26,8 @@ public slots:
 signals:
 
     void dutClicked(int id, bool checked);
+    void selectAllButtonClicked();
+    void reverseSelectionButtonClicked();
 
 private:
 

@@ -234,6 +234,24 @@ void TestClient::setDutChecked(int no, bool checked)
     }
 }
 
+void TestClient::setAllDutsChecked()
+{
+    for(auto & dut : _duts)
+    {
+        if(dut["state"].toBool())
+            dut["checked"] = true;
+    }
+}
+
+void TestClient::reverseDutsChecked()
+{
+    for(auto & dut : _duts)
+    {
+        if(dut["state"].toBool())
+            dut["checked"] = !dut["checked"].toBool();
+    }
+}
+
 void TestClient::checkTestingCompletion()
 {
     for(auto & dut : _duts)

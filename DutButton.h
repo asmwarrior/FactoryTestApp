@@ -23,6 +23,7 @@ signals:
 public slots:
 
     void setButtonState(int state);
+    int getButtonState() const {return _state;}
 
 private:
 

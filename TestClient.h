@@ -58,6 +58,8 @@ public slots:
     bool isDutAvailable(int slot) const {return _duts[slot]["state"].toBool();}
     bool isDutChecked(int slot) const {return _duts[slot]["checked"].toBool();}
     void setDutChecked(int no, bool checked);
+    void setAllDutsChecked();
+    void reverseDutsChecked();
     void checkTestingCompletion();
 
 private slots:

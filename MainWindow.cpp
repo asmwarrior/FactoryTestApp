@@ -300,6 +300,17 @@ MainWindow::MainWindow(QWidget *parent)
         _dutInfoWidget->showDutInfo(no);
     });
 
+    for (auto & testClient : _testClientList)
+    {
+        connect(_testFixtureWidget, &TestFixtureWidget::selectAllButtonClicked, testClient, &TestClient::setAllDutsChecked);
+    }
+
+    for (auto & testClient : _testClientList)
+    {
+        connect(_testFixtureWidget, &TestFixtureWidget::reverseSelectionButtonClicked, testClient, &TestClient::reverseDutsChecked);
+    }
+
+
     connect(_clearLogWidgetButton, &QPushButton::clicked, _logWidget, &QListWidget::clear);
     connect(_clearLogWidgetButton, &QPushButton::clicked, _childProcessOutputLogWidget, &QListWidget::clear);
 

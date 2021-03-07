@@ -66,7 +66,6 @@ TestFixtureWidget::TestFixtureWidget(SessionManager* session, QWidget* parent) :
 
     connect(_buttonGroup, &QButtonGroup::idClicked, [=](int id)
     {
-//        _session->setCurrentDut(id);
         emit dutClicked(id, _buttonGroup->button(id)->isChecked());
     });
     connect(_buttonGroup, QOverload<QAbstractButton *, bool>::of(&QButtonGroup::buttonToggled), [=](QAbstractButton *button, bool checked)
@@ -85,9 +84,10 @@ TestFixtureWidget::TestFixtureWidget(SessionManager* session, QWidget* parent) :
     {
         for (auto & button : _buttons)
         {
-            button->setChecked(true);
+            if(button->getButtonState())
+                button->setChecked(true);
         }
-        //emit dutStateChanged();
+        emit selectAllButtonClicked();
     });
 
     _reverseSelectionButton = new QPushButton("Reverse Selection");
@@ -99,9 +99,10 @@ TestFixtureWidget::TestFixtureWidget(SessionManager* session, QWidget* parent) :
     {
         for (auto & button : _buttons)
         {
-            button->setChecked(!button->isChecked());
+            if(button->getButtonState())
+                button->setChecked(!button->isChecked());
         }
-        //emit dutStateChanged();
+        emit reverseSelectionButtonClicked();
     });
 }
 
