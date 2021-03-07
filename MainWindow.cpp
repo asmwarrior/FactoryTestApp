@@ -17,22 +17,8 @@ MainWindow::MainWindow(QWidget *parent)
     _settings = new QSettings(_workDirectory + "/settings.ini", QSettings::IniFormat, this);
     _settings->setValue("workDirectory", _workDirectory);
 
-//    _scriptEngine = _scriptEngine = new QJSEngine(this);
-//    _scriptEngine->installExtensions(QJSEngine::ConsoleExtension);
-
-//    _scriptEngine->globalObject().setProperty("mainWindow", _scriptEngine->newQObject(this));
-
     _session = new SessionManager(_settings, this);
-//    _scriptEngine->globalObject().setProperty("session", _scriptEngine->newQObject(_session));
-
-//    _testSequenceManager = new TestMethodManager(_settings, this);
     _logger = new Logger(_settings, _session, this);
-//    _scriptEngine->globalObject().setProperty("testSequenceManager", _scriptEngine->newQObject(_testSequenceManager));
-
-//    evaluateScriptFromFile(_workDirectory + "/init.js");
-//    evaluateScriptsFromDirectory(_workDirectory + "/sequences");
-//    _scriptEngine->globalObject().setProperty("logger", _scriptEngine->newQObject(_logger));
-
     _printerManager = new PrinterManager(_settings, this);
     _printerManager->setLogger(_logger);
 
@@ -61,8 +47,6 @@ MainWindow::MainWindow(QWidget *parent)
             _JLinkList.push_back(newJlink);
             if(_settings->value("multithread").toBool())
                 _JLinkList.last()->moveToThread(_threads.last());
-//            QJSValue jlink = _scriptEngine->newQObject(newJlink);
-//            _scriptEngine->globalObject().property("JlinkList").setProperty(i, jlink);
 
             auto testClient = new TestClient(_settings, _session, i + 1);
             testClient->setLogger(_logger);
@@ -73,8 +57,6 @@ MainWindow::MainWindow(QWidget *parent)
 
             if(_settings->value("multithread").toBool())
                 _testClientList.last()->moveToThread(_threads.last());
-
-//            _scriptEngine->globalObject().property("testClientList").setProperty(i, _scriptEngine->newQObject(testClient));
 
             _threads.last()->start();
             _testClientList.last()->open();
@@ -283,6 +265,18 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(_startSelectedTestButton, &QPushButton::clicked, [=]()
+    {
+        if(_testFunctionsListWidget->currentItem())
+        {
+            for(auto & testClient : _testClientList)
+            {
+                testClient->runTestFunction(_testFunctionsListWidget->currentItem()->text());
+                delay(100);
+            }
+        }
+    });
+
+    connect(_testFunctionsListWidget, &QListWidget::itemDoubleClicked, [=]()
     {
         if(_testFunctionsListWidget->currentItem())
         {

@@ -49,9 +49,7 @@ private:
 //    QString _workDirectory = QDir("../..").absolutePath(); //For development
     QSettings* _settings;
     PrinterManager* _printerManager;
-//    QJSEngine* _scriptEngine;
     SessionManager* _session;
-//    TestMethodManager* _testSequenceManager;
     Logger* _logger;
 
     QList<QThread*> _threads;
