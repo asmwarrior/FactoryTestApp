@@ -3,10 +3,7 @@ methodManager.addMethod("OLC Zhaga ECO");
 ZhagaECO =
 {
     downloadRailtest: function ()
-    {  
-
-//        GeneralCommands.startJlinkScript("sequences/OLCZhagaECO/download_railtest.jlink");
-
+    {
         for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
         {
             if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
@@ -38,6 +35,17 @@ ZhagaECO =
         GeneralCommands.startJlinkScript("sequences/OLCZhagaECO/download_software.jlink");
     },
 
+    testRadio: function ()
+    {
+        for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
+        {
+            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+            {
+                console.log("Testing radio interface for DUT " + testClient.dutNo(slot));
+            }
+        }
+    },
+
     //---
 
     checkAinVoltage: function ()
@@ -59,7 +67,6 @@ ZhagaECO =
     {
         testClient.commandSequenceStarted();
 
-        GeneralCommands.detectDuts();
         if(!testClient.isActive())
         {
             testClient.commandSequenceFinished();
@@ -98,9 +105,9 @@ methodManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", ZhagaECO
 methodManager.addFunctionToGeneralList("Test accelerometer", GeneralCommands.testAccelerometer);
 methodManager.addFunctionToGeneralList("Test light sensor", GeneralCommands.testLightSensor);
 methodManager.addFunctionToGeneralList("Test DALI", GeneralCommands.testDALI);
+methodManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio, true);
 methodManager.addFunctionToGeneralList("Check Testing Completion", ZhagaECO.checkTestingCompletion);
 
-//testSequenceManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio);
 //testSequenceManager.addFunctionToGeneralList("Test GNSS", ZhagaECO.testGNSS);
 //testSequenceManager.addFunctionToGeneralList("Download Software", ZhagaECO.downloadSoftware);
 

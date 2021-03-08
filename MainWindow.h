@@ -38,6 +38,7 @@ public slots:
     void finishSession();
     void startFullCycleTesting();
     void startSelectedFunction();
+    void startFunction(const QString& functionName);
     void delay(int msec);
     Dut getDut(int no);
 

@@ -17,5 +17,6 @@
         <file alias="dut_untested">Resources/dut_untested.png</file>
         <file alias="dut_tested">Resources/dut_tested.png</file>
         <file alias="dut_warning">Resources/dut_warnig.png</file>
+        <file alias="logo">Resources/logo.png</file>
     </qresource>
 </RCC>

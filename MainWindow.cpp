@@ -70,10 +70,10 @@ MainWindow::MainWindow(QWidget *parent)
     QVBoxLayout* mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
 
-    mainLayout->addSpacing(30);
+//    mainLayout->addSpacing(30);
     QHBoxLayout* headerLayout = new QHBoxLayout;
     mainLayout->addLayout(headerLayout);
-    mainLayout->addSpacing(30);
+//    mainLayout->addSpacing(30);
 
     QHBoxLayout* panelsLayout = new QHBoxLayout;
     mainLayout->addLayout(panelsLayout);
@@ -93,6 +93,8 @@ MainWindow::MainWindow(QWidget *parent)
     headerLayout->addStretch();
     _headerLabel = new QLabel("HERE WE PLACE HEADER INFO", this);
     _headerLabel->setStyleSheet("font-size:10pt; font-weight: bold;");
+    QPixmap headerLogo(":/icons/logo");
+    _headerLabel->setPixmap(headerLogo);
     headerLayout->addWidget(_headerLabel);
     headerLayout->addStretch();
 
@@ -164,7 +166,6 @@ MainWindow::MainWindow(QWidget *parent)
     _startFullCycleTestingButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/autoDownload")), tr("Start full cycle testing"), this);
     _startFullCycleTestingButton->setFixedSize(165, 40);
     _startFullCycleTestingButton->setEnabled(false);
-    _startFullCycleTestingButton->setVisible(false);
     startTestingButtonsLayout->addWidget(_startFullCycleTestingButton);
 
     _startSelectedTestButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/checked")), tr("Start Command"), this);
@@ -223,6 +224,7 @@ MainWindow::MainWindow(QWidget *parent)
     _logger->setChildProcessLogWidget(_childProcessOutputLogWidget);
 
 //Connections
+
     connect(_operatorNameEdit, &QLineEdit::textEdited, [=](const QString& text)
     {
         if(!text.isEmpty() && !_batchNumberEdit->text().isEmpty())
@@ -418,9 +420,24 @@ void MainWindow::finishSession()
 
 void MainWindow::startFullCycleTesting()
 {
+
+    _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
+    startFunction("Detect DUTs");
+    setControlsEnabled(false);
+    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
+    delay(16000);
+
+    startFunction("Download Railtest");
+
+
+    startFunction("Test radio interface");
+
+
+    _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
+    startFunction("Full cycle testing");
+
 //    setControlsEnabled(false);
 
-//    _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
 //    _testFixtureWidget->reset();
 
 //    for(auto & testClient : _testClientList)
@@ -431,14 +448,12 @@ void MainWindow::startFullCycleTesting()
 //    waitAllThreadsSequencesFinished();
 
 
-//    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
 //    _testSequenceManager->runTestFunction("Supply power to DUTs");
 //    delay(5000);
 
 //    _testSequenceManager->runTestFunction("Download Railtest");
 //    delay(12000);
 
-//    _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
 //    for(auto & testClient : _testClientList)
 //    {
 //        testClient->startTesting();
@@ -472,14 +487,14 @@ void MainWindow::startFullCycleTesting()
 
 //    _testSequenceManager->runTestFunction("Check Testing Completion");
 
-    _actionHintWidget->showProgressHint(HINT_READY);
-    _session->writeDutRecordsToDatabase();
+//    _actionHintWidget->showProgressHint(HINT_READY);
+//    _session->writeDutRecordsToDatabase();
 
-    setControlsEnabled(true);
-    _newSessionButton->setEnabled(false);
-    _operatorNameEdit->setEnabled(false);
-    _batchNumberEdit->setEnabled(false);
-    _batchInfoEdit->setEnabled(false);
+//    setControlsEnabled(true);
+//    _newSessionButton->setEnabled(false);
+//    _operatorNameEdit->setEnabled(false);
+//    _batchNumberEdit->setEnabled(false);
+//    _batchInfoEdit->setEnabled(false);
 
 }
 
@@ -488,18 +503,22 @@ void MainWindow::startSelectedFunction()
     if(_testFunctionsListWidget->currentItem())
     {
         QString functionName = _testFunctionsListWidget->currentItem()->text();
+        startFunction(functionName);
+    }
+}
 
-        for(auto & testClient : _testClientList)
+void MainWindow::startFunction(const QString &functionName)
+{
+    for(auto & testClient : _testClientList)
+    {
+        if(testClient->methodManager()->isFunctionStrictlySequential(functionName))
         {
-            if(testClient->methodManager()->isFunctionStrictlySequential(functionName))
-            {
-                testClient->methodManager()->runTestFunction(functionName); // Runs function for all Test clients sequentally in main thread
-            }
-            else
-            {
-                testClient->runTestFunction(functionName); // Runs function for all Test clients in parallel in their threads
-                delay(100);
-            }
+            testClient->methodManager()->runTestFunction(functionName); // Runs function for all Test clients sequentally in main thread
+        }
+        else
+        {
+            testClient->runTestFunction(functionName); // Runs function for all Test clients in parallel in their threads
+            delay(100);
         }
     }
 }
