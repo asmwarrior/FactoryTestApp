@@ -89,7 +89,7 @@ void JLinkManager::erase()
     error = JLINK_EraseChip();
     if(error < 0)
     {
-        _logger->logError("Error occured when earasing chip!");
+        _logger->logError(QString("Error occured when earasing chip! %1").arg(error));
     }
     else
     {
@@ -114,7 +114,9 @@ void JLinkManager::downloadFile(const QString &fileName, int adress)
     error = JLINK_DownloadFile(QString(_settings->value("workDirectory").toString() + "/" + fileName).toLocal8Bit().data(), adress); // Load the application binary to address 0
     JLINKARM_EndDownload();
     if(error < 0)
-        _logger->logError(QString("JLINK: Failed to load file %1!").arg(fileName));
+        _logger->logError(QString("JLINK: Failed to load file %1! Error code: %2").arg(fileName).arg(error));
+    else
+        _logger->logInfo(QString("JLINK: File %1 has been downloaded").arg(fileName));
 }
 
 void JLinkManager::close()

@@ -37,6 +37,7 @@ public slots:
     void startNewSession();
     void finishSession();
     void startFullCycleTesting();
+    void startSelectedFunction();
     void delay(int msec);
     Dut getDut(int no);
 

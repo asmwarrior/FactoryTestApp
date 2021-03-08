@@ -264,29 +264,8 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-    connect(_startSelectedTestButton, &QPushButton::clicked, [=]()
-    {
-        if(_testFunctionsListWidget->currentItem())
-        {
-            for(auto & testClient : _testClientList)
-            {
-                testClient->runTestFunction(_testFunctionsListWidget->currentItem()->text());
-                delay(100);
-            }
-        }
-    });
-
-    connect(_testFunctionsListWidget, &QListWidget::itemDoubleClicked, [=]()
-    {
-        if(_testFunctionsListWidget->currentItem())
-        {
-            for(auto & testClient : _testClientList)
-            {
-                testClient->runTestFunction(_testFunctionsListWidget->currentItem()->text());
-                delay(100);
-            }
-        }
-    });
+    connect(_startSelectedTestButton, &QPushButton::clicked, this, &MainWindow::startSelectedFunction);
+    connect(_testFunctionsListWidget, &QListWidget::itemDoubleClicked, this, &MainWindow::startSelectedFunction);
 
     connect(_testFixtureWidget, &TestFixtureWidget::dutClicked, _dutInfoWidget, &DutInfoWidget::setDutChecked);
     connect(_testFixtureWidget, &TestFixtureWidget::dutClicked, [=](int no)
@@ -502,6 +481,18 @@ void MainWindow::startFullCycleTesting()
     _batchNumberEdit->setEnabled(false);
     _batchInfoEdit->setEnabled(false);
 
+}
+
+void MainWindow::startSelectedFunction()
+{
+    if(_testFunctionsListWidget->currentItem())
+    {
+        for(auto & testClient : _testClientList)
+        {
+            testClient->runTestFunction(_testFunctionsListWidget->currentItem()->text());
+            delay(100);
+        }
+    }
 }
 
 void MainWindow::setControlsEnabled(bool state)

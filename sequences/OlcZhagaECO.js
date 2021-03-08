@@ -5,29 +5,30 @@ ZhagaECO =
     downloadRailtest: function ()
     {  
 
-        GeneralCommands.startJlinkScript("sequences/OLCZhagaECO/download_railtest.jlink");
+//        GeneralCommands.startJlinkScript("sequences/OLCZhagaECO/download_railtest.jlink");
 
-//        for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
-//        {
-//            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
-//            {
-//                testClient.powerOn(slot);
-//                testClient.delay(1000);
-//                testClient.switchSWD(slot);
+        for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
+        {
+            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+            {
+                testClient.powerOn(slot);
+                testClient.delay(1000);
+                testClient.switchSWD(slot);
 
-//                jlink.selectByUSB();
-//                jlink.setDevice("EFR32FG12PXXXF1024");
-//                jlink.open();
-//                jlink.select();
-//                jlink.setSpeed(5000);
-//                jlink.connect();
-//                jlink.erase();
-//                jlink.downloadFile("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", 0);
-//                jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex", 0);
-//                jlink.reset();
-//                jlink.go();
-//            }
-//        }
+                jlink.selectByUSB();
+                jlink.open();
+                jlink.setDevice("EFR32FG12PXXXF1024");
+                jlink.select();
+                jlink.setSpeed(5000);
+                jlink.connect();
+                jlink.erase();
+                jlink.downloadFile("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", 0);
+                jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex", 0);
+                jlink.reset();
+                jlink.go();
+                jlink.close();
+            }
+        }
     },
 
     //---
