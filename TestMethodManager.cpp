@@ -38,15 +38,17 @@ QStringList TestMethodManager::currentMethodGeneralFunctionNames() const
     return names;
 }
 
-QStringList TestMethodManager::currentMethodSequenceFunctionNames() const
+bool TestMethodManager::isFunctionStrictlySequential(const QString& name) const
 {
-    QStringList names;
-    for(auto & i : _methods[_currentMethod].testSequenceFunctionList)
+    for(auto & i : _methods[_currentMethod].generalFunctionList)
     {
-        names.push_back(i.functionName);
+        if(i.functionName == name)
+        {
+            return i.isStrictlySequential;
+        }
     }
 
-    return names;
+    return true;
 }
 
 void TestMethodManager::runTestFunction(const QString &name)
@@ -61,14 +63,9 @@ void TestMethodManager::runTestFunction(const QString &name)
     }
 }
 
-void TestMethodManager::addFunctionToGeneralList(const QString &name, const QJSValue &function)
+void TestMethodManager::addFunctionToGeneralList(const QString &name, const QJSValue &function, bool isStrictlySequential)
 {
-    _methods[_currentMethod].generalFunctionList.push_back({name, function});
-}
-
-void TestMethodManager::addFunctionToTestSequence(const QString &name, const QJSValue &function)
-{
-    _methods[_currentMethod].testSequenceFunctionList.push_back({name, function});
+    _methods[_currentMethod].generalFunctionList.push_back({name, function, isStrictlySequential});
 }
 
 QJSValue TestMethodManager::evaluateScriptFromFile(const QString &scriptFileName)

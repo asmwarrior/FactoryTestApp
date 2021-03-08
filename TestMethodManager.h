@@ -19,13 +19,13 @@ public:
     {
         QString functionName;
         QJSValue function;
+        bool isStrictlySequential;
     };
 
 
     struct TestMethod
     {
         QList<TestFunction> generalFunctionList; //All avaliable functions for this method, described in js file
-        QList<TestFunction> testSequenceFunctionList; //List of functions called during the auto testing procedure
     };
 
 
@@ -35,11 +35,10 @@ public:
     QJSEngine* getScriptEngine() {return &_scriptEngine;}
 
     Q_INVOKABLE void addMethod(const QString& name);
-    Q_INVOKABLE void addFunctionToGeneralList(const QString& name, const QJSValue& function);
-    Q_INVOKABLE void addFunctionToTestSequence(const QString& name, const QJSValue& function);
+    Q_INVOKABLE void addFunctionToGeneralList(const QString& name, const QJSValue& function, bool isStrictlySequential = false);
     QStringList avaliableMethodsNames() const;
     QStringList currentMethodGeneralFunctionNames() const;
-    QStringList currentMethodSequenceFunctionNames() const;
+    bool isFunctionStrictlySequential(const QString& name) const;
 
 public slots:
     void setCurrentMethod(const QString& name);

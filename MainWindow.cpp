@@ -487,10 +487,15 @@ void MainWindow::startSelectedFunction()
 {
     if(_testFunctionsListWidget->currentItem())
     {
+        QString functionName = _testFunctionsListWidget->currentItem()->text();
+        int delayPeriod = 100;
+        if(_testClientList.first()->methodManager()->isFunctionStrictlySequential(functionName))
+            delayPeriod = 10000;
+
         for(auto & testClient : _testClientList)
         {
-            testClient->runTestFunction(_testFunctionsListWidget->currentItem()->text());
-            delay(100);
+            testClient->runTestFunction(functionName);
+            delay(delayPeriod);
         }
     }
 }

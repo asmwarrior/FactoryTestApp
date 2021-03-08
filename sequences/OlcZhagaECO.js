@@ -90,7 +90,7 @@ ZhagaECO =
 methodManager.addFunctionToGeneralList("Full cycle testing", ZhagaECO.startTesting);
 methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
 methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
-methodManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
+methodManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest, true);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
 methodManager.addFunctionToGeneralList("Supply power to DUTs", GeneralCommands.powerOn);
 methodManager.addFunctionToGeneralList("Power off DUTs", GeneralCommands.powerOff);
