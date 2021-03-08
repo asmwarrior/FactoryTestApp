@@ -358,7 +358,7 @@ void MainWindow::startNewSession()
     //------------------------------------------------------------------------------------------
 
     _session->setOperatorName(_operatorNameEdit->text().simplified());
-    _session->setStartTime(QDateTime::currentDateTime().toString());
+    _session->setStartTime(QDateTime::currentDateTime().toString("dd.MM.yy hh:mm:ss"));
     _session->setBatchNumber(_batchNumberEdit->text());
     _session->setBatchInfo(_batchInfoEdit->text());
 
@@ -366,6 +366,7 @@ void MainWindow::startNewSession()
     _selectMetodBox->setEnabled(true);
     _selectMetodBox->clear();
     _selectMetodBox->addItems(_testClientList.first()->methodManager()->avaliableMethodsNames());
+    _session->setMethod(_selectMetodBox->currentText());
 
     for(auto & testClient : _testClientList)
     {
@@ -424,46 +425,23 @@ void MainWindow::startFullCycleTesting()
     _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
     startFunction("Detect DUTs");
     setControlsEnabled(false);
-    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
     delay(16000);
 
+//    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
     startFunction("Download Railtest");
 
-
+    _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
     startFunction("Test radio interface");
 
-
-    _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
     startFunction("Full cycle testing");
 
-//    setControlsEnabled(false);
+    while(_startedSequenceCount)
+    {
+        QCoreApplication::processEvents();
+    }
 
-//    _testFixtureWidget->reset();
-
-//    for(auto & testClient : _testClientList)
-//    {
-//        testClient->checkDutsCurrent();
-//    }
-
-//    waitAllThreadsSequencesFinished();
-
-
-//    _testSequenceManager->runTestFunction("Supply power to DUTs");
-//    delay(5000);
-
-//    _testSequenceManager->runTestFunction("Download Railtest");
-//    delay(12000);
-
-//    for(auto & testClient : _testClientList)
-//    {
-//        testClient->startTesting();
-//        delay(100);
-//    }
-
-//    waitAllThreadsSequencesFinished();
-
-//    _testSequenceManager->runTestFunction("Download Software");
-//    delay(60000);
+    _actionHintWidget->showProgressHint(HINT_READY);
+    _session->writeDutRecordsToDatabase();
 
 //    _actionHintWidget->showProgressHint(HINT_DEVICE_ID);
 //    _testSequenceManager->runTestFunction("Read unique device identifiers (ID)");
@@ -487,8 +465,7 @@ void MainWindow::startFullCycleTesting()
 
 //    _testSequenceManager->runTestFunction("Check Testing Completion");
 
-//    _actionHintWidget->showProgressHint(HINT_READY);
-//    _session->writeDutRecordsToDatabase();
+
 
 //    setControlsEnabled(true);
 //    _newSessionButton->setEnabled(false);

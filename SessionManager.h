@@ -26,6 +26,7 @@ public slots:
     QString startTime() const {return _startTime;}
     QString batchNumber() const {return _batchNumber;}
     QString batchInfo() const {return _batchInfo;}
+    QString method() const {return _method;}
     int successCount() const {return _successCount;}
     int failedCount() const {return _failedCount;}
 
@@ -33,6 +34,7 @@ public slots:
     void setStartTime(const QString& text) {_startTime = text;}
     void setBatchNumber(const QString& text) {_batchNumber = text;}
     void setBatchInfo(const QString& text) { _batchInfo = text;}
+    void setMethod(const QString& text) { _method = text;}
 
 signals:
 
@@ -57,6 +59,7 @@ private:
         QString _startTime = "";
         QString _batchNumber = "";
         QString _batchInfo = "";
+        QString _method = "";
         int _successCount = 0;
         int _failedCount = 0;
 

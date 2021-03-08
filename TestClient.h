@@ -187,6 +187,7 @@ private:
     bool _currentAccelChecked = false;
     bool _currentLightSensChecked = false;
     bool _currentDaliChecked = false;
+    QString _currentError = "";
 };
 
 #endif // TESTCLIENT_H

@@ -17,19 +17,22 @@ void SessionManager::logDutInfo(Dut dut)
 {
     DutRecord record;
     record.id = dut["id"].toString();
+    record.no = dut["no"].toString();
+    record.error = dut["error"].toString();
     record.batchNumber = _batchNumber;
+    record.method = _method;
     record.operatorName = _operatorName;
     record.timeStamp = _startTime;
 
     if(dut["state"].toInt() != DutState::tested)
     {
         _failedCount++;
-        record.state = "testing failed";
+        record.state = "FAILED";
     }
     else
     {
         _successCount++;
-        record.state = "testing successfully";
+        record.state = "PASSED";
     }
 
     _records.push_back(record);
@@ -44,6 +47,7 @@ void SessionManager::clear()
     _startTime = "";
     _batchNumber = "";
     _batchInfo = "";
+    _method = "";
     _successCount = 0;
     _failedCount = 0;
 
@@ -56,7 +60,7 @@ void SessionManager::writeDutRecordsToDatabase()
     {
         _db->insertIntoTable(record);
 
-        if(record.state == "testing successfully")
+        if(record.state == "PASSED")
         {
             emit printLabel(record);
         }
@@ -68,7 +72,23 @@ void SessionManager::writeDutRecordsToDatabase()
 
     for(auto & record : _records)
     {
-        file.write(record.id.toLocal8Bit() + " " + record.batchNumber.toLocal8Bit() + " " + record.operatorName.toLocal8Bit() + " " + record.timeStamp.toLocal8Bit() + " " + record.state.toLocal8Bit() + "\n");
+        file.write(    "ID: " +  record.id.toLocal8Bit() + "; "
+                     + "SOCKET: " +  record.no.toLocal8Bit() + "; "
+                     + "BATCH NUMBER: " +  record.batchNumber.toLocal8Bit() + "; "
+                     + "TEST METHOD: " +  record.method.toLocal8Bit() + "; "
+                     + "OPERATOR: " +  record.operatorName.toLocal8Bit() + "; "
+                     + "DATE: " +  record.timeStamp.toLocal8Bit() + "; "
+                     + "RESULT: " +  record.state.toLocal8Bit());
+
+        if(record.error.size())
+        {
+            file.write(" ERROR DESC: " + record.error.toLocal8Bit() + "\n");
+        }
+
+        else
+        {
+            file.write("\n");
+        }
     }
 
     file.close();

@@ -14,14 +14,18 @@ static Dut dutTemplate {
     {"voltageChecked", false},
     {"accelChecked", false},
     {"lightSensChecked", false},
-    {"daliChecked", false}
+    {"daliChecked", false},
+    {"error", ""}
 };
 
 struct DutRecord
 {
     QString id;
+    QString no;
+    QString method;
     QString batchNumber;
     QString timeStamp;
     QString operatorName;
     QString state;
+    QString error;
 };

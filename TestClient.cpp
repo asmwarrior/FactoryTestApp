@@ -663,7 +663,10 @@ void TestClient::on_testAccelerometer(int slot)
     if(_duts[slot]["accelChecked"].toBool())
         _logger->logSuccess(QString("Accelerometer in DUT %1 has been tested successfully").arg(_duts[slot]["no"].toInt()));
     else
+    {
         _logger->logError(QString("Testing accelerometer in DUT %1 has been failed!").arg(_duts[slot]["no"].toInt()));
+        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + _currentError;
+    }
 
     emit dutChanged(_duts[slot]);
 }
@@ -678,7 +681,10 @@ void TestClient::on_testLightSensor(int slot)
     if(_duts[slot]["lightSensChecked"].toBool())
         _logger->logSuccess(QString("Light sensor in DUT %1 has been tested successfully").arg(_duts[slot]["no"].toInt()));
     else
+    {
         _logger->logError(QString("Testing light sensor in DUT %1 has been failed!").arg(_duts[slot]["no"].toInt()));
+        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + _currentError;
+    }
 
     emit dutChanged(_duts[slot]);
 }
@@ -696,7 +702,10 @@ void TestClient::on_testDALI()
     if(_duts[_currentSlot]["daliChecked"].toBool())
         _logger->logSuccess(QString("DALI for DUT %1 has been tested successfully").arg(_duts[_currentSlot]["no"].toInt()));
     else
+    {
         _logger->logError(QString("Testing DALI for DUT %1 has been failed!").arg(_duts[_currentSlot]["no"].toInt()));
+        _duts[_currentSlot]["error"] = _duts[_currentSlot]["error"].toString() + "; " + _currentError;
+    }
 
     sendRailtestCommand(_currentSlot, "dali", {"0xFE80 16 0 0"});
     delay(2000);
@@ -904,6 +913,7 @@ void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
                                 else
                                 {
                                     _duts[_currentSlot]["voltageChecked"] = false;
+                                    _duts[_currentSlot]["error"] = _duts[_currentSlot]["error"].toString() + "Error voltage value on AIN 1. " + QString("Code:%1").arg(gr->errorCode) + "; ";
                                     _logger->logError(QString("Error voltage value on AIN 1 in DUT %1 detected!").arg(_duts[_currentSlot]["no"].toInt()));
                                     _logger->logError(QString("Code:%1").arg(gr->errorCode));
                                 }
@@ -1028,6 +1038,7 @@ void TestClient::processFrameFromRail(QByteArray frame)
                {
                    _logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
                    _currentAccelChecked = false;
+                   _currentError = QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z);
                }
                else
                {
@@ -1053,6 +1064,7 @@ void TestClient::processFrameFromRail(QByteArray frame)
                {
                    _logger->logError(QString("Light sensor failure: opwr=%1.").arg(opwr));
                    _currentLightSensChecked = false;
+                   _currentError = QString("Light sensor failure: opwr=%1.").arg(opwr);
                }
                else
                {
@@ -1076,6 +1088,7 @@ void TestClient::processFrameFromRail(QByteArray frame)
                {
                    _logger->logError(frame);
                    _currentDaliChecked = false;
+                   _currentError = frame;
                }
                else
                {
