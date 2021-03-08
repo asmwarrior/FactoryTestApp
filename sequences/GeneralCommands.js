@@ -28,6 +28,8 @@ GeneralCommands =
         {
             if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
             {
+                testClient.powerOn(slot);
+                testClient.delay(1000);
                 testClient.switchSWD(slot);
                 testClient.delay(100);
                 jlink.startScript(scriptFile);

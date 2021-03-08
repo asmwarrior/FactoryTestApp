@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    a.setWindowIcon(QIcon(":/icons/application"));
+//    a.setWindowIcon(QIcon(":/icons/application"));
     a.setOrganizationName("Capelon");
     a.setApplicationName("FactoryTestApp");
 
