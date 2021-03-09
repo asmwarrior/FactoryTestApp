@@ -68,7 +68,9 @@ void SessionManager::writeDutRecordsToDatabase()
         }
     }
 
-    QFile file(_settings->value("workDirectory").toString() + "/log.txt");
+    //Text log file
+
+    QFile file(_settings->value("workDirectory").toString() + "/reports/log.txt");
 
     file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
 
@@ -95,6 +97,28 @@ void SessionManager::writeDutRecordsToDatabase()
     }
 
     file.close();
+
+    //CSV log file
+
+    QFile csv_file(_settings->value("workDirectory").toString() + "/reports/" + "ALL_" + QDateTime::currentDateTime().toString("yyyy-MM-dd") + ".csv");
+
+    csv_file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+
+    for(auto & record : _records)
+    {
+        csv_file.write(    record.id.toLocal8Bit() + "; "
+                     + record.no.toLocal8Bit() + "; "
+                     +  record.cycleNo.toLocal8Bit() + "; "
+                     +  record.batchNumber.toLocal8Bit() + "; "
+                     +  record.method.toLocal8Bit() + "; "
+                     +  record.operatorName.toLocal8Bit() + "; "
+                     +  record.timeStamp.toLocal8Bit() + "; "
+                     +  record.state.toLocal8Bit() + ";"
+                     +  record.error.toLocal8Bit() + ";\n");
+
+    }
+
+    csv_file.close();
 
     _records.clear();
 }
