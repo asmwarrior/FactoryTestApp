@@ -120,5 +120,32 @@ void SessionManager::writeDutRecordsToDatabase()
 
     csv_file.close();
 
+    //Brief CSV log file
+
+    //CSV log file
+
+    QFile brief_csv_file(_settings->value("workDirectory").toString() + "/reports/" + QDateTime::currentDateTime().toString("yyyy-MM-dd") + ".csv");
+
+    brief_csv_file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+
+    for(auto & record : _records)
+    {
+        brief_csv_file.write(    record.cycleNo.toLocal8Bit() + "; "
+                     + record.no.toLocal8Bit() + "; "
+                     + record.id.toLocal8Bit() + "; ");
+
+        if(record.state == "FAILED")
+        {
+            brief_csv_file.write("FALIED;\n");
+        }
+
+        else
+        {
+            brief_csv_file.write(";\n");
+        }
+    }
+
+    brief_csv_file.close();
+
     _records.clear();
 }
