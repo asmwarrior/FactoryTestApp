@@ -7,7 +7,6 @@ TestMethodManager::TestMethodManager(QSettings *settings, QObject *parent) : QOb
     _scriptEngine.installExtensions(QJSEngine::ConsoleExtension);
 
     _scriptEngine.globalObject().setProperty("methodManager", _scriptEngine.newQObject(this));
-//    evaluateScriptFromFile(settings->value("workDirectory").toString() + "/init.js");
     evaluateScriptsFromDirectory(settings->value("workDirectory").toString() + "/sequences");
 }
 

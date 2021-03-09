@@ -41,7 +41,7 @@ ZhagaECO =
         {
             if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
             {
-                console.log("Testing radio interface for DUT " + testClient.dutNo(slot));
+                testClient.on_testRadio(slot);
             }
         }
     },

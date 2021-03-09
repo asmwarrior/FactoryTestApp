@@ -8,6 +8,7 @@
 #include "TestMethodManager.h"
 #include "SessionManager.h"
 #include "Logger.h"
+#include "RailtestClient.h"
 
 class TestClient : public QObject
 {
@@ -62,7 +63,7 @@ public slots:
     void reverseDutsChecked();
     void checkTestingCompletion();
 
-private slots:
+    //----
 
     void on_open();
     void onSerialPortReadyRead();
@@ -101,11 +102,13 @@ private slots:
     void on_readTemperature();
 
     void on_readChipId(int slot);
-//    void on_testRadio();
+    void on_testRadio(int slot);
     void on_testAccelerometer(int slot);
     void on_testLightSensor(int slot);
     void on_testDALI();
 //    void on_testGNSS();
+
+    void onRfReplyReceived(QString id, QVariantMap params);
 
 signals:
 
@@ -148,7 +151,7 @@ signals:
     void waitCommandPrompt(int timeout = 1000);
     void syncCommand(const QByteArray &cmd, const QByteArray &args = QByteArray(), int timeout = 5000);
     void readChipId(int dut);
-    void testRadio();
+    //void testRadio();
     void testAccelerometer(int slot);
     void testLightSensor(int slot);
     void testDALI();
@@ -188,6 +191,9 @@ private:
     bool _currentLightSensChecked = false;
     bool _currentDaliChecked = false;
     QString _currentError = "";
+
+    int _rfRSSI;
+    int _rfCount;
 };
 
 #endif // TESTCLIENT_H

@@ -653,6 +653,72 @@ void TestClient::on_readChipId(int slot)
     _logger->logSuccess(QString("ID for DUT %1 has been read: %2").arg(_duts[slot]["no"].toInt()).arg(_duts[slot]["id"].toString()));
 }
 
+void TestClient::on_testRadio(int slot)
+{
+    RailtestClient rf;
+
+    connect(&rf, &RailtestClient::replyReceived, this, &TestClient::onRfReplyReceived);
+
+    if (!rf.open(_settings->value("Railtest/rf_serial").toString()))
+    {
+        _logger->logError("Cannot open serial port for reference radio module!");
+        return;
+    }
+
+    rf.syncCommand("reset", "", 3000);
+    if (!rf.waitCommandPrompt())
+    {
+        _logger->logError("Timeout waiting reference radio module command prompt!");
+        return;
+    }
+
+    rf.syncCommand("rx", "0", 1000);
+    _rfRSSI = 255;
+    _rfCount = 0;
+    rf.syncCommand("setBleMode", "1", 1000);
+    rf.syncCommand("setBle1Mbps", "1", 1000);
+    rf.syncCommand("setChannel", "19", 1000);
+
+    on_sendRailtestCommand(slot, "rx", "0");
+    on_delay(1000);
+
+    on_sendRailtestCommand(slot, "setBleMode", "1");
+    on_delay(1000);
+
+    on_sendRailtestCommand(slot, "setBle1Mbps", "1");
+    on_delay(1000);
+
+    on_sendRailtestCommand(slot, "setChannel", "19");
+    on_delay(1000);
+
+    on_sendRailtestCommand(slot, "setPower", "80");
+    on_delay(1000);
+
+    rf.syncCommand("rx", "1", 1000);
+
+    on_sendRailtestCommand(slot, "tx", "11");
+    on_delay(5000);
+
+    if (_rfCount < 8)
+    {
+        _logger->logError(QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount));
+        _duts[slot]["radioChecked"] = false;
+        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount);
+    }
+
+    else if (_rfRSSI < -50 || _rfRSSI > 20)
+    {
+        _logger->logError(QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI));
+        _duts[slot]["radioChecked"] = false;
+        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI);
+    }
+
+    else
+    {
+        _duts[slot]["radioChecked"] = true;
+    }
+}
+
 void TestClient::on_testAccelerometer(int slot)
 {
     _currentCommand = accelCommand;
@@ -711,6 +777,22 @@ void TestClient::on_testDALI()
     delay(2000);
 
     emit dutChanged(_duts[_currentSlot]);
+}
+
+void TestClient::onRfReplyReceived(QString id, QVariantMap params)
+{
+    if (id == "rxPacket" && params.contains("rssi"))
+    {
+        bool ok;
+        int rssi = params.value("rssi").toInt(&ok);
+
+        if (ok)
+        {
+            ++_rfCount;
+            if (rssi < _rfRSSI)
+                _rfRSSI = rssi;
+        }
+    }
 }
 
 void TestClient::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW

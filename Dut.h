@@ -15,6 +15,7 @@ static Dut dutTemplate {
     {"accelChecked", false},
     {"lightSensChecked", false},
     {"daliChecked", false},
+    {"radioChecked", false},
     {"error", ""}
 };
 
