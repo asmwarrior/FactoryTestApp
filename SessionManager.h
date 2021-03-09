@@ -35,6 +35,7 @@ public slots:
     void setBatchNumber(const QString& text) {_batchNumber = text;}
     void setBatchInfo(const QString& text) { _batchInfo = text;}
     void setMethod(const QString& text) { _method = text;}
+    void increaseCyclesCount() {_testCyclesCount++;}
 
 signals:
 
@@ -62,6 +63,7 @@ private:
         QString _method = "";
         int _successCount = 0;
         int _failedCount = 0;
+        int _testCyclesCount = 0;
 
         QList<DutRecord> _records;
 

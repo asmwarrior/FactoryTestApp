@@ -22,6 +22,7 @@ struct DutRecord
 {
     QString id;
     QString no;
+    QString cycleNo;
     QString method;
     QString batchNumber;
     QString timeStamp;

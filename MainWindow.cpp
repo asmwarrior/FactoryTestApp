@@ -251,13 +251,20 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-    for (auto & testClient : _testClientList)
-    {
-        connect(_selectMetodBox, SIGNAL(currentTextChanged(const QString&)), testClient->methodManager(), SLOT(setCurrentMethod(const QString&)));
-    }
+//    for (auto & testClient : _testClientList)
+//    {
+//        connect(_selectMetodBox, SIGNAL(currentTextChanged(const QString&)), testClient->methodManager(), SLOT(setCurrentMethod(const QString&)));
+//    }
 
-    connect(_selectMetodBox, &QComboBox::currentTextChanged, [=]()
+    connect(_selectMetodBox, &QComboBox::currentTextChanged, [=](QString methodName)
     {
+        for (auto & testClient : _testClientList)
+        {
+            testClient->methodManager()->setCurrentMethod(methodName);
+        }
+
+        _session->setMethod(methodName);
+
         _testFunctionsListWidget->clear();
         _testFunctionsListWidget->addItems(_testClientList.first()->methodManager()->currentMethodGeneralFunctionNames());
         if(_testFunctionsListWidget->count() > 0)
@@ -421,7 +428,8 @@ void MainWindow::finishSession()
 
 void MainWindow::startFullCycleTesting()
 {
-
+    _session->writeDutRecordsToDatabase();
+    _session->increaseCyclesCount();
     _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
     startFunction("Detect DUTs");
     setControlsEnabled(false);

@@ -50,6 +50,7 @@ void SessionManager::clear()
     _method = "";
     _successCount = 0;
     _failedCount = 0;
+    _testCyclesCount = 0;
 
     emit sessionStatsChanged();
 }
@@ -58,6 +59,7 @@ void SessionManager::writeDutRecordsToDatabase()
 {
     for(auto & record : _records)
     {
+        record.cycleNo = QString().setNum(_testCyclesCount);
         _db->insertIntoTable(record);
 
         if(record.state == "PASSED")
@@ -74,6 +76,7 @@ void SessionManager::writeDutRecordsToDatabase()
     {
         file.write(    "ID: " +  record.id.toLocal8Bit() + "; "
                      + "SOCKET: " +  record.no.toLocal8Bit() + "; "
+                     + "TEST CYCLE: " +  record.cycleNo.toLocal8Bit() + "; "
                      + "BATCH NUMBER: " +  record.batchNumber.toLocal8Bit() + "; "
                      + "TEST METHOD: " +  record.method.toLocal8Bit() + "; "
                      + "OPERATOR: " +  record.operatorName.toLocal8Bit() + "; "
