@@ -18,7 +18,11 @@ ZhagaECO =
                 jlink.select();
                 jlink.setSpeed(5000);
                 jlink.connect();
-                jlink.erase();
+                if(jlink.erase() < 0)
+                {
+                    return;
+                }
+
                 jlink.downloadFile("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", 0);
                 jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex", 0);
                 jlink.reset();

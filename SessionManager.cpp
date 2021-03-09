@@ -18,7 +18,7 @@ void SessionManager::logDutInfo(Dut dut)
     DutRecord record;
     record.id = dut["id"].toString();
     record.no = dut["no"].toString();
-    record.error = dut["error"].toString();
+    record.error = dut["error"].toString().remove('\n').remove('\r').remove(';');
     record.batchNumber = _batchNumber;
     record.method = _method;
     record.operatorName = _operatorName;
@@ -121,8 +121,6 @@ void SessionManager::writeDutRecordsToDatabase()
     csv_file.close();
 
     //Brief CSV log file
-
-    //CSV log file
 
     QFile brief_csv_file(_settings->value("workDirectory").toString() + "/reports/" + QDateTime::currentDateTime().toString("yyyy-MM-dd") + ".csv");
 

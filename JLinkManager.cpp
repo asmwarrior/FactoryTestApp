@@ -83,18 +83,20 @@ void JLinkManager::connect()
     }
 }
 
-void JLinkManager::erase()
+int JLinkManager::erase()
 {
     int error = 0;
     error = JLINK_EraseChip();
     if(error < 0)
     {
-        _logger->logError(QString("Error occured when earasing chip! %1").arg(error));
+        _logger->logError(QString("Error occured when earasing chip! Error code: %1. Check if the device is already programmed.").arg(error));
     }
     else
     {
         _logger->logInfo("Chip flash has been earased.");
     }
+
+    return error;
 }
 
 void JLinkManager::reset()

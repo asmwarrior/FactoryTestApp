@@ -432,10 +432,10 @@ void MainWindow::startFullCycleTesting()
     _session->increaseCyclesCount();
     _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
     startFunction("Detect DUTs");
-    setControlsEnabled(false);
     delay(16000);
 
-//    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
+    setControlsEnabled(false);
+    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
     startFunction("Download Railtest");
 
     _actionHintWidget->showProgressHint(HINT_FULL_TESTING);

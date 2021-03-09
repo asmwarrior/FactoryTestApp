@@ -31,7 +31,7 @@ public slots:
     void select(int interface = JLINKARM_TIF_SWD);
     void setSpeed(int speed);
     void connect();
-    void erase();
+    int erase();
     void reset();
     void go();
     void downloadFile(const QString& fileName, int adress);

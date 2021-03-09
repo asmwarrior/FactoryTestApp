@@ -987,7 +987,7 @@ void TestClient::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
                             case 8:
                                 _currentVoltage = gr->errorCode;
 
-                                if(_currentVoltage > 70200 && _currentVoltage < 72000)
+                                if(_currentVoltage > 70000 && _currentVoltage < 72000)
                                 {
                                     _duts[_currentSlot]["voltageChecked"] = true;
                                     _logger->logSuccess(QString("Voltage (3.3V) on AIN 1 in DUT %1 checked").arg(_duts[_currentSlot]["no"].toInt()));
