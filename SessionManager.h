@@ -55,6 +55,7 @@ private:
 //    };
 
         QSettings* _settings;
+        QByteArray _csv_separator;
 
         QString _operatorName = "";
         QString _startTime = "";

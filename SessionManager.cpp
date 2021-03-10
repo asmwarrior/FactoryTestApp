@@ -6,6 +6,12 @@ SessionManager::SessionManager(QSettings *settings, QObject *parent) : QObject(p
     _db = new DataBase(settings, this);
     _db->connectToDataBase();
 //    _db->createTable();
+
+    auto sep = _settings->value("Report/csv_separator").toByteArray();
+    if(sep == "")
+        _csv_separator = ";";
+    else
+        _csv_separator = sep;
 }
 
 SessionManager::~SessionManager()
@@ -18,7 +24,7 @@ void SessionManager::logDutInfo(Dut dut)
     DutRecord record;
     record.id = dut["id"].toString();
     record.no = dut["no"].toString();
-    record.error = dut["error"].toString().remove('\n').remove('\r').remove(';');
+    record.error = dut["error"].toString().remove('\n').remove('\r').remove(';').remove(',');
     record.batchNumber = _batchNumber;
     record.method = _method;
     record.operatorName = _operatorName;
@@ -106,17 +112,22 @@ void SessionManager::writeDutRecordsToDatabase()
 
     for(auto & record : _records)
     {
-        csv_file.write(    record.id.toLocal8Bit() + "; "
-                     + record.no.toLocal8Bit() + "; "
-                     +  record.cycleNo.toLocal8Bit() + "; "
-                     +  record.batchNumber.toLocal8Bit() + "; "
-                     +  record.method.toLocal8Bit() + "; "
-                     +  record.operatorName.toLocal8Bit() + "; "
-                     +  record.timeStamp.toLocal8Bit() + "; "
-                     +  record.state.toLocal8Bit() + ";"
-                     +  record.error.toLocal8Bit() + ";\n");
+        csv_file.write(    record.id.toLocal8Bit() + _csv_separator
+                     + record.no.toLocal8Bit() + _csv_separator
+                     +  record.cycleNo.toLocal8Bit() + _csv_separator
+                     +  record.batchNumber.toLocal8Bit() + _csv_separator
+                     +  record.method.toLocal8Bit() + _csv_separator
+                     +  record.operatorName.toLocal8Bit() + _csv_separator
+                     +  record.timeStamp.toLocal8Bit() + _csv_separator
+                     +  record.state.toLocal8Bit());
 
+        if(record.error.size())
+        {
+            csv_file.write(_csv_separator + record.error.toLocal8Bit());
+        }
+        csv_file.write(_csv_separator + "\n");
     }
+
 
     csv_file.close();
 
@@ -128,19 +139,15 @@ void SessionManager::writeDutRecordsToDatabase()
 
     for(auto & record : _records)
     {
-        brief_csv_file.write(    record.cycleNo.toLocal8Bit() + "; "
-                     + record.no.toLocal8Bit() + "; "
-                     + record.id.toLocal8Bit() + "; ");
+        brief_csv_file.write(    record.cycleNo.toLocal8Bit() + _csv_separator
+                     + record.no.toLocal8Bit() + _csv_separator
+                     + record.id.toLocal8Bit());
 
         if(record.state == "FAILED")
         {
-            brief_csv_file.write("FALIED;\n");
+            brief_csv_file.write(_csv_separator + "FALIED");
         }
-
-        else
-        {
-            brief_csv_file.write(";\n");
-        }
+        brief_csv_file.write(_csv_separator + "\n");
     }
 
     brief_csv_file.close();

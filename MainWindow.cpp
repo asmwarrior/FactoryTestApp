@@ -434,12 +434,12 @@ void MainWindow::startFullCycleTesting()
     startFunction("Detect DUTs");
     delay(16000);
 
-    setControlsEnabled(false);
-    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
-    startFunction("Download Railtest");
+//    setControlsEnabled(false);
+//    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
+//    startFunction("Download Railtest");
 
-    _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
-    startFunction("Test radio interface");
+//    _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
+//    startFunction("Test radio interface");
 
     startFunction("Full cycle testing");
 
@@ -450,37 +450,6 @@ void MainWindow::startFullCycleTesting()
 
     _actionHintWidget->showProgressHint(HINT_READY);
     _session->writeDutRecordsToDatabase();
-
-//    _actionHintWidget->showProgressHint(HINT_DEVICE_ID);
-//    _testSequenceManager->runTestFunction("Read unique device identifiers (ID)");
-//    delay(5000);
-
-//    _actionHintWidget->showProgressHint(HINT_CHECK_VOLTAGE);
-//    _testSequenceManager->runTestFunction("Check voltage on AIN 1 (3.3V)");
-//    delay(5000);
-
-//    _actionHintWidget->showProgressHint(HINT_TEST_ACCEL);
-//    _testSequenceManager->runTestFunction("Test accelerometer");
-//    delay(5000);
-
-//    _actionHintWidget->showProgressHint(HINT_TEST_LIGHT);
-//    _testSequenceManager->runTestFunction("Test light sensor");
-//    delay(5000);
-
-//    _actionHintWidget->showProgressHint(HINT_TEST_DALI);
-//    _testSequenceManager->runTestFunction("Test DALI");
-//    delay(10000);
-
-//    _testSequenceManager->runTestFunction("Check Testing Completion");
-
-
-
-//    setControlsEnabled(true);
-//    _newSessionButton->setEnabled(false);
-//    _operatorNameEdit->setEnabled(false);
-//    _batchNumberEdit->setEnabled(false);
-//    _batchInfoEdit->setEnabled(false);
-
 }
 
 void MainWindow::startSelectedFunction()
