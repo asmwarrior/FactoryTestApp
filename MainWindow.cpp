@@ -22,10 +22,13 @@ MainWindow::MainWindow(QWidget *parent)
     _printerManager = new PrinterManager(_settings, this);
     _printerManager->setLogger(_logger);
 
-//    auto availablePorts = QSerialPortInfo::availablePorts();
+    auto availablePorts = QSerialPortInfo::availablePorts();
 //    for(auto & portInfo : availablePorts)
 //    {
 //        qDebug() << portInfo.portName() << portInfo.productIdentifier();
+//        qDebug() << portInfo.portName() << portInfo.serialNumber();
+//        qDebug() << portInfo.portName() << portInfo.description();
+//        qDebug() << portInfo.portName() << portInfo.vendorIdentifier();
 //    }
 
     //Setting number of active measuring boards (max - 5)
@@ -53,7 +56,15 @@ MainWindow::MainWindow(QWidget *parent)
             testClient->setJlinkManager(newJlink);
             _testClientList.push_back(testClient);
             _testClientList.last()->setDutsNumbers(_settings->value(QString("TestBoard/duts" + QString().setNum(i + 1))).toString());
-            _testClientList.last()->setPort(_settings->value(QString("Railtest/serial%1").arg(QString().setNum(i + 1))).toString());
+
+            for (auto & portInfo : availablePorts)
+            {
+                if(portInfo.serialNumber() == _settings->value(QString("Railtest/serialID%1").arg(QString().setNum(i + 1))).toString())
+                {
+                    _testClientList.last()->setPort(portInfo.portName());
+                    break;
+                }
+            }
 
             if(_settings->value("multithread").toBool())
                 _testClientList.last()->moveToThread(_threads.last());
