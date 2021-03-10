@@ -70,6 +70,8 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, int no, QOb
       _session(session),
       _serial(this)
 {
+    connect(this, &TestClient::test, this, &TestClient::on_test);
+
     connect(&_serial, &QSerialPort::readyRead, this, &TestClient::onSerialPortReadyRead);
     connect(&_serial, &QSerialPort::errorOccurred, this, &TestClient::onSerialPortErrorOccurred);
 
@@ -83,7 +85,7 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, int no, QOb
     connect(this, &TestClient::delay, this, &TestClient::on_delay);
     connect(this, &TestClient::waitCommandFinished, this, &TestClient::on_waitCommandFinished);
 
-    connect(this, &TestClient::addJlinkToSriptEngine, this, &TestClient::on_addJlinkToSriptEngine);
+//    connect(this, &TestClient::addJlinkToSriptEngine, this, &TestClient::on_addJlinkToSriptEngine);
 
     connect(this, &TestClient::setDutProperty, this, &TestClient::on_setDutProperty);
     connect(this, &TestClient::resetDut, this, &TestClient::on_resetDut);
@@ -157,14 +159,14 @@ TestClient::~TestClient()
 
 }
 
-void TestClient::initTestMethodManager()
-{
-    _methodManager = new TestMethodManager(_settings);
-    _methodManager->moveToThread(thread());
-    _methodManager->setLogger(_logger);
-    _methodManager->getScriptEngine()->globalObject().setProperty("testClient", _methodManager->getScriptEngine()->newQObject(this));
-    connect(this, &TestClient::runTestFunction, _methodManager, &TestMethodManager::runTestFunction);
-}
+//void TestClient::initTestMethodManager()
+//{
+//    _methodManager = new TestMethodManager(_settings);
+//    _methodManager->moveToThread(thread());
+//    _methodManager->setLogger(_logger);
+//    _methodManager->getScriptEngine()->globalObject().setProperty("testClient", _methodManager->getScriptEngine()->newQObject(this));
+//    connect(this, &TestClient::runTestFunction, _methodManager, &TestMethodManager::runTestFunction);
+//}
 
 void TestClient::setLogger(Logger *logger)
 {
@@ -1332,10 +1334,10 @@ void TestClient::on_waitCommandFinished()
     }
 }
 
-void TestClient::on_addJlinkToSriptEngine()
-{
-    _methodManager->getScriptEngine()->globalObject().setProperty("jlink", _methodManager->getScriptEngine()->newQObject(_jlinkManager));
-}
+//void TestClient::on_addJlinkToSriptEngine()
+//{
+//    _methodManager->getScriptEngine()->globalObject().setProperty("jlink", _methodManager->getScriptEngine()->newQObject(_jlinkManager));
+//}
 
 void TestClient::on_resetDut(int slot)
 {

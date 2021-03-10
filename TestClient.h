@@ -23,10 +23,10 @@ public:
     explicit TestClient(QSettings* settings, SessionManager* session, int no, QObject *parent = nullptr);
     ~TestClient();
 
-    void initTestMethodManager();
-    TestMethodManager* methodManager() {return _methodManager;}
+//    void initTestMethodManager();
+//    TestMethodManager* methodManager() {return _methodManager;}
     void setLogger(Logger* logger);
-    void setJlinkManager(JLinkManager* jlink) {_jlinkManager = jlink;}
+//    void setJlinkManager(JLinkManager* jlink) {_jlinkManager = jlink;}
     void setDutsNumbers(QString numbers);
 
     void setPort(const QString &name,
@@ -41,6 +41,8 @@ public:
     QMap<int, Dut> getDuts() {return _duts;}
 
 public slots:
+    void on_test() {qDebug() << thread();}
+
     int no() const {return _no;}
 
     void setActive(bool state) {_isActive = state;}
@@ -71,7 +73,7 @@ public slots:
     void on_delay(int msec);
     void on_waitCommandFinished();
 
-    void on_addJlinkToSriptEngine();
+//    void on_addJlinkToSriptEngine();
 
     void on_resetDut(int slot);
     void on_setDutProperty(int slot, const QString& property, const QVariant& value);
@@ -112,6 +114,7 @@ public slots:
     void onRfReplyReceived(QString id, QVariantMap params);
 
 signals:
+    void test();
 
     void open();
     void checkDutsCurrent();
@@ -165,8 +168,8 @@ private:
     void decodeRailtestReply(const QByteArray &reply);
     void processFrameFromRail(QByteArray frame);
 
-    JLinkManager* _jlinkManager;
-    TestMethodManager* _methodManager;
+//    JLinkManager* _jlinkManager;
+//    TestMethodManager* _methodManager;
     int _no;
     Mode _mode = idleMode;
     RailTestCommand _currentCommand = noCommand;

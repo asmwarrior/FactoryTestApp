@@ -54,6 +54,7 @@ private:
     SessionManager* _session;
     Logger* _logger;
 
+    TestMethodManager* _methodManager;
     QList<QThread*> _threads;
     QList<JLinkManager*> _JLinkList;
     QList<TestClient*> _testClientList;

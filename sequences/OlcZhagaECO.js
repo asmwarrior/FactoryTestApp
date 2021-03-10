@@ -105,6 +105,14 @@ ZhagaECO =
     }
 }
 
+function test()
+{
+    for (var i = 0; i < 5; i++)
+    {
+        testClientList[i].test();
+    }
+}
+
 methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
 methodManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest, true);
 methodManager.addFunctionToGeneralList("Full cycle testing", ZhagaECO.startTesting);
@@ -119,6 +127,7 @@ methodManager.addFunctionToGeneralList("Test light sensor", GeneralCommands.test
 methodManager.addFunctionToGeneralList("Test DALI", GeneralCommands.testDALI);
 methodManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio, true);
 methodManager.addFunctionToGeneralList("Check Testing Completion", ZhagaECO.checkTestingCompletion);
+methodManager.addFunctionToGeneralList("test", test);
 
 //testSequenceManager.addFunctionToGeneralList("Test GNSS", ZhagaECO.testGNSS);
 //testSequenceManager.addFunctionToGeneralList("Download Software", ZhagaECO.downloadSoftware);

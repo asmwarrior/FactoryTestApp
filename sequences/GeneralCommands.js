@@ -1,3 +1,6 @@
+var jlinkList = [];
+var testClientList = [];
+
 function delay(milliseconds)
 {
   const date = Date.now();
@@ -70,50 +73,55 @@ GeneralCommands =
 
     detectDuts: function ()
     {
-        testClient.commandSequenceStarted();
-
-        testClient.setActive(false);
-
-        for (var slot = 1; slot < testClient.dutsCount() + 1; slot++)
+        for (let i = 0; i < 5; i++)
         {
-            testClient.powerOff(slot);
-            testClient.resetDut(slot);
-        }
+            let testClient = testClientList[i];
 
-        testClient.delay(2000);
+            testClient.commandSequenceStarted();
 
-        for(slot = 1; slot < testClient.dutsCount() + 1; slot++)
-        {
-            testClient.setCurrentSlot(slot);
+            testClient.setActive(false);
 
-            testClient.readCSA(0);
-            testClient.delay(100);
-            var currentCSA = testClient.currentCSA();
-
-            testClient.powerOn(slot);
-            testClient.delay(100);
-
-            testClient.readCSA(0);
-            testClient.delay(100);
-            if((testClient.currentCSA() - currentCSA) > 15 && currentCSA !== -1)
+            for (var slot = 1; slot < testClient.dutsCount() + 1; slot++)
             {
-                logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no());
-                testClient.setDutProperty(slot, "state", 1);
-                testClient.setDutProperty(slot, "checked", true);
-                testClient.setActive(true);
+                testClient.powerOff(slot);
+                testClient.resetDut(slot);
             }
 
-            else
-            {
-                testClient.setDutProperty(slot, "state", 0);
-                testClient.setDutProperty(slot, "checked", false);
-            }
-
-            testClient.powerOff(slot);
             testClient.delay(2000);
-        }
 
-        testClient.commandSequenceFinished();
+            for(slot = 1; slot < testClient.dutsCount() + 1; slot++)
+            {
+                testClient.setCurrentSlot(slot);
+
+                testClient.readCSA(0);
+                testClient.delay(100);
+                var currentCSA = testClient.currentCSA();
+
+                testClient.powerOn(slot);
+                testClient.delay(100);
+
+                testClient.readCSA(0);
+                testClient.delay(100);
+                if((testClient.currentCSA() - currentCSA) > 15 && currentCSA !== -1)
+                {
+                    logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no());
+                    testClient.setDutProperty(slot, "state", 1);
+                    testClient.setDutProperty(slot, "checked", true);
+                    testClient.setActive(true);
+                }
+
+                else
+                {
+                    testClient.setDutProperty(slot, "state", 0);
+                    testClient.setDutProperty(slot, "checked", false);
+                }
+
+                testClient.powerOff(slot);
+                testClient.delay(2000);
+            }
+
+            testClient.commandSequenceFinished();
+        }
     },
 
     //---

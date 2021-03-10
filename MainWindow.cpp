@@ -21,6 +21,8 @@ MainWindow::MainWindow(QWidget *parent)
     _logger = new Logger(_settings, _session, this);
     _printerManager = new PrinterManager(_settings, this);
     _printerManager->setLogger(_logger);
+    _methodManager = new TestMethodManager(_settings);
+    _methodManager->setLogger(_logger);
 
     auto availablePorts = QSerialPortInfo::availablePorts();
 //    for(auto & portInfo : availablePorts)
@@ -51,9 +53,11 @@ MainWindow::MainWindow(QWidget *parent)
             if(_settings->value("multithread").toBool())
                 _JLinkList.last()->moveToThread(_threads.last());
 
+            _methodManager->getScriptEngine()->globalObject().property("jlinkList").setProperty(i, _methodManager->getScriptEngine()->newQObject(_JLinkList.last()));
+
             auto testClient = new TestClient(_settings, _session, i + 1);
             testClient->setLogger(_logger);
-            testClient->setJlinkManager(newJlink);
+//            testClient->setJlinkManager(newJlink);
             _testClientList.push_back(testClient);
             _testClientList.last()->setDutsNumbers(_settings->value(QString("TestBoard/duts" + QString().setNum(i + 1))).toString());
 
@@ -69,10 +73,11 @@ MainWindow::MainWindow(QWidget *parent)
             if(_settings->value("multithread").toBool())
                 _testClientList.last()->moveToThread(_threads.last());
 
+            _methodManager->getScriptEngine()->globalObject().property("testClientList").setProperty(i, _methodManager->getScriptEngine()->newQObject(_testClientList.last()));
             _threads.last()->start();
             _testClientList.last()->open();
-            _testClientList.last()->initTestMethodManager();
-            _testClientList.last()->addJlinkToSriptEngine();
+//            _testClientList.last()->initTestMethodManager();
+//            _testClientList.last()->addJlinkToSriptEngine();
             delay(200);
         }
     }
@@ -271,13 +276,13 @@ MainWindow::MainWindow(QWidget *parent)
     {
         for (auto & testClient : _testClientList)
         {
-            testClient->methodManager()->setCurrentMethod(methodName);
+//            testClient->methodManager()->setCurrentMethod(methodName);
         }
 
         _session->setMethod(methodName);
 
         _testFunctionsListWidget->clear();
-        _testFunctionsListWidget->addItems(_testClientList.first()->methodManager()->currentMethodGeneralFunctionNames());
+//        _testFunctionsListWidget->addItems(_testClientList.first()->methodManager()->currentMethodGeneralFunctionNames());
         if(_testFunctionsListWidget->count() > 0)
         {
             _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
@@ -365,53 +370,55 @@ MainWindow::~MainWindow()
 
 void MainWindow::startNewSession()
 {
-    setControlsEnabled(false);
+    _methodManager->runTestFunction("Detect DUTs");
 
-    for(auto & jlink : _JLinkList)
-    {
-        jlink->establishConnection();
-        delay(100);
-    }
+//    setControlsEnabled(false);
 
-    //------------------------------------------------------------------------------------------
+//    for(auto & jlink : _JLinkList)
+//    {
+//        jlink->establishConnection();
+//        delay(100);
+//    }
 
-    _session->setOperatorName(_operatorNameEdit->text().simplified());
-    _session->setStartTime(QDateTime::currentDateTime().toString("dd.MM.yy hh:mm:ss"));
-    _session->setBatchNumber(_batchNumberEdit->text());
-    _session->setBatchInfo(_batchInfoEdit->text());
+//    //------------------------------------------------------------------------------------------
 
-    //------------------------------------------------------------------------------------------
-    _selectMetodBox->setEnabled(true);
-    _selectMetodBox->clear();
-    _selectMetodBox->addItems(_testClientList.first()->methodManager()->avaliableMethodsNames());
-    _session->setMethod(_selectMetodBox->currentText());
+//    _session->setOperatorName(_operatorNameEdit->text().simplified());
+//    _session->setStartTime(QDateTime::currentDateTime().toString("dd.MM.yy hh:mm:ss"));
+//    _session->setBatchNumber(_batchNumberEdit->text());
+//    _session->setBatchInfo(_batchInfoEdit->text());
 
-    for(auto & testClient : _testClientList)
-    {
-        testClient->methodManager()->setCurrentMethod(_selectMetodBox->currentText());
-    }
+//    //------------------------------------------------------------------------------------------
+//    _selectMetodBox->setEnabled(true);
+//    _selectMetodBox->clear();
+////    _selectMetodBox->addItems(_testClientList.first()->methodManager()->avaliableMethodsNames());
+//    _session->setMethod(_selectMetodBox->currentText());
 
-    _testFunctionsListWidget->setEnabled(true);
-    _testFunctionsListWidget->clear();
-    _testFunctionsListWidget->addItems(_testClientList.first()->methodManager()->currentMethodGeneralFunctionNames());
-    if(_testFunctionsListWidget->count() > 0)
-    {
-        _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
-    }
+//    for(auto & testClient : _testClientList)
+//    {
+////        testClient->methodManager()->setCurrentMethod(_selectMetodBox->currentText());
+//    }
 
-    _startFullCycleTestingButton->setEnabled(true);
-    _startSelectedTestButton->setEnabled(true);
-    _testFixtureWidget->setEnabled(true);
-    _finishSessionButton->setEnabled(true);
+//    _testFunctionsListWidget->setEnabled(true);
+//    _testFunctionsListWidget->clear();
+////    _testFunctionsListWidget->addItems(_testClientList.first()->methodManager()->currentMethodGeneralFunctionNames());
+//    if(_testFunctionsListWidget->count() > 0)
+//    {
+//        _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
+//    }
 
-    _actionHintWidget->showNormalHint(HINT_CHOOSE_METHOD);
-    _sessionInfoWidget->refresh();
-    _testFixtureWidget->refreshButtonsState();
+//    _startFullCycleTestingButton->setEnabled(true);
+//    _startSelectedTestButton->setEnabled(true);
+//    _testFixtureWidget->setEnabled(true);
+//    _finishSessionButton->setEnabled(true);
 
-    if(!_operatorList.contains(_session->operatorName(), Qt::CaseInsensitive))
-    {
-        _operatorList.push_back(_session->operatorName());
-    }
+//    _actionHintWidget->showNormalHint(HINT_CHOOSE_METHOD);
+//    _sessionInfoWidget->refresh();
+//    _testFixtureWidget->refreshButtonsState();
+
+//    if(!_operatorList.contains(_session->operatorName(), Qt::CaseInsensitive))
+//    {
+//        _operatorList.push_back(_session->operatorName());
+//    }
 }
 
 void MainWindow::finishSession()
@@ -480,15 +487,15 @@ void MainWindow::startFunction(const QString &functionName)
 {
     for(auto & testClient : _testClientList)
     {
-        if(testClient->methodManager()->isFunctionStrictlySequential(functionName))
-        {
-            testClient->methodManager()->runTestFunction(functionName); // Runs function for all Test clients sequentally in main thread
-        }
-        else
-        {
-            testClient->runTestFunction(functionName); // Runs function for all Test clients in parallel in their threads
-            delay(100);
-        }
+//        if(testClient->methodManager()->isFunctionStrictlySequential(functionName))
+//        {
+//            testClient->methodManager()->runTestFunction(functionName); // Runs function for all Test clients sequentally in main thread
+//        }
+//        else
+//        {
+//            testClient->runTestFunction(functionName); // Runs function for all Test clients in parallel in their threads
+//            delay(100);
+//        }
     }
 }
 
