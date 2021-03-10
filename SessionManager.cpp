@@ -170,5 +170,29 @@ void SessionManager::writeDutRecordsToDatabase()
 
     brief_csv_file.close();
 
+    //CSV printer log file
+
+    QFile printer_csv_file(_settings->value("workDirectory").toString() + "/reports/" + "PRINTER_" + QDateTime::currentDateTime().toString("yyyy-MM-dd") + " " + _method + ".csv");
+
+    printer_csv_file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+
+    for(auto & record : _records)
+    {
+        printer_csv_file.write(    record.runningNumber.toLocal8Bit() + _csv_separator
+                                   + record.cycleNo.toLocal8Bit() + "."
+                                   + record.no.toLocal8Bit() + _csv_separator
+                                   + record.id.toLocal8Bit() + _csv_separator
+                                   + record.batchNumber.toLocal8Bit());
+
+        if(record.state == "FAILED")
+        {
+            printer_csv_file.write(_csv_separator + "FAILED");
+        }
+        printer_csv_file.write(_csv_separator + "\n");
+    }
+
+
+    printer_csv_file.close();
+
     _records.clear();
 }
