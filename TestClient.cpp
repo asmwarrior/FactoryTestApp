@@ -86,6 +86,7 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, int no, QOb
     connect(this, &TestClient::addJlinkToSriptEngine, this, &TestClient::on_addJlinkToSriptEngine);
 
     connect(this, &TestClient::setDutProperty, this, &TestClient::on_setDutProperty);
+    connect(this, &TestClient::resetDut, this, &TestClient::on_resetDut);
 
     //Slip commands
 
@@ -1334,6 +1335,20 @@ void TestClient::on_waitCommandFinished()
 void TestClient::on_addJlinkToSriptEngine()
 {
     _methodManager->getScriptEngine()->globalObject().setProperty("jlink", _methodManager->getScriptEngine()->newQObject(_jlinkManager));
+}
+
+void TestClient::on_resetDut(int slot)
+{
+    _duts[slot]["state"] = DutState::inactive;
+    _duts[slot]["id"] = "";
+    _duts[slot]["checked"] = false;
+    _duts[slot]["voltageChecked"] = false;
+    _duts[slot]["accelChecked"] = false;
+    _duts[slot]["lightSensChecked"] = false;
+    _duts[slot]["daliChecked"] = false;
+    _duts[slot]["radioChecked"] = false;
+    _duts[slot]["error"] = "";
+
 }
 
 void TestClient::on_setDutProperty(int slot, const QString &property, const QVariant &value)

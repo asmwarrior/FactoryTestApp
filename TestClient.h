@@ -73,6 +73,7 @@ public slots:
 
     void on_addJlinkToSriptEngine();
 
+    void on_resetDut(int slot);
     void on_setDutProperty(int slot, const QString& property, const QVariant& value);
 
     void sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW;
@@ -119,6 +120,7 @@ signals:
     void waitCommandFinished();
 
     void addJlinkToSriptEngine();
+    void resetDut(int slot);
     void setDutProperty(int slot, const QString& property, const QVariant& value);
     void runTestFunction(const QString &name);
 

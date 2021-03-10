@@ -21,6 +21,7 @@ static Dut dutTemplate {
 
 struct DutRecord
 {
+    QString runningNumber;
     QString id;
     QString no;
     QString cycleNo;

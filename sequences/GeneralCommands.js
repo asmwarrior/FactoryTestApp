@@ -77,6 +77,7 @@ GeneralCommands =
         for (var slot = 1; slot < testClient.dutsCount() + 1; slot++)
         {
             testClient.powerOff(slot);
+            testClient.resetDut(slot);
         }
 
         testClient.delay(2000);

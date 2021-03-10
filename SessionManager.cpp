@@ -12,6 +12,8 @@ SessionManager::SessionManager(QSettings *settings, QObject *parent) : QObject(p
         _csv_separator = ";";
     else
         _csv_separator = sep;
+
+    _runningNumber = _settings->value("Report/runningNumber").toInt();
 }
 
 SessionManager::~SessionManager()
@@ -21,7 +23,20 @@ SessionManager::~SessionManager()
 
 void SessionManager::logDutInfo(Dut dut)
 {
+    _runningNumber++;
+    _settings->setValue("Report/runningNumber", _runningNumber);
     DutRecord record;
+
+    QString zeroFields;
+    if(_runningNumber < 10)
+        zeroFields = "000";
+    else if(_runningNumber < 100)
+        zeroFields = "00";
+    else if(_runningNumber < 1000)
+        zeroFields = "0";
+
+    record.runningNumber = zeroFields + QString().setNum(_runningNumber);
+
     record.id = dut["id"].toString();
     record.no = dut["no"].toString();
     record.error = dut["error"].toString().remove('\n').remove('\r').remove(';').remove(',');
@@ -82,7 +97,8 @@ void SessionManager::writeDutRecordsToDatabase()
 
     for(auto & record : _records)
     {
-        file.write(    "ID: " +  record.id.toLocal8Bit() + "; "
+        file.write(    record.runningNumber.toLocal8Bit() + "; "
+                     + "ID: " +  record.id.toLocal8Bit() + "; "
                      + "SOCKET: " +  record.no.toLocal8Bit() + "; "
                      + "TEST CYCLE: " +  record.cycleNo.toLocal8Bit() + "; "
                      + "BATCH NUMBER: " +  record.batchNumber.toLocal8Bit() + "; "
@@ -112,14 +128,15 @@ void SessionManager::writeDutRecordsToDatabase()
 
     for(auto & record : _records)
     {
-        csv_file.write(    record.id.toLocal8Bit() + _csv_separator
+        csv_file.write(    record.runningNumber.toLocal8Bit() + _csv_separator
+                     + record.id.toLocal8Bit() + _csv_separator
                      + record.no.toLocal8Bit() + _csv_separator
-                     +  record.cycleNo.toLocal8Bit() + _csv_separator
-                     +  record.batchNumber.toLocal8Bit() + _csv_separator
-                     +  record.method.toLocal8Bit() + _csv_separator
-                     +  record.operatorName.toLocal8Bit() + _csv_separator
-                     +  record.timeStamp.toLocal8Bit() + _csv_separator
-                     +  record.state.toLocal8Bit());
+                     + record.cycleNo.toLocal8Bit() + _csv_separator
+                     + record.batchNumber.toLocal8Bit() + _csv_separator
+                     + record.method.toLocal8Bit() + _csv_separator
+                     + record.operatorName.toLocal8Bit() + _csv_separator
+                     + record.timeStamp.toLocal8Bit() + _csv_separator
+                     + record.state.toLocal8Bit());
 
         if(record.error.size())
         {
@@ -139,9 +156,10 @@ void SessionManager::writeDutRecordsToDatabase()
 
     for(auto & record : _records)
     {
-        brief_csv_file.write(    record.cycleNo.toLocal8Bit() + _csv_separator
-                     + record.no.toLocal8Bit() + _csv_separator
-                     + record.id.toLocal8Bit());
+        brief_csv_file.write(    record.runningNumber.toLocal8Bit() + _csv_separator
+                                 + record.cycleNo.toLocal8Bit() + _csv_separator
+                                 + record.no.toLocal8Bit() + _csv_separator
+                                 + record.id.toLocal8Bit());
 
         if(record.state == "FAILED")
         {
