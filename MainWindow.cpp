@@ -432,14 +432,18 @@ void MainWindow::startFullCycleTesting()
     _session->increaseCyclesCount();
     _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
     startFunction("Detect DUTs");
-    delay(16000);
+    while(_startedSequenceCount)
+    {
+        QCoreApplication::processEvents();
+    }
+//    delay(16000);
 
-//    setControlsEnabled(false);
-//    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
-//    startFunction("Download Railtest");
+    setControlsEnabled(false);
+    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
+    startFunction("Download Railtest");
 
-//    _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
-//    startFunction("Test radio interface");
+    _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
+    startFunction("Test radio interface");
 
     startFunction("Full cycle testing");
 

@@ -4,6 +4,8 @@ ZhagaECO =
 {
     downloadRailtest: function ()
     {
+        testClient.commandSequenceStarted();
+
         for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
         {
             if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
@@ -30,6 +32,8 @@ ZhagaECO =
                 jlink.close();
             }
         }
+
+        testClient.commandSequenceFinished();
     },
 
     //---
@@ -41,6 +45,8 @@ ZhagaECO =
 
     testRadio: function ()
     {
+        testClient.commandSequenceStarted();
+
         for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
         {
             if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
@@ -48,6 +54,8 @@ ZhagaECO =
                 testClient.on_testRadio(slot);
             }
         }
+
+        testClient.commandSequenceFinished();
     },
 
     //---
