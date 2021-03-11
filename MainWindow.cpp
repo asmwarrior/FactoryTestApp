@@ -447,7 +447,6 @@ void MainWindow::startFullCycleTesting()
     {
         QCoreApplication::processEvents();
     }
-//    delay(16000);
 
     setControlsEnabled(false);
     _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
@@ -463,7 +462,18 @@ void MainWindow::startFullCycleTesting()
         QCoreApplication::processEvents();
     }
 
+    startFunction("Check Testing Completion");
+
+    setControlsEnabled(false);
+    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_SOFTWARE);
+    startFunction("Download software");
+
     _actionHintWidget->showProgressHint(HINT_READY);
+    setControlsEnabled(true);
+    _newSessionButton->setEnabled(false);
+    _operatorNameEdit->setEnabled(false);
+    _batchNumberEdit->setEnabled(false);
+    _batchInfoEdit->setEnabled(false);
     _session->writeDutRecordsToDatabase();
 }
 

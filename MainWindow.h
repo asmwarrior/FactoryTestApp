@@ -91,6 +91,7 @@ private:
     const QString HINT_CHOOSE_METHOD = "Choose a test method (Step 2), select DUTs (Step 3) and run full cycle testing (or single step testing) for the selected DUTs";
     const QString HINT_DETECT_DUTS = "Detecting DUTs in the test fixture and downloading Railtest...";
     const QString HINT_DOWNLOAD_RAILTEST = "Downloading Railtest...";
+    const QString HINT_DOWNLOAD_SOFTWARE = "Downloading sowtware...";
     const QString HINT_FULL_TESTING = "Perfoming full cycle testing for the selected DUTs...";
     const QString HINT_DEVICE_ID = "Reading device IDs...";
     const QString HINT_CHECK_VOLTAGE = "Checking voltage on AIN1...";

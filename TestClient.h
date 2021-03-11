@@ -18,7 +18,7 @@ public:
 
     enum Mode {idleMode, railMode, slipMode};
     enum DutState {inactive, untested, tested, warning};
-    enum RailTestCommand {noCommand, readChipIdCommand, accelCommand, lightSensCommand, daliCommand};
+    enum RailTestCommand {noCommand, readChipIdCommand, accelCommand, lightSensCommand, daliCommand, gnssCommand};
 
     explicit TestClient(QSettings* settings, SessionManager* session, int no, QObject *parent = nullptr);
     ~TestClient();
@@ -75,6 +75,7 @@ public slots:
 
     void on_resetDut(int slot);
     void on_setDutProperty(int slot, const QString& property, const QVariant& value);
+    QVariant getDutProperty(int slot, const QString& property);
 
     void sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW;
     void processResponsePacket();
@@ -107,7 +108,7 @@ public slots:
     void on_testAccelerometer(int slot);
     void on_testLightSensor(int slot);
     void on_testDALI();
-//    void on_testGNSS();
+    void on_testGNSS();
 
     void onRfReplyReceived(QString id, QVariantMap params);
 
@@ -126,6 +127,7 @@ signals:
 
     void dutChanged(Dut);
     void dutFullyTested(Dut);
+    void slotFullyTested(int);
     void commandSequenceStarted();
     void commandSequenceFinished();
 
@@ -153,7 +155,6 @@ signals:
     void waitCommandPrompt(int timeout = 1000);
     void syncCommand(const QByteArray &cmd, const QByteArray &args = QByteArray(), int timeout = 5000);
     void readChipId(int dut);
-    //void testRadio();
     void testAccelerometer(int slot);
     void testLightSensor(int slot);
     void testDALI();
@@ -192,6 +193,7 @@ private:
     bool _currentAccelChecked = false;
     bool _currentLightSensChecked = false;
     bool _currentDaliChecked = false;
+    bool _currentGnssChecked = false;
     QString _currentError = "";
 
     int _rfRSSI;

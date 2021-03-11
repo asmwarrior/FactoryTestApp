@@ -125,12 +125,9 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, int no, QOb
     connect(this, &TestClient::read3V, this, &TestClient::on_read3V);
     connect(this, &TestClient::readTemperature, this, &TestClient::on_readTemperature);
 
+    connect(this, &TestClient::slotFullyTested, [this](int slot){emit dutFullyTested(_duts[slot]);});
+
     //Rail test commands
-
-//    connect(this, &TestClient::waitCommandPrompt, [this](){_mode = railMode;});
-//    connect(this, &TestClient::waitCommandPrompt, &_rail, &RailtestClient::on_waitCommandPrompt);
-
-//    connect(this, &TestClient::syncCommand, &_rail, &RailtestClient::on_syncCommand);
 
     connect(this, &TestClient::readChipId, [this](){_mode = railMode;});
     connect(this, &TestClient::readChipId, this, &TestClient::on_readChipId);
@@ -144,8 +141,7 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, int no, QOb
     connect(this, &TestClient::testDALI, [this](){_mode = railMode;});
     connect(this, &TestClient::testDALI, this, &TestClient::on_testDALI);
 
-//    connect(this, &TestClient::testRadio, &_rail, &RailtestClient::on_testRadio);
-//    connect(this, &TestClient::testGNSS, &_rail, &RailtestClient::on_testGNSS);
+    connect(this, &TestClient::testGNSS, this, &TestClient::on_testGNSS);
 
     _duts[1] = dutTemplate;
     _duts[2] = dutTemplate;
@@ -780,6 +776,16 @@ void TestClient::on_testDALI()
     emit dutChanged(_duts[_currentSlot]);
 }
 
+void TestClient::on_testGNSS()
+{
+    _currentCommand = gnssCommand;
+    sendRailtestCommand(_currentSlot, "gnrx", {"3"});
+    delay(2000);
+
+}
+
+
+
 void TestClient::onRfReplyReceived(QString id, QVariantMap params)
 {
     if (id == "rxPacket" && params.contains("rssi"))
@@ -1185,6 +1191,24 @@ void TestClient::processFrameFromRail(QByteArray frame)
         }
     }
         break;
+
+    case gnssCommand:
+    {
+        if (frame.contains("error"))
+        {
+            _logger->logError(frame);
+            _currentGnssChecked = false;
+            _currentError = frame;
+        }
+
+        else if (frame.contains("line"))
+        {
+            _currentGnssChecked = true;
+        }
+        else
+            _logger->logError("Wrong reply to GNSS command!");
+    }
+        break;
     }
 
     _currentCommand = noCommand;
@@ -1355,6 +1379,11 @@ void TestClient::on_setDutProperty(int slot, const QString &property, const QVar
 {
     _duts[slot][property] = value;
     emit dutChanged(_duts[slot]);
+}
+
+QVariant TestClient::getDutProperty(int slot, const QString &property)
+{
+    return _duts[slot][property];
 }
 
 bool TestClient::isActive() const

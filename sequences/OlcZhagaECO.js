@@ -40,7 +40,33 @@ ZhagaECO =
 
     downloadSoftware: function ()
     {
-        GeneralCommands.startJlinkScript("sequences/OLCZhagaECO/download_software.jlink");
+        testClient.commandSequenceStarted();
+
+        for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
+        {
+            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+            {
+                testClient.powerOn(slot);
+                testClient.delay(1000);
+                testClient.switchSWD(slot);
+
+                jlink.selectByUSB();
+                jlink.open();
+                jlink.setDevice("EFR32FG12PXXXF1024");
+                jlink.select();
+                jlink.setSpeed(5000);
+                jlink.connect();
+//                if(jlink.erase() < 0)
+//                {
+//                    return;
+//                }
+
+//                jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_software.hex", 0);
+                jlink.close();
+            }
+        }
+
+        testClient.commandSequenceFinished();
     },
 
     testRadio: function ()
@@ -92,7 +118,7 @@ ZhagaECO =
         GeneralCommands.testAccelerometer();
         GeneralCommands.testLightSensor();
         GeneralCommands.testDALI();
-        ZhagaECO.checkTestingCompletion();
+//        ZhagaECO.checkTestingCompletion();
 
         testClient.commandSequenceFinished();
     },
@@ -101,7 +127,30 @@ ZhagaECO =
 
     checkTestingCompletion: function ()
     {
-        testClient.checkTestingCompletion();
+//        testClient.checkTestingCompletion();
+
+        for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
+        {
+            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+            {
+                if( testClient.getDutProperty(slot, "id") !== "" &&
+                    testClient.getDutProperty(slot, "voltageChecked") &&
+                    testClient.getDutProperty(slot, "lightSensChecked") &&
+                    testClient.getDutProperty(slot, "daliChecked") &&
+                    testClient.getDutProperty(slot, "accelChecked")
+                   )
+                {
+                    testClient.on_setDutProperty(slot, "state", 2);
+                }
+
+                else
+                {
+                    testClient.on_setDutProperty(slot, "state", 3);
+                }
+
+                testClient.slotFullyTested(slot);
+            }
+        }
     }
 }
 
@@ -118,8 +167,8 @@ methodManager.addFunctionToGeneralList("Test accelerometer", GeneralCommands.tes
 methodManager.addFunctionToGeneralList("Test light sensor", GeneralCommands.testLightSensor);
 methodManager.addFunctionToGeneralList("Test DALI", GeneralCommands.testDALI);
 methodManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio, true);
+methodManager.addFunctionToGeneralList("Download software", ZhagaECO.downloadSoftware, true);
 methodManager.addFunctionToGeneralList("Check Testing Completion", ZhagaECO.checkTestingCompletion);
 
 //testSequenceManager.addFunctionToGeneralList("Test GNSS", ZhagaECO.testGNSS);
-//testSequenceManager.addFunctionToGeneralList("Download Software", ZhagaECO.downloadSoftware);
 
