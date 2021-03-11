@@ -23,6 +23,7 @@ set(SOURCES
     JLinkManager.cpp
     Logger.cpp
     RailtestClient.cpp
+    PortManager.cpp
     TestClient.cpp
     TestFixtureWidget.cpp
     DutButton.cpp

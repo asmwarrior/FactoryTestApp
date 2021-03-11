@@ -345,7 +345,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(_session, &SessionManager::printLabel, _printerManager, &PrinterManager::addLabel);
 
-    _methodManager->runTestFunction("Detect DUTs");
+    for(auto & testClient : _testClientList)
+    {
+        testClient->readCSA(0);
+    }
 }
 
 MainWindow::~MainWindow()
