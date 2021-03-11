@@ -19,8 +19,12 @@ GeneralCommands =
 
     readCSA: function ()
     {
-        testClient.readCSA(0);
-        logger.logInfo("Measuring board " + testClient.no() + " current: " + testClient.currentCSA() + " mA");
+        for(let i = 0; i < testClientList.length; i++)
+        {
+            let testClient = testClientList[i];
+            testClient.readCSA(0);
+            logger.logInfo("Measuring board " + testClient.no() + " current: " + testClient.currentCSA() + " mA");
+        }
     },
 
     //---
@@ -45,12 +49,16 @@ GeneralCommands =
 
     powerOn: function ()
     {
-        for(var i = 1; i < testClient.dutsCount() + 1; i++)
+        for(let i = 0; i < testClientList.length; i++)
         {
-            if(testClient.isDutChecked(i))
+            let testClient = testClientList[i];
+            for(let slot = 1; slot < testClient.dutsCount() + 1; slot++)
             {
-                testClient.powerOn(i);
-                logger.logInfo("DUT " + testClient.dutNo(i) + " switched ON");
+                if(testClient.isDutChecked(slot))
+                {
+                    testClient.powerOn(slot);
+                    logger.logInfo("DUT " + testClient.dutNo(slot) + " switched ON");
+                }
             }
         }
     },
@@ -59,12 +67,16 @@ GeneralCommands =
 
     powerOff: function ()
     {
-        for(var i = 1; i < testClient.dutsCount() + 1; i++)
+        for(let i = 0; i < testClientList.length; i++)
         {
-            if(testClient.isDutChecked(i))
+            let testClient = testClientList[i];
+            for(let slot = 1; slot < testClient.dutsCount() + 1; slot++)
             {
-                testClient.powerOff(i);
-                logger.logInfo("DUT " + testClient.dutNo(i) + " switched OFF");
+                if(testClient.isDutChecked(slot))
+                {
+                    testClient.powerOff(slot);
+                    logger.logInfo("DUT " + testClient.dutNo(slot) + " switched OFF");
+                }
             }
         }
     },
@@ -73,7 +85,7 @@ GeneralCommands =
 
     detectDuts: function ()
     {
-        for (let i = 0; i < 5; i++)
+        for (let i = 0; i < testClientList.length; i++)
         {
             let testClient = testClientList[i];
 
@@ -87,37 +99,39 @@ GeneralCommands =
                 testClient.resetDut(slot);
             }
 
-            testClient.delay(2000);
+            testClient.test();
+            testClient.delay(5000);
+            testClient.test();
 
             for(slot = 1; slot < testClient.dutsCount() + 1; slot++)
             {
-                testClient.setCurrentSlot(slot);
+//                testClient.setCurrentSlot(slot);
 
-                testClient.readCSA(0);
-                testClient.delay(100);
-                var currentCSA = testClient.currentCSA();
+//                testClient.readCSA(0);
+//                testClient.delay(100);
+//                var currentCSA = testClient.currentCSA();
 
-                testClient.powerOn(slot);
-                testClient.delay(100);
+//                testClient.powerOn(slot);
+//                testClient.delay(100);
 
-                testClient.readCSA(0);
-                testClient.delay(100);
-                if((testClient.currentCSA() - currentCSA) > 15 && currentCSA !== -1)
-                {
-                    logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no());
-                    testClient.setDutProperty(slot, "state", 1);
-                    testClient.setDutProperty(slot, "checked", true);
-                    testClient.setActive(true);
-                }
+//                testClient.readCSA(0);
+//                testClient.delay(100);
+//                if((testClient.currentCSA() - currentCSA) > 15 && currentCSA !== -1)
+//                {
+//                    logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no());
+//                    testClient.setDutProperty(slot, "state", 1);
+//                    testClient.setDutProperty(slot, "checked", true);
+//                    testClient.setActive(true);
+//                }
 
-                else
-                {
-                    testClient.setDutProperty(slot, "state", 0);
-                    testClient.setDutProperty(slot, "checked", false);
-                }
+//                else
+//                {
+//                    testClient.setDutProperty(slot, "state", 0);
+//                    testClient.setDutProperty(slot, "checked", false);
+//                }
 
-                testClient.powerOff(slot);
-                testClient.delay(2000);
+//                testClient.powerOff(slot);
+//                testClient.delay(2000);
             }
 
             testClient.commandSequenceFinished();

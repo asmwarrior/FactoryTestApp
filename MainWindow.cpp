@@ -344,6 +344,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_startFullCycleTestingButton, &QPushButton::clicked, this, &MainWindow::startFullCycleTesting);
 
     connect(_session, &SessionManager::printLabel, _printerManager, &PrinterManager::addLabel);
+
+    _methodManager->runTestFunction("Detect DUTs");
 }
 
 MainWindow::~MainWindow()
