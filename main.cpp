@@ -7,10 +7,11 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
 //    a.setWindowIcon(QIcon(":/icons/application"));
-    a.setOrganizationName("Capelon");
+    a.setOrganizationName("Capelon AB");
     a.setApplicationName("CapelonTestStation");
 
     MainWindow w;
+    w.setWindowTitle("Capelon Test Station 0.5");
     w.setFixedSize(1200, 900);
     w.show();
 
