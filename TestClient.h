@@ -108,7 +108,7 @@ public slots:
     void on_testAccelerometer(int slot);
     void on_testLightSensor(int slot);
     void on_testDALI();
-    void on_testGNSS();
+    void on_testGNSS(int slot);
 
     void onRfReplyReceived(QString id, QVariantMap params);
 
@@ -158,7 +158,7 @@ signals:
     void testAccelerometer(int slot);
     void testLightSensor(int slot);
     void testDALI();
-    void testGNSS();
+    void testGNSS(int slot);
 
 private:
 

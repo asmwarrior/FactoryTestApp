@@ -448,12 +448,12 @@ void MainWindow::startFullCycleTesting()
         QCoreApplication::processEvents();
     }
 
-//    setControlsEnabled(false);
-//    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
-//    startFunction("Download Railtest");
+    setControlsEnabled(false);
+    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
+    startFunction("Download Railtest");
 
-//    _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
-//    startFunction("Test radio interface");
+    _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
+    startFunction("Test radio interface");
 
     startFunction("Full cycle testing");
 

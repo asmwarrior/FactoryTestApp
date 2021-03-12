@@ -141,6 +141,7 @@ TestClient::TestClient(QSettings *settings, SessionManager *session, int no, QOb
     connect(this, &TestClient::testDALI, [this](){_mode = railMode;});
     connect(this, &TestClient::testDALI, this, &TestClient::on_testDALI);
 
+    connect(this, &TestClient::testGNSS, [this](){_mode = railMode;});
     connect(this, &TestClient::testGNSS, this, &TestClient::on_testGNSS);
 
     _duts[1] = dutTemplate;
@@ -776,12 +777,22 @@ void TestClient::on_testDALI()
     emit dutChanged(_duts[_currentSlot]);
 }
 
-void TestClient::on_testGNSS()
+void TestClient::on_testGNSS(int slot)
 {
     _currentCommand = gnssCommand;
-    sendRailtestCommand(_currentSlot, "gnrx", {"3"});
-    delay(2000);
+    sendRailtestCommand(slot, "gnrx", {"3"});
+    delay(5000);
+    _duts[slot]["gnssChecked"] = _currentGnssChecked;
 
+    if(_duts[slot]["gnssChecked"].toBool())
+        _logger->logSuccess(QString("GNSS for DUT %1 has been tested successfully").arg(_duts[slot]["no"].toInt()));
+    else
+    {
+        _logger->logError(QString("Testing GNSS for DUT %1 has been failed!").arg(_duts[slot]["no"].toInt()));
+        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + _currentError;
+    }
+
+    emit dutChanged(_duts[slot]);
 }
 
 
@@ -1206,7 +1217,10 @@ void TestClient::processFrameFromRail(QByteArray frame)
             _currentGnssChecked = true;
         }
         else
+        {
+            _currentGnssChecked = false;
             _logger->logError("Wrong reply to GNSS command!");
+        }
     }
         break;
     }
@@ -1371,6 +1385,7 @@ void TestClient::on_resetDut(int slot)
     _duts[slot]["lightSensChecked"] = false;
     _duts[slot]["daliChecked"] = false;
     _duts[slot]["radioChecked"] = false;
+    _duts[slot]["gnssChecked"] = false;
     _duts[slot]["error"] = "";
 
 }

@@ -177,5 +177,31 @@ GeneralCommands =
             }
         }
         testClient.daliOff();
+    },
+
+    testRadio: function ()
+    {
+        testClient.commandSequenceStarted();
+
+        for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
+        {
+            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+            {
+                testClient.on_testRadio(slot);
+            }
+        }
+
+        testClient.commandSequenceFinished();
+    },
+
+    testGNSS: function ()
+    {
+        for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
+        {
+            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+            {
+                testClient.testGNSS(slot);
+            }
+        }
     }
 }
