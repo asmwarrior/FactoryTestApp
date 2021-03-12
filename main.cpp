@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 
 //    a.setWindowIcon(QIcon(":/icons/application"));
     a.setOrganizationName("Capelon");
-    a.setApplicationName("FactoryTestApp");
+    a.setApplicationName("CapelonTestStation");
 
     MainWindow w;
     w.setFixedSize(1200, 900);
