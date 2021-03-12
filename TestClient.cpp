@@ -1136,7 +1136,7 @@ void TestClient::processFrameFromRail(QByteArray frame)
 
                if (x > 10 || x < -10 || y > 10 || y < -10 || z < 80 || z > 100)
                {
-                   _logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
+                   _logger->logDebug(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
                    _currentAccelChecked = false;
                    _currentError = QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z);
                }
@@ -1162,7 +1162,7 @@ void TestClient::processFrameFromRail(QByteArray frame)
 
                if (opwr < 0)
                {
-                   _logger->logError(QString("Light sensor failure: opwr=%1.").arg(opwr));
+                   _logger->logDebug(QString("Light sensor failure: opwr=%1.").arg(opwr));
                    _currentLightSensChecked = false;
                    _currentError = QString("Light sensor failure: opwr=%1.").arg(opwr);
                }
@@ -1207,7 +1207,7 @@ void TestClient::processFrameFromRail(QByteArray frame)
     {
         if (frame.contains("error"))
         {
-            _logger->logError(frame);
+            _logger->logDebug(frame);
             _currentGnssChecked = false;
             _currentError = frame;
         }
@@ -1219,7 +1219,7 @@ void TestClient::processFrameFromRail(QByteArray frame)
         else
         {
             _currentGnssChecked = false;
-            _logger->logError("Wrong reply to GNSS command!");
+            _logger->logDebug("Wrong reply to GNSS command!");
         }
     }
         break;
