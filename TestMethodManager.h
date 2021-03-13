@@ -32,7 +32,7 @@ public:
     TestMethodManager(QSettings* settings, QObject *parent = nullptr);
 
     void setLogger(Logger* logger) {_logger = logger; _scriptEngine.globalObject().setProperty("logger", _scriptEngine.newQObject(_logger));}
-    QJSEngine* getScriptEngine() {return &_scriptEngine;}
+    QJSEngine* scriptEngine() {return &_scriptEngine;}
 
     Q_INVOKABLE void addMethod(const QString& name);
     Q_INVOKABLE void addFunctionToGeneralList(const QString& name, const QJSValue& function, bool isStrictlySequential = false);

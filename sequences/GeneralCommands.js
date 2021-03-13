@@ -1,3 +1,4 @@
+const SLOTS_NUMBER = 3;
 var jlinkList = [];
 var testClientList = [];
 
@@ -14,34 +15,18 @@ GeneralCommands =
 {
     testConnection: function ()
     {
-        jlink.establishConnection();
-    },
-
-    readCSA: function ()
-    {
-        for(let i = 0; i < testClientList.length; i++)
+        for (var i = 0; i < jlinkList.length; i++)
         {
-            let testClient = testClientList[i];
-            testClient.readCSA(0);
-            logger.logInfo("Measuring board " + testClient.no() + " current: " + testClient.currentCSA() + " mA");
+            jlinkList[i].establishConnection();
         }
     },
 
-    //---
-
-    startJlinkScript: function (scriptFile)
+    readCSA: function()
     {
-        for (let slot = 1; slot < 4; slot++)
+        for (var i = 0; i < testClientList.length; i++)
         {
-            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
-            {
-                testClient.powerOn(slot);
-                testClient.delay(1000);
-                testClient.switchSWD(slot);
-                testClient.delay(100);
-                jlink.startScript(scriptFile);
-                testClient.delay(3000);
-            }
+            let testClient = testClientList[i];
+            logger.logInfo("Measuring board " + testClient.no() + " current: " + testClient.readCSA(0) + " mA");
         }
     },
 
@@ -49,13 +34,13 @@ GeneralCommands =
 
     powerOn: function ()
     {
-        for(let i = 0; i < testClientList.length; i++)
+        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
         {
-            let testClient = testClientList[i];
-            for(let slot = 1; slot < testClient.dutsCount() + 1; slot++)
+            for (var i = 0; i < testClientList.length; i++)
             {
-                if(testClient.isDutChecked(slot))
+                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
                 {
+                    let testClient = testClientList[i];
                     testClient.powerOn(slot);
                     logger.logInfo("DUT " + testClient.dutNo(slot) + " switched ON");
                 }
@@ -67,13 +52,13 @@ GeneralCommands =
 
     powerOff: function ()
     {
-        for(let i = 0; i < testClientList.length; i++)
+        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
         {
-            let testClient = testClientList[i];
-            for(let slot = 1; slot < testClient.dutsCount() + 1; slot++)
+            for (var i = 0; i < testClientList.length; i++)
             {
-                if(testClient.isDutChecked(slot))
+                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
                 {
+                    let testClient = testClientList[i];
                     testClient.powerOff(slot);
                     logger.logInfo("DUT " + testClient.dutNo(slot) + " switched OFF");
                 }
@@ -85,119 +70,215 @@ GeneralCommands =
 
     detectDuts: function ()
     {
-        for (let i = 0; i < testClientList.length; i++)
+        actionHintWidget.showProgressHint("Detecting DUTs in the testing fixture...");
+
+        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
         {
-            let testClient = testClientList[i];
-
-            testClient.commandSequenceStarted();
-
-            testClient.setActive(false);
-
-            for (var slot = 1; slot < testClient.dutsCount() + 1; slot++)
+            for (var i = 0; i < testClientList.length; i++)
             {
+                let testClient = testClientList[i];
                 testClient.powerOff(slot);
                 testClient.resetDut(slot);
             }
-
-            testClient.test();
-            testClient.delay(5000);
-            testClient.test();
-
-            for(slot = 1; slot < testClient.dutsCount() + 1; slot++)
-            {
-//                testClient.setCurrentSlot(slot);
-
-//                testClient.readCSA(0);
-//                testClient.delay(100);
-//                var currentCSA = testClient.currentCSA();
-
-//                testClient.powerOn(slot);
-//                testClient.delay(100);
-
-//                testClient.readCSA(0);
-//                testClient.delay(100);
-//                if((testClient.currentCSA() - currentCSA) > 15 && currentCSA !== -1)
-//                {
-//                    logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no());
-//                    testClient.setDutProperty(slot, "state", 1);
-//                    testClient.setDutProperty(slot, "checked", true);
-//                    testClient.setActive(true);
-//                }
-
-//                else
-//                {
-//                    testClient.setDutProperty(slot, "state", 0);
-//                    testClient.setDutProperty(slot, "checked", false);
-//                }
-
-//                testClient.powerOff(slot);
-//                testClient.delay(2000);
-            }
-
-            testClient.commandSequenceFinished();
         }
+        delay(100);
+
+
+        for (slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (i = 0; i < testClientList.length; i++)
+            {
+                var testClient = testClientList[i];
+                testClient.commandSequenceStarted();
+                testClient.setActive(false);
+
+                testClient.commandSequenceStarted();
+                testClient.setActive(false);
+
+                var prevCSA = testClient.readCSA(0);
+                testClient.powerOn(slot);
+                var currCSA = testClient.readCSA(0);
+
+                if((currCSA - prevCSA) > 15)
+                {
+                    logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no());
+                    testClient.setDutProperty(slot, "state", 1);
+                    testClient.setDutProperty(slot, "checked", true);
+                    testClient.setActive(true);
+                }
+
+                else
+                {
+                    testClient.setDutProperty(slot, "state", 0);
+                    testClient.setDutProperty(slot, "checked", false);
+                }
+
+                testClient.commandSequenceFinished();
+            }
+        }
+
+        actionHintWidget.showProgressHint("READY");
     },
 
     //---
 
     readChipId: function ()
     {
-        for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
+        actionHintWidget.showProgressHint("Reading device's IDs...");
+
+        for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
         {
-            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+            for (let i = 0; i < testClientList.length; i++)
             {
-                testClient.readChipId(slot);
+                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
+                {
+                    let response = testClientList[i].railtestCommand(slot, "getmemw 0x0FE081F0 2");
+                    let id = response[response.length - 1].slice(2) + response[response.length - 3].slice(2);
+                    testClientList[i].setDutProperty(slot, "id", id.toUpperCase());
+                    logger.logSuccess("ID for DUT " + testClientList[i].dutNo(slot) + " has been read: " + testClientList[i].dutProperty(slot, "id"));
+                }
             }
         }
+
+        actionHintWidget.showProgressHint("READY");
     },
 
     testAccelerometer: function ()
     {
-        for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
+        actionHintWidget.showProgressHint("Testing Accelerometer...");
+
+        for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
         {
-            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+            for (let i = 0; i < testClientList.length; i++)
             {
-                testClient.testAccelerometer(slot);
+                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
+                {
+                    let response = testClientList[i].railtestCommand(slot, "accl");
+                    if (response[2].includes("X") && response[3].includes("Y") && response[4].includes("Z"))
+                    {
+                           let x = Number(response[2].slice(2, 5));
+                           let y = Number(response[3].slice(2, 5));
+                           let z = Number(response[4].slice(2, 5));
+
+                           if (x > 10 || x < -10 || y > 10 || y < -10 || z < 80 || z > 100)
+                           {
+                               testClientList[i].setDutProperty(slot, "accelChecked", false);
+                               testClientList[i].addDutError(slot, response.join(' '));
+                               logger.logDebug("Accelerometer failure: X=" + x +", Y=" + y + ", Z=" + z + ".");
+                               logger.logError("Accelerometer failture for DUT " + testClientList[i].dutNo(slot));
+                           }
+                           else
+                           {
+                               testClientList[i].setDutProperty(slot, "accelChecked", true);
+                               logger.logSuccess("Accelerometer for DUT " + testClientList[i].dutNo(slot) + " has been tested successfully.");
+                           }
+                    }
+
+                    else
+                    {
+                        testClientList[i].setDutProperty(slot, "accelChecked", false);
+                        testClientList[i].addDutError(slot, response.join(' '));
+                        logger.logError("Accelerometer failture for DUT " + testClientList[i].dutNo(slot));
+                    }
+                }
             }
         }
+
+        actionHintWidget.showProgressHint("READY");
     },
 
     testLightSensor: function ()
     {
-        for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
+        actionHintWidget.showProgressHint("Testing light sensor...");
+
+        for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
         {
-            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+            for (let i = 0; i < testClientList.length; i++)
             {
-                testClient.testLightSensor(slot);
+                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
+                {
+                    let response = testClientList[i].railtestCommand(slot, "lsen");
+                    if (response[2].includes("opwr"))
+                    {
+                           let x = Number(response[2].slice(5, 5));
+
+                           if (x < 0)
+                           {
+                               testClientList[i].setDutProperty(slot, "lightSensChecked", false);
+                               testClientList[i].addDutError(slot, response.join(' '));
+                               logger.logDebug("Light sensor failure: X=" + x  + ".");
+                               logger.logError("Light sensor failture for DUT " + testClientList[i].dutNo(slot));
+                           }
+                           else
+                           {
+                               testClientList[i].setDutProperty(slot, "lightSensChecked", true);
+                               logger.logSuccess("Light sensor for DUT " + testClientList[i].dutNo(slot) + " has been tested successfully.");
+                           }
+                    }
+
+                    else
+                    {
+                        estClientList[i].setDutProperty(slot, "lightSensChecked", false);
+                        testClientList[i].addDutError(slot, response.join(' '));
+                        logger.logError("Light sensor failture for DUT " + testClientList[i].dutNo(slot));
+                    }
+                }
             }
         }
+
+        actionHintWidget.showProgressHint("READY");
     },
 
     testDALI: function ()
     {
-        for(var i = 1; i < testClient.dutsCount() + 1; i++)
+        actionHintWidget.showProgressHint("Testing DALI interface...");
+
+        GeneralCommands.powerOff();
+
+        for (var i = 0; i < testClientList.length; i++)
         {
-            if(testClient.isDutChecked(i))
+            testClientList[i].daliOn();
+        }
+
+        for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (let i = 0; i < testClientList.length; i++)
             {
-                testClient.powerOff(i);
+                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
+                {
+                    let testClient = testClientList[i];
+                    testClient.switchSWD(slot);
+                    testClient.powerOn(slot);
+                    delay(2000);
+
+                    testClientList[i].railtestCommand(slot, "dali 0xFE80 16 0 0");
+                    let responseString = testClientList[i].railtestCommand(slot, "dali 0xFF90 16 0 1000000").join(' ');
+
+                    if(responseString.includes("error:0"))
+                    {
+                        testClientList[i].setDutProperty(slot, "daliChecked", true);
+                        logger.logSuccess("DALI interface for DUT " + testClientList[i].dutNo(slot) + " has been tested successfully.");
+                    }
+
+                    else
+                    {
+                        testClientList[i].setDutProperty(slot, "daliChecked", false);
+                        testClientList[i].addDutError(slot, responseString);
+                        logger.logError("DALI testing for DUT " + testClientList[i].dutNo(slot) + " has been failed!");
+                        logger.logDebug("DALI failure: " + responseString  + ".");
+                    }
+
+                    testClientList[i].railtestCommand(slot, "dali 0xFE80 16 0 0");
+                    testClient.powerOff(slot);
+                }
             }
         }
 
-        testClient.daliOn();
-        for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
+        for (i = 0; i < testClientList.length; i++)
         {
-            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
-            {
-                testClient.switchSWD(slot);
-                testClient.powerOn(slot);
-                delay(1000);
-
-                testClient.testDALI();
-                delay(500);
-
-                testClient.powerOff(slot);
-            }
+            testClientList[i].daliOff();
         }
-        testClient.daliOff();
-    }
+
+        actionHintWidget.showProgressHint("READY");
+    },
 }

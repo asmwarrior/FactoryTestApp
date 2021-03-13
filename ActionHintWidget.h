@@ -11,6 +11,9 @@ public:
 
     ActionHintWidget(QWidget* parent = nullptr);
 
+public slots:
+
+
     void showNormalHint(const QString& text);
     void showProgressHint(const QString& text);
 

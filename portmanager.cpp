@@ -113,16 +113,18 @@ QStringList PortManager::slipCommand(int channel, const QByteArray &frame)
     _mode = slipMode;
     _response.clear();
     sendFrame(channel, frame);
+    emit responseRecieved(_response);
     return _response;
 }
 
-QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd, const QByteArray &args)
+QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
 {
     _mode = railMode;
     _response.clear();
     _syncCommand = cmd;
     _syncReplies.clear();
-    sendFrame(channel, cmd + " " + args + "\r\n\r\n");
+    sendFrame(channel, cmd + "\r\n\r\n");
+    emit responseRecieved(_response);
     return _response;
 }
 

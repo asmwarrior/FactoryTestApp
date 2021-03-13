@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(FactoryTestApp LANGUAGES CXX)
+project(CapelonTestStation LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -36,8 +36,8 @@ set(SOURCES
 
 add_executable(${PROJECT_NAME}
     ${SOURCES}
-    ${PROJECT_NAME}.qrc
-    ${PROJECT_NAME}.rc
+    "FactoryTestApp.qrc"
+    "FactoryTestApp.rc"
 )
 
 target_link_libraries(${PROJECT_NAME}

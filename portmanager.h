@@ -31,9 +31,11 @@ public slots:
     void close();
 
     QStringList slipCommand(int channel, const QByteArray &frame);
-    QStringList railtestCommand(int channel, const QByteArray &cmd, const QByteArray &args);
+    QStringList railtestCommand(int channel, const QByteArray &cmd);
 
 signals:
+
+    void responseRecieved(QStringList response);
 
 private slots:
 

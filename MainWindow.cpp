@@ -53,7 +53,7 @@ MainWindow::MainWindow(QWidget *parent)
             if(_settings->value("multithread").toBool())
                 _JLinkList.last()->moveToThread(_threads.last());
 
-            _methodManager->getScriptEngine()->globalObject().property("jlinkList").setProperty(i, _methodManager->getScriptEngine()->newQObject(_JLinkList.last()));
+            _methodManager->scriptEngine()->globalObject().property("jlinkList").setProperty(i, _methodManager->scriptEngine()->newQObject(_JLinkList.last()));
 
             auto testClient = new TestClient(_settings, _session, i + 1);
             testClient->setLogger(_logger);
@@ -73,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent)
             if(_settings->value("multithread").toBool())
                 _testClientList.last()->moveToThread(_threads.last());
 
-            _methodManager->getScriptEngine()->globalObject().property("testClientList").setProperty(i, _methodManager->getScriptEngine()->newQObject(_testClientList.last()));
+            _methodManager->scriptEngine()->globalObject().property("testClientList").setProperty(i, _methodManager->scriptEngine()->newQObject(_testClientList.last()));
             _threads.last()->start();
             _testClientList.last()->open();
 //            _testClientList.last()->initTestMethodManager();
@@ -117,6 +117,7 @@ MainWindow::MainWindow(QWidget *parent)
     //Next action hint
     _actionHintWidget = new ActionHintWidget(this);
     _actionHintWidget->showNormalHint(HINT_START);
+    _methodManager->scriptEngine()->globalObject().setProperty("actionHintWidget", _methodManager->scriptEngine()->newQObject(_actionHintWidget));
     mainLayout->addWidget(_actionHintWidget);
 
     //Input session info and start session widgets
@@ -267,22 +268,14 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-//    for (auto & testClient : _testClientList)
-//    {
-//        connect(_selectMetodBox, SIGNAL(currentTextChanged(const QString&)), testClient->methodManager(), SLOT(setCurrentMethod(const QString&)));
-//    }
-
     connect(_selectMetodBox, &QComboBox::currentTextChanged, [=](QString methodName)
     {
-        for (auto & testClient : _testClientList)
-        {
-//            testClient->methodManager()->setCurrentMethod(methodName);
-        }
+        _methodManager->setCurrentMethod(methodName);
 
         _session->setMethod(methodName);
 
         _testFunctionsListWidget->clear();
-//        _testFunctionsListWidget->addItems(_testClientList.first()->methodManager()->currentMethodGeneralFunctionNames());
+        _testFunctionsListWidget->addItems(_methodManager->currentMethodGeneralFunctionNames());
         if(_testFunctionsListWidget->count() > 0)
         {
             _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
@@ -319,24 +312,24 @@ MainWindow::MainWindow(QWidget *parent)
         connect(testClient, &TestClient::dutChanged, _dutInfoWidget, &DutInfoWidget::updateDut, Qt::QueuedConnection);
         connect(testClient, &TestClient::dutFullyTested, _session, &SessionManager::logDutInfo, Qt::QueuedConnection);
 
-        connect(testClient, &TestClient::commandSequenceStarted, [this]()
-        {
-            _startedSequenceCount++;
-            setControlsEnabled(false);
-        });
+//        connect(testClient, &TestClient::commandSequenceStarted, [this]()
+//        {
+//            _startedSequenceCount++;
+//            setControlsEnabled(false);
+//        });
 
-        connect(testClient, &TestClient::commandSequenceFinished, [this]()
-        {
-            _startedSequenceCount--;
-            if(_startedSequenceCount == 0)
-            {
-                setControlsEnabled(true);
-                _newSessionButton->setEnabled(false);
-                _operatorNameEdit->setEnabled(false);
-                _batchNumberEdit->setEnabled(false);
-                _batchInfoEdit->setEnabled(false);
-            }
-        });
+//        connect(testClient, &TestClient::commandSequenceFinished, [this]()
+//        {
+//            _startedSequenceCount--;
+//            if(_startedSequenceCount == 0)
+//            {
+//                setControlsEnabled(true);
+//                _newSessionButton->setEnabled(false);
+//                _operatorNameEdit->setEnabled(false);
+//                _batchNumberEdit->setEnabled(false);
+//                _batchInfoEdit->setEnabled(false);
+//            }
+//        });
     }
 
     connect(_newSessionButton, &QPushButton::clicked, this, &MainWindow::startNewSession);
@@ -345,10 +338,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(_session, &SessionManager::printLabel, _printerManager, &PrinterManager::addLabel);
 
-    for(auto & testClient : _testClientList)
-    {
-        testClient->readCSA(0);
-    }
+//    _methodManager->scriptEngine()->globalObject().property("testFunc").call();
 }
 
 MainWindow::~MainWindow()
@@ -375,55 +365,46 @@ MainWindow::~MainWindow()
 
 void MainWindow::startNewSession()
 {
-    _methodManager->runTestFunction("Detect DUTs");
 
-//    setControlsEnabled(false);
+    setControlsEnabled(false);
 
-//    for(auto & jlink : _JLinkList)
-//    {
-//        jlink->establishConnection();
-//        delay(100);
-//    }
+    //------------------------------------------------------------------------------------------
 
-//    //------------------------------------------------------------------------------------------
+    _session->setOperatorName(_operatorNameEdit->text().simplified());
+    _session->setStartTime(QDateTime::currentDateTime().toString("dd.MM.yy hh:mm:ss"));
+    _session->setBatchNumber(_batchNumberEdit->text());
+    _session->setBatchInfo(_batchInfoEdit->text());
 
-//    _session->setOperatorName(_operatorNameEdit->text().simplified());
-//    _session->setStartTime(QDateTime::currentDateTime().toString("dd.MM.yy hh:mm:ss"));
-//    _session->setBatchNumber(_batchNumberEdit->text());
-//    _session->setBatchInfo(_batchInfoEdit->text());
+    //------------------------------------------------------------------------------------------
+    _selectMetodBox->setEnabled(true);
+    _selectMetodBox->clear();
+    _selectMetodBox->addItems(_methodManager->avaliableMethodsNames());
+    _session->setMethod(_selectMetodBox->currentText());
 
-//    //------------------------------------------------------------------------------------------
-//    _selectMetodBox->setEnabled(true);
-//    _selectMetodBox->clear();
-////    _selectMetodBox->addItems(_testClientList.first()->methodManager()->avaliableMethodsNames());
-//    _session->setMethod(_selectMetodBox->currentText());
 
-//    for(auto & testClient : _testClientList)
-//    {
-////        testClient->methodManager()->setCurrentMethod(_selectMetodBox->currentText());
-//    }
+    _methodManager->setCurrentMethod(_selectMetodBox->currentText());
 
-//    _testFunctionsListWidget->setEnabled(true);
-//    _testFunctionsListWidget->clear();
-////    _testFunctionsListWidget->addItems(_testClientList.first()->methodManager()->currentMethodGeneralFunctionNames());
-//    if(_testFunctionsListWidget->count() > 0)
-//    {
-//        _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
-//    }
+    _testFunctionsListWidget->setEnabled(true);
+    _testFunctionsListWidget->clear();
+    _testFunctionsListWidget->addItems(_methodManager->currentMethodGeneralFunctionNames());
+    if(_testFunctionsListWidget->count() > 0)
+    {
+        _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
+    }
 
-//    _startFullCycleTestingButton->setEnabled(true);
-//    _startSelectedTestButton->setEnabled(true);
-//    _testFixtureWidget->setEnabled(true);
-//    _finishSessionButton->setEnabled(true);
+    _startFullCycleTestingButton->setEnabled(true);
+    _startSelectedTestButton->setEnabled(true);
+    _testFixtureWidget->setEnabled(true);
+    _finishSessionButton->setEnabled(true);
 
-//    _actionHintWidget->showNormalHint(HINT_CHOOSE_METHOD);
-//    _sessionInfoWidget->refresh();
-//    _testFixtureWidget->refreshButtonsState();
+    _actionHintWidget->showNormalHint(HINT_CHOOSE_METHOD);
+    _sessionInfoWidget->refresh();
+    _testFixtureWidget->refreshButtonsState();
 
-//    if(!_operatorList.contains(_session->operatorName(), Qt::CaseInsensitive))
-//    {
-//        _operatorList.push_back(_session->operatorName());
-//    }
+    if(!_operatorList.contains(_session->operatorName(), Qt::CaseInsensitive))
+    {
+        _operatorList.push_back(_session->operatorName());
+    }
 }
 
 void MainWindow::finishSession()
@@ -454,29 +435,17 @@ void MainWindow::startFullCycleTesting()
     _session->writeDutRecordsToDatabase();
     _session->increaseCyclesCount();
     _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
-    startFunction("Detect DUTs");
-    while(_startedSequenceCount)
-    {
-        QCoreApplication::processEvents();
-    }
-//    delay(16000);
 
     setControlsEnabled(false);
-    _actionHintWidget->showProgressHint(HINT_DOWNLOAD_RAILTEST);
-    startFunction("Download Railtest");
-
-    _actionHintWidget->showProgressHint(HINT_FULL_TESTING);
-    startFunction("Test radio interface");
-
     startFunction("Full cycle testing");
-
-    while(_startedSequenceCount)
-    {
-        QCoreApplication::processEvents();
-    }
 
     _actionHintWidget->showProgressHint(HINT_READY);
     _session->writeDutRecordsToDatabase();
+    setControlsEnabled(true);
+    _newSessionButton->setEnabled(false);
+    _operatorNameEdit->setEnabled(false);
+    _batchNumberEdit->setEnabled(false);
+    _batchInfoEdit->setEnabled(false);
 }
 
 void MainWindow::startSelectedFunction()
@@ -490,18 +459,7 @@ void MainWindow::startSelectedFunction()
 
 void MainWindow::startFunction(const QString &functionName)
 {
-    for(auto & testClient : _testClientList)
-    {
-//        if(testClient->methodManager()->isFunctionStrictlySequential(functionName))
-//        {
-//            testClient->methodManager()->runTestFunction(functionName); // Runs function for all Test clients sequentally in main thread
-//        }
-//        else
-//        {
-//            testClient->runTestFunction(functionName); // Runs function for all Test clients in parallel in their threads
-//            delay(100);
-//        }
-    }
+    _methodManager->runTestFunction(functionName);
 }
 
 void MainWindow::setControlsEnabled(bool state)
