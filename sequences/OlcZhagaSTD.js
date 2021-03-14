@@ -127,6 +127,7 @@ ZhagaSTD =
         GeneralCommands.testAccelerometer();
         GeneralCommands.testLightSensor();
         GeneralCommands.testDALI();
+        GeneralCommands.testGNSS();
         ZhagaECO.checkTestingCompletion();
         ZhagaECO.downloadSoftware();
 
@@ -148,6 +149,7 @@ ZhagaSTD =
                             testClient.dutProperty(slot, "voltageChecked") &&
                             testClient.dutProperty(slot, "lightSensChecked") &&
                             testClient.dutProperty(slot, "daliChecked") &&
+                            //testClient.dutProperty(slot, "gnssChecked") &&
                             //testClient.dutProperty(slot, "radioChecked") &&
                             testClient.dutProperty(slot, "accelChecked")
                             )
@@ -180,6 +182,6 @@ methodManager.addFunctionToGeneralList("Test accelerometer", GeneralCommands.tes
 methodManager.addFunctionToGeneralList("Test light sensor", GeneralCommands.testLightSensor);
 methodManager.addFunctionToGeneralList("Test DALI", GeneralCommands.testDALI);
 //methodManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio, true);
-//testSequenceManager.addFunctionToGeneralList("Test GNSS", ZhagaECO.testGNSS);
+methodManager.addFunctionToGeneralList("Test GNSS", GeneralCommands.testGNSS);
 methodManager.addFunctionToGeneralList("Check Testing Completion", ZhagaSTD.checkTestingCompletion);
-testSequenceManager.addFunctionToGeneralList("Download Software", ZhagaSTD.downloadSoftware);
+methodManager.addFunctionToGeneralList("Download Software", ZhagaSTD.downloadSoftware);

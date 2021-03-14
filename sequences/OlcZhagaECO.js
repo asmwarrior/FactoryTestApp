@@ -194,6 +194,6 @@ methodManager.addFunctionToGeneralList("Test DALI", GeneralCommands.testDALI);
 //methodManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio, true);
 //testSequenceManager.addFunctionToGeneralList("Test GNSS", ZhagaECO.testGNSS);
 methodManager.addFunctionToGeneralList("Check Testing Completion", ZhagaECO.checkTestingCompletion);
-testSequenceManager.addFunctionToGeneralList("Download Software", ZhagaECO.downloadSoftware);
+methodManager.addFunctionToGeneralList("Download Software", ZhagaECO.downloadSoftware);
 
 
