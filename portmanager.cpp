@@ -113,6 +113,11 @@ QStringList PortManager::slipCommand(int channel, const QByteArray &frame)
     _mode = slipMode;
     _response.clear();
     sendFrame(channel, frame);
+
+//    if(_response.isEmpty())
+//    {
+//        _logger->logDebug("Timeout for the response waiting.");
+//    }
     emit responseRecieved(_response);
     return _response;
 }
@@ -124,6 +129,11 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
     _syncCommand = cmd;
     _syncReplies.clear();
     sendFrame(channel, cmd + "\r\n\r\n");
+
+//    if(_response.isEmpty())
+//    {
+//        _logger->logDebug("Timeout for the response waiting.");
+//    }
     emit responseRecieved(_response);
     return _response;
 }
@@ -284,45 +294,6 @@ void PortManager::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcep
 
                             gr->errorCode = qFromBigEndian(gr->errorCode);
                             _response.push_back(QString().setNum(gr->errorCode));
-//                            switch (gr->header.sequence)
-//                            {
-//                            case 1:
-//                                //_logger->logDebug(QString("Reply to switchSWD command to board on %1: %2").arg(_serial.portName()).arg(gr->errorCode));
-//                                break;
-
-//                            case 2:
-//                                //_logger->logDebug(QString("Reply to powerOn command to %1: %2").arg(_serial.portName()).arg(gr->errorCode));
-//                                break;
-
-//                            case 3:
-//                                //_logger->logDebug(QString("Reply to powerOff command to %1: %2").arg(_serial.portName()).arg(gr->errorCode));
-//                                break;
-
-//                            case 7:
-//                                _CSA = gr->errorCode;
-//                                //_logger->logDebug(QString("Reply to readCSA command to measuring board %1: %2").arg(_no).arg(gr->errorCode));
-//                                break;
-
-//                            case 8:
-//                                _currentVoltage = gr->errorCode;
-
-//                                if(_currentVoltage > 70000 && _currentVoltage < 72000)
-//                                {
-//                                    _duts[_currentSlot]["voltageChecked"] = true;
-//                                    _logger->logSuccess(QString("Voltage (3.3V) on AIN 1 in DUT %1 checked").arg(_duts[_currentSlot]["no"].toInt()));
-//                                }
-//                                else
-//                                {
-//                                    _duts[_currentSlot]["voltageChecked"] = false;
-//                                    _duts[_currentSlot]["error"] = _duts[_currentSlot]["error"].toString() + "Error voltage value on AIN 1. " + QString("Code:%1").arg(gr->errorCode) + "; ";
-//                                    _logger->logError(QString("Error voltage value on AIN 1 in DUT %1 detected!").arg(_duts[_currentSlot]["no"].toInt()));
-//                                    _logger->logError(QString("Code:%1").arg(gr->errorCode));
-//                                }
-
-//                                emit dutChanged(_duts[_currentSlot]);
-//                                _currentVoltage = 0;
-//                                break;
-//                            }
                         }
                         break;
 
@@ -348,123 +319,6 @@ void PortManager::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcep
 
     _mode = idleMode;
 }
-
-//void PortManager::processFrameFromRail(QByteArray frame)
-//{
-//    switch (_currentCommand)
-//    {
-//    case readChipIdCommand:
-//    {
-//        //------------------------------------------------------------
-//        int idx = frame.indexOf("\r\n");
-//        frame = frame.mid(idx + 2); // Delete first line
-//        frame = frame.mid(1); // Delete '#' symbol
-
-//        QString frameString(frame);
-
-//        auto replyStringList = frameString.split("\r\n");
-//        QList<QByteArray> replyList;
-//        for (int i = 1; i < replyStringList.size() - 2; i++)
-//        {
-//            replyList.push_back(replyStringList.at(i).toLocal8Bit());
-//        }
-
-//        for(auto & reply : replyList)
-//        {
-//            decodeRailtestReply(reply);
-//        }
-//        //-------------------------------------------------------------
-
-//        auto llo = _syncReplies.at(0).toList();
-//        auto lhi = _syncReplies.at(1).toList();
-
-//        auto lo = llo.at(1).toByteArray().trimmed();
-//        auto hi = lhi.at(1).toByteArray().trimmed();
-
-//        _currentChipID = (hi.mid(2) + lo.mid(2)).toUpper();
-//    }
-//        break;
-
-//    case accelCommand:
-//    {
-//        if (frame.contains("X") && frame.contains("Y") && frame.contains("Z"))
-//        {
-//               double x = frame.mid(frame.indexOf("X") + 2, 5).toDouble();
-//               double y = frame.mid(frame.indexOf("Y") + 2, 5).toDouble();
-//               double z = frame.mid(frame.indexOf("Z") + 2, 5).toDouble();
-
-//               if (x > 10 || x < -10 || y > 10 || y < -10 || z < 80 || z > 100)
-//               {
-//                   _logger->logError(QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
-//                   _currentAccelChecked = false;
-//                   _currentError = QString("Accelerometer failure: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z);
-//               }
-//               else
-//               {
-//                   //_logger->logSuccess(QString("Accelerometer: X=%1, Y=%2, Z=%3.").arg(x).arg(y).arg(z));
-//                   _currentAccelChecked = true;
-//               }
-//        }
-
-//        else
-//        {
-//            _currentAccelChecked = false;
-//        }
-//    }
-//        break;
-
-//    case lightSensCommand:
-//    {
-//        if (frame.contains("opwr"))
-//        {
-//               double opwr = frame.mid(frame.indexOf("opwr") + 5, 5).toDouble();
-
-//               if (opwr < 0)
-//               {
-//                   _logger->logError(QString("Light sensor failure: opwr=%1.").arg(opwr));
-//                   _currentLightSensChecked = false;
-//                   _currentError = QString("Light sensor failure: opwr=%1.").arg(opwr);
-//               }
-//               else
-//               {
-//                   _currentLightSensChecked = true;
-//               }
-//        }
-
-//        else
-//        {
-//            _currentAccelChecked = false;
-//        }
-//    }
-//        break;
-
-//    case daliCommand:
-//    {
-//        if (frame.contains("error"))
-//        {
-//               int code = frame.mid(frame.indexOf("error") + 6, 1).toInt();
-//               if (code != 0)
-//               {
-//                   _logger->logError(frame);
-//                   _currentDaliChecked = false;
-//                   _currentError = frame;
-//               }
-//               else
-//               {
-//                   _currentDaliChecked = true;
-//               }
-//        }
-
-//        else
-//        {
-//            _currentDaliChecked = false;
-//        }
-//    }
-//        break;
-//    }
-
-//    _currentCommand = noCommand;
-//}
 
 void PortManager::decodeRailtestReply(const QByteArray &reply)
 {
@@ -547,8 +401,14 @@ void PortManager::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
 
 void PortManager::waitCommandFinished()
 {
+    QTime expire = QTime::currentTime().addMSecs(20000);
     while(_mode != idleMode)
     {
         QCoreApplication::processEvents();
+
+        if(QTime::currentTime() > expire)
+        {
+            _mode = idleMode;
+        }
     }
 }

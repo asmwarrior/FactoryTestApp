@@ -45,7 +45,6 @@ private slots:
     void processResponsePacket();
     void decodeFrame() Q_DECL_NOTHROW;
     void onSlipPacketReceived(quint8 channel, QByteArray frame) Q_DECL_NOTHROW;
-//    void processFrameFromRail(QByteArray frame);
     void decodeRailtestReply(const QByteArray &reply);
     void waitCommandFinished();
 

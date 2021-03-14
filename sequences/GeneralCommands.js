@@ -289,6 +289,9 @@ GeneralCommands =
     {
         actionHintWidget.showProgressHint("Testing GNSS module...");
 
+        GeneralCommands.powerOn();
+        delay(1000);
+
         for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
         {
             for (let i = 0; i < testClientList.length; i++)
