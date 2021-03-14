@@ -181,7 +181,7 @@ methodManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", ZhagaSTD
 methodManager.addFunctionToGeneralList("Test accelerometer", GeneralCommands.testAccelerometer);
 methodManager.addFunctionToGeneralList("Test light sensor", GeneralCommands.testLightSensor);
 methodManager.addFunctionToGeneralList("Test DALI", GeneralCommands.testDALI);
-//methodManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio, true);
+methodManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio);
 methodManager.addFunctionToGeneralList("Test GNSS", GeneralCommands.testGNSS);
 methodManager.addFunctionToGeneralList("Check Testing Completion", ZhagaSTD.checkTestingCompletion);
 methodManager.addFunctionToGeneralList("Download Software", ZhagaSTD.downloadSoftware);

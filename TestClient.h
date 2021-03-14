@@ -80,6 +80,7 @@ public slots:
 //    void on_readTemperature();
 
     QStringList railtestCommand(int channel, const QByteArray &cmd);
+    void testRadio(int slot);
 
 signals:
 
@@ -91,6 +92,10 @@ signals:
     void slotFullyTested(int);
     void commandSequenceStarted();
     void commandSequenceFinished();
+
+private slots:
+
+    void onRfReplyReceived(QString id, QVariantMap params);
 
 private:
 
@@ -104,6 +109,9 @@ private:
 
     bool _isActive = false; //True, if at least one DUT connected
     int _currentSlot = 0;
+
+    int _rfRSSI;
+    int _rfCount;
 };
 
 #endif // TESTCLIENT_H

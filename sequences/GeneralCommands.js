@@ -232,6 +232,22 @@ GeneralCommands =
         actionHintWidget.showProgressHint("READY");
     },
 
+    testRadio: function ()
+    {
+        actionHintWidget.showProgressHint("Testing light sensor...");
+
+        for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (let i = 0; i < testClientList.length; i++)
+            {
+                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
+                {
+                    testClientList[i].testRadio(slot);
+                }
+            }
+        }
+    },
+
     testDALI: function ()
     {
         actionHintWidget.showProgressHint("Testing DALI interface...");

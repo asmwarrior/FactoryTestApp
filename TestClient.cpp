@@ -296,6 +296,88 @@ QStringList TestClient::railtestCommand(int channel, const QByteArray &cmd)
     return _portManager.railtestCommand(channel, cmd);
 }
 
+void TestClient::testRadio(int slot)
+{
+    RailtestClient rf;
+
+    connect(&rf, &RailtestClient::replyReceived, this, &TestClient::onRfReplyReceived);
+
+    if (!rf.open(_settings->value("Railtest/rf_serial").toString()))
+    {
+        _logger->logError("Cannot open serial port for reference radio module!");
+        return;
+    }
+
+    rf.syncCommand("reset", "", 3000);
+    if (!rf.waitCommandPrompt())
+    {
+        _logger->logError("Timeout waiting reference radio module command prompt!");
+        return;
+    }
+
+    rf.syncCommand("rx", "0", 1000);
+    _rfRSSI = 255;
+    _rfCount = 0;
+    rf.syncCommand("setBleMode", "1", 1000);
+    rf.syncCommand("setBle1Mbps", "1", 1000);
+    rf.syncCommand("setChannel", "19", 1000);
+
+    railtestCommand(slot, "rx 0");
+//    on_delay(1000);
+
+    railtestCommand(slot, "setBleMode 1");
+//    on_delay(1000);
+
+    railtestCommand(slot, "setBle1Mbps 1");
+//    on_delay(1000);
+
+    railtestCommand(slot, "setChannel 19");
+//    on_delay(1000);
+
+    railtestCommand(slot, "setPower 80");
+//    on_delay(1000);
+
+    rf.syncCommand("rx", "1", 1000);
+
+    railtestCommand(slot, "tx 11");
+//    on_delay(5000);
+
+    if (_rfCount < 8)
+    {
+        _logger->logError(QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount));
+        _duts[slot]["radioChecked"] = false;
+        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount);
+    }
+
+    else if (_rfRSSI < -50 || _rfRSSI > 20)
+    {
+        _logger->logError(QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI));
+        _duts[slot]["radioChecked"] = false;
+        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI);
+    }
+
+    else
+    {
+        _duts[slot]["radioChecked"] = true;
+    }
+}
+
+void TestClient::onRfReplyReceived(QString id, QVariantMap params)
+{
+    if (id == "rxPacket" && params.contains("rssi"))
+    {
+        bool ok;
+        int rssi = params.value("rssi").toInt(&ok);
+
+        if (ok)
+        {
+            ++_rfCount;
+            if (rssi < _rfRSSI)
+                _rfRSSI = rssi;
+        }
+    }
+}
+
 void TestClient::resetDut(int slot)
 {
     _duts[slot]["state"] = DutState::inactive;
