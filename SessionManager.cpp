@@ -14,6 +14,8 @@ SessionManager::SessionManager(QSettings *settings, QObject *parent) : QObject(p
         _csv_separator = sep;
 
     _runningNumber = _settings->value("Report/runningNumber").toInt();
+
+
 }
 
 SessionManager::~SessionManager()
@@ -23,6 +25,9 @@ SessionManager::~SessionManager()
 
 void SessionManager::logDutInfo(Dut dut)
 {
+    if (!dut["no"].toInt())
+        return;
+
     _runningNumber++;
     _settings->setValue("Report/runningNumber", _runningNumber);
     DutRecord record;
@@ -71,7 +76,7 @@ void SessionManager::clear()
     _method = "";
     _successCount = 0;
     _failedCount = 0;
-    _testCyclesCount = 0;
+    _testCyclesCount = 1;
 
     emit sessionStatsChanged();
 }

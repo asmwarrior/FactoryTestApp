@@ -65,7 +65,7 @@ private:
         QString _method = "";
         int _successCount = 0;
         int _failedCount = 0;
-        int _testCyclesCount = 0;
+        int _testCyclesCount = 1;
 
         QList<DutRecord> _records;
 
