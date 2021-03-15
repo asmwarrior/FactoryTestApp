@@ -234,7 +234,7 @@ GeneralCommands =
 
     testRadio: function ()
     {
-        actionHintWidget.showProgressHint("Testing light sensor...");
+        actionHintWidget.showProgressHint("Testing radio interface...");
 
         for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
         {
@@ -246,6 +246,8 @@ GeneralCommands =
                 }
             }
         }
+
+        actionHintWidget.showProgressHint("READY");
     },
 
     testDALI: function ()
