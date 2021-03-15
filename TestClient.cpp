@@ -308,39 +308,39 @@ void TestClient::testRadio(int slot)
         return;
     }
 
-    rf.syncCommand("reset", "", 3000);
+    rf.syncCommand("reset", "", 2000);
     if (!rf.waitCommandPrompt())
     {
         _logger->logError("Timeout waiting reference radio module command prompt!");
         return;
     }
 
-    rf.syncCommand("rx", "0", 1000);
+    rf.syncCommand("rx", "0", 500);
     _rfRSSI = 255;
     _rfCount = 0;
-    rf.syncCommand("setBleMode", "1", 1000);
-    rf.syncCommand("setBle1Mbps", "1", 1000);
-    rf.syncCommand("setChannel", "19", 1000);
+    rf.syncCommand("setBleMode", "1", 500);
+    rf.syncCommand("setBle1Mbps", "1", 500);
+    rf.syncCommand("setChannel", "19", 500);
 
     railtestCommand(slot, "rx 0");
-//    on_delay(1000);
+    delay(500);
 
     railtestCommand(slot, "setBleMode 1");
-//    on_delay(1000);
+    delay(500);
 
     railtestCommand(slot, "setBle1Mbps 1");
-//    on_delay(1000);
+    delay(500);
 
     railtestCommand(slot, "setChannel 19");
-//    on_delay(1000);
+    delay(500);
 
     railtestCommand(slot, "setPower 80");
-//    on_delay(1000);
+    delay(500);
 
-    rf.syncCommand("rx", "1", 1000);
+    rf.syncCommand("rx", "1", 500);
 
     railtestCommand(slot, "tx 11");
-//    on_delay(5000);
+    delay(3000);
 
     if (_rfCount < 8)
     {
@@ -358,6 +358,7 @@ void TestClient::testRadio(int slot)
 
     else
     {
+        _logger->logSuccess(QString("Radio interface for DUT %1 has been tested successfully.").arg(dutNo(slot)));
         _duts[slot]["radioChecked"] = true;
     }
 }
@@ -375,6 +376,15 @@ void TestClient::onRfReplyReceived(QString id, QVariantMap params)
             if (rssi < _rfRSSI)
                 _rfRSSI = rssi;
         }
+    }
+}
+
+void TestClient::delay(int msec)
+{
+    QTime expire = QTime::currentTime().addMSecs(msec);
+    while (QTime::currentTime() <= expire)
+    {
+        QCoreApplication::processEvents();
     }
 }
 

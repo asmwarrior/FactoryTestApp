@@ -96,6 +96,7 @@ signals:
 private slots:
 
     void onRfReplyReceived(QString id, QVariantMap params);
+    void delay(int msec);
 
 private:
 

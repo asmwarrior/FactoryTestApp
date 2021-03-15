@@ -80,21 +80,6 @@ ZhagaECO =
         actionHintWidget.showProgressHint("READY");
     },
 
-    testRadio: function ()
-    {
-        testClient.commandSequenceStarted();
-
-        for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
-        {
-            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
-            {
-                testClient.on_testRadio(slot);
-            }
-        }
-
-        testClient.commandSequenceFinished();
-    },
-
     //---
 
     checkAinVoltage: function ()
@@ -138,6 +123,7 @@ ZhagaECO =
         ZhagaECO.checkAinVoltage();
         GeneralCommands.testAccelerometer();
         GeneralCommands.testLightSensor();
+        GeneralCommands.testRadio();
         GeneralCommands.testDALI();
         ZhagaECO.checkTestingCompletion();
         ZhagaECO.downloadSoftware();
@@ -160,7 +146,7 @@ ZhagaECO =
                             testClient.dutProperty(slot, "voltageChecked") &&
                             testClient.dutProperty(slot, "lightSensChecked") &&
                             testClient.dutProperty(slot, "daliChecked") &&
-                            //testClient.dutProperty(slot, "radioChecked") &&
+                            testClient.dutProperty(slot, "radioChecked") &&
                             testClient.dutProperty(slot, "accelChecked")
                             )
                     {
