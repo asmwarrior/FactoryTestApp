@@ -25,9 +25,6 @@ SessionManager::~SessionManager()
 
 void SessionManager::logDutInfo(Dut dut)
 {
-    if (!dut["no"].toInt())
-        return;
-
     _runningNumber++;
     _settings->setValue("Report/runningNumber", _runningNumber);
     DutRecord record;
@@ -76,7 +73,7 @@ void SessionManager::clear()
     _method = "";
     _successCount = 0;
     _failedCount = 0;
-    _testCyclesCount = 1;
+    _testCyclesCount = 0;
 
     emit sessionStatsChanged();
 }
@@ -88,7 +85,7 @@ void SessionManager::writeDutRecordsToDatabase()
         record.cycleNo = QString().setNum(_testCyclesCount);
         _db->insertIntoTable(record);
 
-        if(record.state == "PASSED")
+        if(record.state == "PASSED" && record.no.size())
         {
             emit printLabel(record);
         }
@@ -177,27 +174,30 @@ void SessionManager::writeDutRecordsToDatabase()
 
     //CSV printer log file
 
-    QFile printer_csv_file(_settings->value("workDirectory").toString() + "/reports/" + "PRINTER_" + QDateTime::currentDateTime().toString("yyyy-MM-dd") + " " + _method + ".csv");
-
-    printer_csv_file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
-
-    for(auto & record : _records)
+    if(_method.size())
     {
-        printer_csv_file.write(    record.runningNumber.toLocal8Bit() + _csv_separator
-                                   + record.cycleNo.toLocal8Bit() + "."
-                                   + record.no.toLocal8Bit() + _csv_separator
-                                   + record.id.toLocal8Bit() + _csv_separator
-                                   + record.batchNumber.toLocal8Bit());
+        QFile printer_csv_file(_settings->value("workDirectory").toString() + "/reports/" + "PRINTER_" + QDateTime::currentDateTime().toString("yyyy-MM-dd") + " " + _method + ".csv");
 
-        if(record.state == "FAILED")
+        printer_csv_file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+
+        for(auto & record : _records)
         {
-            printer_csv_file.write(_csv_separator + "FAILED");
+            printer_csv_file.write(    record.runningNumber.toLocal8Bit() + _csv_separator
+                                       + record.cycleNo.toLocal8Bit() + "."
+                                   + record.no.toLocal8Bit() + _csv_separator
+                                       + record.id.toLocal8Bit() + _csv_separator
+                                       + record.batchNumber.toLocal8Bit());
+
+            if(record.state == "FAILED")
+            {
+                printer_csv_file.write(_csv_separator + "FAILED");
+            }
+            printer_csv_file.write(_csv_separator + "\n");
         }
-        printer_csv_file.write(_csv_separator + "\n");
+
+
+        printer_csv_file.close();
     }
-
-
-    printer_csv_file.close();
 
     _records.clear();
 }

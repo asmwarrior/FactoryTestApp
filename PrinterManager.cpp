@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QProcess>
+#include <QFileInfo>
 
 PrinterManager::PrinterManager(QSettings *settings, QObject *parent)
     : QObject(parent), _settings(settings)
@@ -37,7 +38,12 @@ void PrinterManager::addLabel(DutRecord dutRecord)
 
 void PrinterManager::sendLabeltoPrinter()
 {
-    if(_labelQueue.isEmpty())
+    if(_labelQueue.isEmpty() || QFileInfo::exists(_fileName))
+        return;
+
+    auto currentRecord = _labelQueue.dequeue();
+
+    if(!currentRecord.no.size())
         return;
 
     QFile file(_fileName);
@@ -46,7 +52,6 @@ void PrinterManager::sendLabeltoPrinter()
     if (!file.isWritable())
         _logger->logError(QString("Cannot open label file '%1' for writing").arg(_fileName));
 
-    auto currentRecord = _labelQueue.dequeue();
 
     file.write(QString("LABELNAME = \"%1\"\n").arg(_labelName).toLocal8Bit());
     file.write(QString("LABELQUANTITY = \"%1\"\n").arg(_quantity).toLocal8Bit());
