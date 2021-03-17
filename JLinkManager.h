@@ -15,10 +15,10 @@ class JLinkManager : public QObject
 
     enum State {unknown, waitingTestResponse, connectionTested};
 
-    explicit JLinkManager(QSettings* settings, QObject *parent = Q_NULLPTR);
+    explicit JLinkManager(const QSharedPointer<QSettings> &settings, QObject *parent = Q_NULLPTR);
     ~JLinkManager() Q_DECL_OVERRIDE;
 
-    void setLogger(Logger* logger) {_logger = logger;}
+    void setLogger(const QSharedPointer<Logger> &logger) {_logger = logger;}
 
     void setSN(const QString& serialNumber);
     QString getSN() const;
@@ -53,8 +53,8 @@ private:
     void logOut(const char* log) {_logger->logInfo(log);}
     void errorOut(const char* log) {_logger->logError(QString("JLINK ERROR: %1").arg(log));}
 
-    QSettings* _settings;
-    Logger* _logger;
+    QSharedPointer<QSettings> _settings;
+    QSharedPointer<Logger> _logger;
     State _state = unknown;
 
     QString _device;

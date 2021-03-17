@@ -29,9 +29,9 @@ public:
     };
 
 
-    TestMethodManager(QSettings* settings, QObject *parent = nullptr);
+    TestMethodManager(const QSharedPointer<QSettings> &settings, QObject *parent = nullptr);
 
-    void setLogger(Logger* logger) {_logger = logger; _scriptEngine.globalObject().setProperty("logger", _scriptEngine.newQObject(_logger));}
+    void setLogger(const QSharedPointer<Logger>& logger) {_logger = logger; _scriptEngine.globalObject().setProperty("logger", _scriptEngine.newQObject(_logger.get()));}
     QJSEngine* scriptEngine() {return &_scriptEngine;}
 
     Q_INVOKABLE void addMethod(const QString& name);
@@ -50,9 +50,9 @@ private:
     QList<QJSValue> evaluateScriptsFromDirectory(const QString& directoryName);
     QJSValue runScript(const QString& scriptName, const QJSValueList& args);
 
-    QSettings* _settings;
+    QSharedPointer<QSettings> _settings;
     QJSEngine _scriptEngine;
-    Logger* _logger;
+    QSharedPointer<Logger> _logger;
     QString _currentMethod;
     QMap<QString, TestMethod> _methods;
 };

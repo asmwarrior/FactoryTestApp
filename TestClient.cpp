@@ -3,12 +3,11 @@
 #include <QCoreApplication>
 #include <QtEndian>
 
-TestClient::TestClient(QSettings *settings, SessionManager *session, int no, QObject *parent)
+TestClient::TestClient(const QSharedPointer<QSettings> &settings, int no, QObject *parent)
     : QObject(parent),
       _portManager(this),
       _no(no),
-      _settings(settings),
-      _session(session)
+      _settings(settings)
 {
     connect(this, &TestClient::test, this, &TestClient::on_test);
     connect(&_portManager, &PortManager::responseRecieved, this, &TestClient::responseRecieved);
@@ -25,7 +24,7 @@ TestClient::~TestClient()
 
 }
 
-void TestClient::setLogger(Logger *logger)
+void TestClient::setLogger(const QSharedPointer<Logger> &logger)
 {
     _logger = logger;
 }

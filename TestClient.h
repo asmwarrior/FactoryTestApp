@@ -18,10 +18,10 @@ public:
 
     enum DutState {inactive, untested, tested, warning};
 
-    explicit TestClient(QSettings* settings, SessionManager* session, int no, QObject *parent = nullptr);
+    explicit TestClient(const QSharedPointer<QSettings> &settings, int no, QObject *parent = nullptr);
     ~TestClient();
 
-    void setLogger(Logger* logger);
+    void setLogger(const QSharedPointer<Logger> &logger);
     void setDutsNumbers(QString numbers);
 
     void setPort(const QString& portName);
@@ -102,9 +102,8 @@ private:
 
     PortManager _portManager;
     int _no;
-    QSettings* _settings;
-    SessionManager* _session;
-    Logger* _logger;
+    QSharedPointer<QSettings> _settings;
+    QSharedPointer<Logger> _logger;
 
     QMap<int, Dut> _duts;
 

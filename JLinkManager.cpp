@@ -5,7 +5,7 @@
 #include <QThread>
 #include <QCoreApplication>
 
-JLinkManager::JLinkManager(QSettings *settings, QObject *parent)
+JLinkManager::JLinkManager(const QSharedPointer<QSettings> &settings, QObject *parent)
     : QObject(parent), _settings(settings), _proc(this)
 {
     _proc.setProgram(_settings->value("JLink/path").toString());

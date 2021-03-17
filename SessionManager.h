@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QList>
 #include <QSettings>
+#include <QSharedPointer>
 
 #include "Database.h"
 
@@ -13,7 +14,7 @@ class SessionManager : public QObject
 
 public:
 
-    explicit SessionManager(QSettings* settings, QObject *parent = nullptr);
+    explicit SessionManager(const QSharedPointer<QSettings>& settings, QObject *parent = nullptr);
     ~SessionManager();
 
 public slots:
@@ -54,7 +55,7 @@ private:
 //        {"failedCount", 0}
 //    };
 
-        QSettings* _settings;
+        QSharedPointer<QSettings> _settings;
         QByteArray _csv_separator;
         int _runningNumber;
 

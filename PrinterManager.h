@@ -14,10 +14,10 @@ class PrinterManager : public QObject
     public:
 
 
-    explicit PrinterManager(QSettings* settings, QObject *parent = Q_NULLPTR);
+    explicit PrinterManager(const QSharedPointer<QSettings> &settings, QObject *parent = Q_NULLPTR);
     virtual ~PrinterManager();
 
-    void setLogger(Logger* logger) {_logger = logger;}
+    void setLogger(const QSharedPointer<Logger> &logger) {_logger = logger;}
 
 
 public slots:
@@ -32,8 +32,8 @@ signals:
 
 private:
 
-    QSettings* _settings;
-    Logger* _logger;
+    QSharedPointer<QSettings> _settings;
+    QSharedPointer<Logger> _logger;
 
     QTimer _timer;
     QQueue<DutRecord> _labelQueue;

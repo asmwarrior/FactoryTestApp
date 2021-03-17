@@ -2,7 +2,7 @@
 
 #include <QDebug>
 
-Logger::Logger(QSettings *settings, SessionManager *session, QObject *parent)
+Logger::Logger(const QSharedPointer<QSettings> &settings, SessionManager *session, QObject *parent)
     : QObject(parent),
       _settings(settings),
       _session(session),

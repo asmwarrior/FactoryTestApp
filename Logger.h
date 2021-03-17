@@ -12,7 +12,7 @@ class Logger : public QObject
 
 public:
 
-    explicit Logger(QSettings* settings, SessionManager* session, QObject *parent = nullptr);
+    explicit Logger(const QSharedPointer<QSettings> &settings, SessionManager* session, QObject *parent = nullptr);
 
     void setLogWidget(QListWidget* widget);
     void setChildProcessLogWidget(QListWidget* widget);
@@ -35,7 +35,7 @@ signals:
 
 private:
 
-    QSettings* _settings;
+    QSharedPointer<QSettings> _settings;
     SessionManager* _session;
 
     QMutex _logMutex;

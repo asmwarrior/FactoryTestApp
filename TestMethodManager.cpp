@@ -2,7 +2,7 @@
 
 #include <QDebug>
 
-TestMethodManager::TestMethodManager(QSettings *settings, QObject *parent) : QObject(parent), _settings(settings),  _scriptEngine(this)
+TestMethodManager::TestMethodManager(const QSharedPointer<QSettings> &settings, QObject *parent) : QObject(parent), _settings(settings),  _scriptEngine(this)
 {
     _scriptEngine.installExtensions(QJSEngine::ConsoleExtension);
 

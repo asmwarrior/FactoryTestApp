@@ -10,9 +10,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QLineEdit>
-
-#include <QSqlTableModel>
-#include <QModelIndex>
+#include <QSharedPointer>
 
 #include "SessionManager.h"
 #include "TestMethodManager.h"
@@ -53,10 +51,10 @@ private:
     //QString _workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
     QString _workDirectory = QDir(".").absolutePath(); //For test version
 //    QString _workDirectory = QDir("../..").absolutePath(); //For development
-    QSettings* _settings;
+    QSharedPointer<QSettings> _settings;
     PrinterManager* _printerManager;
     SessionManager* _session;
-    Logger* _logger;
+    QSharedPointer<Logger> _logger;
 
     TestMethodManager* _methodManager;
     QList<QThread*> _threads;
@@ -64,8 +62,6 @@ private:
     QList<TestClient*> _testClientList;
 
     QStringList _operatorList;
-
-    QSqlTableModel  *model;
 
     //--- GUI Elements ------------------------------------------------
 

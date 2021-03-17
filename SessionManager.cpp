@@ -1,6 +1,6 @@
 #include "SessionManager.h"
 
-SessionManager::SessionManager(QSettings *settings, QObject *parent) : QObject(parent), _settings(settings)
+SessionManager::SessionManager(const QSharedPointer<QSettings> &settings, QObject *parent) : QObject(parent), _settings(settings)
 {
     //Database
     _db = new DataBase(settings, this);

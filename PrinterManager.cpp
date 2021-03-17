@@ -4,7 +4,7 @@
 #include <QProcess>
 #include <QFileInfo>
 
-PrinterManager::PrinterManager(QSettings *settings, QObject *parent)
+PrinterManager::PrinterManager(const QSharedPointer<QSettings>& settings, QObject *parent)
     : QObject(parent), _settings(settings)
 {
     _fileName = _settings->value("workDirectory").toString() + "/" + _settings->value("Label/fileName").toString();

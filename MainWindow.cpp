@@ -16,11 +16,11 @@ MainWindow::MainWindow(QWidget *parent)
     thread()->setObjectName("Main Window thread");
     setStyleSheet("color: #424242; font-size:10pt;");    
 
-    _settings = new QSettings(_workDirectory + "/settings.ini", QSettings::IniFormat, this);
+    _settings = QSharedPointer<QSettings>::create(_workDirectory + "/settings.ini", QSettings::IniFormat);
     _settings->setValue("workDirectory", _workDirectory);
 
     _session = new SessionManager(_settings, this);
-    _logger = new Logger(_settings, _session, this);
+    _logger = QSharedPointer<Logger>::create(_settings, _session);
     _printerManager = new PrinterManager(_settings, this);
     _printerManager->setLogger(_logger);
     _methodManager = new TestMethodManager(_settings);
@@ -50,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent)
 
             _methodManager->scriptEngine()->globalObject().property("jlinkList").setProperty(i, _methodManager->scriptEngine()->newQObject(_JLinkList.last()));
 
-            auto testClient = new TestClient(_settings, _session, i + 1);
+            auto testClient = new TestClient(_settings, i + 1);
             testClient->setLogger(_logger);
             _testClientList.push_back(testClient);
             _testClientList.last()->setDutsNumbers(_settings->value(QString("TestBoard/duts" + QString().setNum(i + 1))).toString());
