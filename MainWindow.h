@@ -43,6 +43,9 @@ public slots:
     void delay(int msec);
     Dut getDut(int no);
 
+protected:
+    void closeEvent(QCloseEvent* event);
+
 private:
 
     void setControlsEnabled(bool state);

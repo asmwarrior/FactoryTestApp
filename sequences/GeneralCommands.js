@@ -42,7 +42,7 @@ GeneralCommands =
                 {
                     let testClient = testClientList[i];
                     testClient.powerOn(slot);
-                    logger.logInfo("DUT " + testClient.dutNo(slot) + " switched ON");
+                    logger.logInfo("DUT " + testClient.dutNo(slot) + " is switched ON");
                 }
             }
         }
@@ -60,7 +60,7 @@ GeneralCommands =
                 {
                     let testClient = testClientList[i];
                     testClient.powerOff(slot);
-                    logger.logInfo("DUT " + testClient.dutNo(slot) + " switched OFF");
+                    logger.logInfo("DUT " + testClient.dutNo(slot) + " is switched OFF");
                 }
             }
         }

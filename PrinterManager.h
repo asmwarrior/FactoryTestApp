@@ -24,6 +24,7 @@ public slots:
 
     void addLabel(DutRecord dutRecord);
     void sendLabeltoPrinter();
+    bool isQueueEmpty() const;
 
 signals:
 

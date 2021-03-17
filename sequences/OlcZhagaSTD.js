@@ -107,7 +107,7 @@ ZhagaSTD =
                     testClientList[i].setDutProperty(slot, "voltageChecked", false);
                     testClientList[i].addDutError(slot, response.join(' '));
                     logger.logDebug("Error voltage value on AIN 1 : " + voltage  + ".");
-                    logger.logError("Error voltage value on AIN 1 detected! DUT " + testClientList[i].dutNo(slot));
+                    logger.logError("Error voltage value on AIN 1 is detected! DUT " + testClientList[i].dutNo(slot));
                 }
             }
         }

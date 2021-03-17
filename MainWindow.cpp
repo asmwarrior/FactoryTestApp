@@ -7,6 +7,8 @@
 #include <QFormLayout>
 #include <QCompleter>
 #include <QSerialPortInfo>
+#include <QMessageBox>
+#include <QCloseEvent>
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -315,25 +317,6 @@ MainWindow::MainWindow(QWidget *parent)
         connect(_testFixtureWidget, &TestFixtureWidget::dutClicked, testClient, &TestClient::setDutChecked, Qt::QueuedConnection);
         connect(testClient, &TestClient::dutChanged, _dutInfoWidget, &DutInfoWidget::updateDut, Qt::QueuedConnection);
         connect(testClient, &TestClient::dutFullyTested, _session, &SessionManager::logDutInfo, Qt::QueuedConnection);
-
-//        connect(testClient, &TestClient::commandSequenceStarted, [this]()
-//        {
-//            _startedSequenceCount++;
-//            setControlsEnabled(false);
-//        });
-
-//        connect(testClient, &TestClient::commandSequenceFinished, [this]()
-//        {
-//            _startedSequenceCount--;
-//            if(_startedSequenceCount == 0)
-//            {
-//                setControlsEnabled(true);
-//                _newSessionButton->setEnabled(false);
-//                _operatorNameEdit->setEnabled(false);
-//                _batchNumberEdit->setEnabled(false);
-//                _batchInfoEdit->setEnabled(false);
-//            }
-//        });
     }
 
     connect(_newSessionButton, &QPushButton::clicked, this, &MainWindow::startNewSession);
@@ -341,8 +324,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_startFullCycleTestingButton, &QPushButton::clicked, this, &MainWindow::startFullCycleTesting);
 
     connect(_session, &SessionManager::printLabel, _printerManager, &PrinterManager::addLabel);
-
-//    _methodManager->scriptEngine()->globalObject().property("testFunc").call();
 }
 
 MainWindow::~MainWindow()
@@ -388,7 +369,10 @@ void MainWindow::startNewSession()
 
     _methodManager->setCurrentMethod(_selectMetodBox->currentText());
 
-    _testFunctionsListWidget->setEnabled(true);
+    _manualCommandsCheckBox->setEnabled(true);
+    _manualCommandsCheckBox->setChecked(false);
+
+    _testFunctionsListWidget->setEnabled(false);
     _testFunctionsListWidget->clear();
     _testFunctionsListWidget->addItems(_methodManager->currentMethodGeneralFunctionNames());
     if(_testFunctionsListWidget->count() > 0)
@@ -397,7 +381,7 @@ void MainWindow::startNewSession()
     }
 
     _startFullCycleTestingButton->setEnabled(true);
-    _startSelectedTestButton->setEnabled(true);
+    _startSelectedTestButton->setEnabled(false);
     _testFixtureWidget->setEnabled(true);
     _finishSessionButton->setEnabled(true);
 
@@ -450,6 +434,12 @@ void MainWindow::startFullCycleTesting()
     _operatorNameEdit->setEnabled(false);
     _batchNumberEdit->setEnabled(false);
     _batchInfoEdit->setEnabled(false);
+
+    if(!_manualCommandsCheckBox->isChecked())
+    {
+        _testFunctionsListWidget->setEnabled(false);
+        _startSelectedTestButton->setEnabled(false);
+    }
 }
 
 void MainWindow::startSelectedFunction()
@@ -476,6 +466,7 @@ void MainWindow::setControlsEnabled(bool state)
     _finishSessionButton->setEnabled(state);
 
     _selectMetodBox->setEnabled(state);
+    _manualCommandsCheckBox->setEnabled(state);
     _testFunctionsListWidget->setEnabled(state);
     _startFullCycleTestingButton->setEnabled(state);
     _startSelectedTestButton->setEnabled(state);
@@ -504,4 +495,39 @@ Dut MainWindow::getDut(int no)
     }
 
     return dutTemplate;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if(_finishSessionButton->isEnabled())
+    {
+        if(QMessageBox::question(this, "Capelon Test Station", "Current test session in progress! Are you shure you want to quit?") == QMessageBox::Yes)
+        {
+            QWidget::closeEvent(event);
+        }
+
+        else
+        {
+            event->ignore();
+        }
+
+        return;
+    }
+
+    if(!_printerManager->isQueueEmpty())
+    {
+        if(QMessageBox::question(this, "Capelon Test Station", "There are labels in the printer queue! Are you shure you want to quit?") == QMessageBox::Yes)
+        {
+            QWidget::closeEvent(event);
+        }
+
+        else
+        {
+            event->ignore();
+        }
+
+        return;
+    }
+
+    QWidget::closeEvent(event);
 }

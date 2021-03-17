@@ -97,14 +97,14 @@ ZhagaECO =
                     if(voltage > 70000 && voltage < 72000)
                     {
                         testClientList[i].setDutProperty(slot, "voltageChecked", true);
-                        logger.logSuccess("Voltage (3.3V) on AIN 1 for DUT " + testClientList[i].dutNo(slot) + " checked.");
+                        logger.logSuccess("Voltage (3.3V) on AIN 1 for DUT " + testClientList[i].dutNo(slot) + " is checked.");
                     }
                     else
                     {
                         testClientList[i].setDutProperty(slot, "voltageChecked", false);
                         testClientList[i].addDutError(slot, response.join(' '));
                         logger.logDebug("Error voltage value on AIN 1 : " + voltage  + ".");
-                        logger.logError("Error voltage value on AIN 1 detected! DUT " + testClientList[i].dutNo(slot));
+                        logger.logError("Error voltage value on AIN 1 is detected! DUT " + testClientList[i].dutNo(slot));
                     }
                 }
             }

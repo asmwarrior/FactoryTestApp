@@ -71,3 +71,11 @@ void PrinterManager::sendLabeltoPrinter()
     file.close();
 }
 
+bool PrinterManager::isQueueEmpty() const
+{
+    if(_labelQueue.isEmpty())
+        return true;
+
+    return false;
+}
+
