@@ -5,6 +5,7 @@
 #include <QJSEngine>
 #include <QThread>
 #include <QComboBox>
+#include <QCheckBox>
 #include <QListWidget>
 #include <QLabel>
 #include <QPushButton>
@@ -72,6 +73,7 @@ private:
     QPushButton* _newSessionButton;
     QPushButton* _finishSessionButton;
     QComboBox* _selectMetodBox;
+    QCheckBox* _manualCommandsCheckBox;
     QListWidget* _testFunctionsListWidget;
     QPushButton* _startFullCycleTestingButton;
     QPushButton* _startSelectedTestButton;

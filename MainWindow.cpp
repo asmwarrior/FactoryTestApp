@@ -25,13 +25,6 @@ MainWindow::MainWindow(QWidget *parent)
     _methodManager->setLogger(_logger);
 
     auto availablePorts = QSerialPortInfo::availablePorts();
-//    for(auto & portInfo : availablePorts)
-//    {
-//        qDebug() << portInfo.portName() << portInfo.productIdentifier();
-//        qDebug() << portInfo.portName() << portInfo.serialNumber();
-//        qDebug() << portInfo.portName() << portInfo.description();
-//        qDebug() << portInfo.portName() << portInfo.vendorIdentifier();
-//    }
 
     //Setting number of active measuring boards (max - 5)
     const int MAX_MEASBOARD_COUNT = 5;
@@ -57,7 +50,6 @@ MainWindow::MainWindow(QWidget *parent)
 
             auto testClient = new TestClient(_settings, _session, i + 1);
             testClient->setLogger(_logger);
-//            testClient->setJlinkManager(newJlink);
             _testClientList.push_back(testClient);
             _testClientList.last()->setDutsNumbers(_settings->value(QString("TestBoard/duts" + QString().setNum(i + 1))).toString());
 
@@ -76,8 +68,6 @@ MainWindow::MainWindow(QWidget *parent)
             _methodManager->scriptEngine()->globalObject().property("testClientList").setProperty(i, _methodManager->scriptEngine()->newQObject(_testClientList.last()));
             _threads.last()->start();
             _testClientList.last()->open();
-//            _testClientList.last()->initTestMethodManager();
-//            _testClientList.last()->addJlinkToSriptEngine();
             delay(200);
         }
     }
@@ -167,11 +157,22 @@ MainWindow::MainWindow(QWidget *parent)
     leftPanelLayout->addWidget(_selectMetodBox);
 
     //Test functions list widget
-    QLabel* testFunctionsListLabel = new QLabel("Avaliable testing commands:", this);
+    QHBoxLayout* functionsHeaderLayout = new QHBoxLayout;
+    leftPanelLayout->addLayout(functionsHeaderLayout);
+
+    QLabel* testFunctionsListLabel = new QLabel("Commands:", this);
+    functionsHeaderLayout->addWidget(testFunctionsListLabel);
+    functionsHeaderLayout->addStretch();
+
+    QLabel* checkBoxLabel = new QLabel("Manual mode", this);
+    functionsHeaderLayout->addWidget(checkBoxLabel);
+
+    _manualCommandsCheckBox = new QCheckBox(this);
+    _manualCommandsCheckBox->setChecked(false);
+    functionsHeaderLayout->addWidget(_manualCommandsCheckBox);
+
     _testFunctionsListWidget = new QListWidget(this);
     _testFunctionsListWidget->setEnabled(false);
-
-    leftPanelLayout->addWidget(testFunctionsListLabel);
     leftPanelLayout->addWidget(_testFunctionsListWidget);
     leftPanelLayout->addStretch();
 
@@ -281,6 +282,9 @@ MainWindow::MainWindow(QWidget *parent)
             _testFunctionsListWidget->setCurrentItem(_testFunctionsListWidget->item(0));
         }
     });
+
+    connect(_manualCommandsCheckBox, &QCheckBox::clicked, _startSelectedTestButton, &QPushButton::setEnabled);
+    connect(_manualCommandsCheckBox, &QCheckBox::clicked, _testFunctionsListWidget, &QPushButton::setEnabled);
 
     connect(_startSelectedTestButton, &QPushButton::clicked, this, &MainWindow::startSelectedFunction);
     connect(_testFunctionsListWidget, &QListWidget::itemDoubleClicked, this, &MainWindow::startSelectedFunction);
