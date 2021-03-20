@@ -1,6 +1,8 @@
 #ifndef TESTCLIENT_H
 #define TESTCLIENT_H
 
+#include <QSemaphore>
+
 #include "SlipProtocol.h"
 #include "PortManager.h"
 #include "JLinkManager.h"
@@ -18,7 +20,7 @@ public:
 
     enum DutState {inactive, untested, tested, warning};
 
-    explicit TestClient(const QSharedPointer<QSettings> &settings, int no, QObject *parent = nullptr);
+    explicit TestClient(const QSharedPointer<QSettings> &settings, const QSharedPointer<QSemaphore>& semaphore, int no, QObject *parent = nullptr);
     ~TestClient();
 
     void setLogger(const QSharedPointer<Logger> &logger);
@@ -30,7 +32,7 @@ public:
     QMap<int, Dut> getDuts() {return _duts;}
 
 public slots:
-    void on_test() {qDebug() << thread();}
+    void on_test();
 
     int no() const {return _no;}
 
@@ -60,6 +62,25 @@ public slots:
 
     void resetDut(int slot);
 
+    //---------
+
+    void acquireSemaphore() {_syncSemaphore->acquire();}
+    void releaseSemaphore() {_syncSemaphore->release();}
+    void waitForResponse();
+    QStringList lastResponse() const {return _lastResponse;}
+    int lastResponseInt() const
+    {
+        if(_lastResponse.size())
+        {
+            return _lastResponse[0].toInt();
+        }
+
+        return -1;
+    }
+
+    //---------
+
+
     //SLIP commands
 
     int switchSWD(int slot);
@@ -87,6 +108,30 @@ signals:
     void test();
     void responseRecieved(QStringList response);
 
+    //--- SLIP commands calls ------------------------
+
+    void call_switchSWD(int slot);
+    void call_powerOn(int slot);
+    void call_powerOff(int slot);
+    void call_readDIN(int slot, int DIN);
+    void call_setDOUT(int slot, int DOUT);
+    void call_clearDOUT(int slot, int DOUT);
+    void call_readCSA(int gain);
+    void call_readAIN(int slot, int AIN, int gain);
+    void call_daliOn();
+    void call_daliOff();
+    void call_readDaliADC();
+    void call_readDinADC(int slot, int DIN);
+    void call_read24V();
+    void call_read3V();
+    void call_readTemperature();
+
+    //--- Railtest command call ---------------------
+
+    void call_railtestCommand(int channel, const QByteArray &cmd);
+
+    //-----------------------------------------------
+
     void dutChanged(Dut);
     void dutFullyTested(Dut);
     void slotFullyTested(int);
@@ -104,11 +149,14 @@ private:
     int _no;
     QSharedPointer<QSettings> _settings;
     QSharedPointer<Logger> _logger;
+    QSharedPointer<QSemaphore> _syncSemaphore;
 
     QMap<int, Dut> _duts;
 
     bool _isActive = false; //True, if at least one DUT connected
     int _currentSlot = 0;
+    QStringList _lastResponse;
+    bool _isWaitingForResponse = false;
 
     int _rfRSSI;
     int _rfCount;

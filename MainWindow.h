@@ -4,6 +4,7 @@
 #include <QSettings>
 #include <QJSEngine>
 #include <QThread>
+#include <QSemaphore>
 #include <QComboBox>
 #include <QCheckBox>
 #include <QListWidget>
@@ -55,6 +56,8 @@ private:
     PrinterManager* _printerManager;
     SessionManager* _session;
     QSharedPointer<Logger> _logger;
+    QSharedPointer<QSemaphore> _syncSemaphore;
+
 
     TestMethodManager* _methodManager;
     QList<QThread*> _threads;

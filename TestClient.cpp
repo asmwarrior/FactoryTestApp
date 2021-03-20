@@ -3,14 +3,28 @@
 #include <QCoreApplication>
 #include <QtEndian>
 
-TestClient::TestClient(const QSharedPointer<QSettings> &settings, int no, QObject *parent)
+TestClient::TestClient(const QSharedPointer<QSettings> &settings, const QSharedPointer<QSemaphore> &semaphore, int no, QObject *parent)
     : QObject(parent),
       _portManager(this),
       _no(no),
-      _settings(settings)
+      _settings(settings),
+      _syncSemaphore(semaphore)
 {
-    connect(this, &TestClient::test, this, &TestClient::on_test);
-    connect(&_portManager, &PortManager::responseRecieved, this, &TestClient::responseRecieved);
+    connect(this, &TestClient::test, this, &TestClient::on_test, Qt::QueuedConnection);
+    connect(&_portManager, &PortManager::responseRecieved, [this](QStringList response)
+    {
+        _lastResponse = response;
+        _isWaitingForResponse = false;
+        emit responseRecieved(response);
+    });
+
+    connect(this, &TestClient::call_switchSWD, this, &TestClient::switchSWD, Qt::QueuedConnection);
+    connect(this, &TestClient::call_powerOn, this, &TestClient::powerOn, Qt::QueuedConnection);
+    connect(this, &TestClient::call_powerOff, this, &TestClient::powerOff, Qt::QueuedConnection);
+    connect(this, &TestClient::call_readCSA, this, &TestClient::readCSA, Qt::QueuedConnection);
+    connect(this, &TestClient::call_readAIN, this, &TestClient::readAIN, Qt::QueuedConnection);
+    connect(this, &TestClient::call_daliOn, this, &TestClient::daliOn, Qt::QueuedConnection);
+    connect(this, &TestClient::call_daliOff, this, &TestClient::daliOff, Qt::QueuedConnection);
 
     connect(this, &TestClient::slotFullyTested, [this](int slot){emit dutFullyTested(_duts[slot]);});
 
@@ -37,6 +51,13 @@ void TestClient::setPort(const QString &portName)
 void TestClient::open()
 {
     _portManager.open();
+}
+
+void TestClient::on_test()
+{
+    delay(2000);
+    qDebug() << thread() << _no;
+    releaseSemaphore();
 }
 
 void TestClient::setDutsNumbers(QString numbers)
@@ -88,6 +109,7 @@ void TestClient::reverseDutsChecked()
 
 int TestClient::switchSWD(int slot)
 {
+    _isWaitingForResponse = true;
     _currentSlot = slot;
 #pragma pack (push, 1)
     struct Pkt
@@ -104,11 +126,11 @@ int TestClient::switchSWD(int slot)
     pkt.h.dataLen = 1;
     pkt.dut = slot;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    _lastResponse = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
 
-    if(response.size())
+    if(_lastResponse.size())
     {
-        return response[0].toInt();
+        return _lastResponse[0].toInt();
     }
 
     return -1;
@@ -117,6 +139,8 @@ int TestClient::switchSWD(int slot)
 
 int TestClient::powerOn(int slot)
 {
+    _isWaitingForResponse = true;
+
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -135,11 +159,11 @@ int TestClient::powerOn(int slot)
     pkt.dut = slot;
     pkt.state = 1;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    _lastResponse = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
 
-    if(response.size())
+    if(_lastResponse.size())
     {
-        return response[0].toInt();
+        return _lastResponse[0].toInt();
     }
 
     return -1;
@@ -147,6 +171,8 @@ int TestClient::powerOn(int slot)
 
 int TestClient::powerOff(int slot)
 {
+    _isWaitingForResponse = true;
+
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -165,11 +191,11 @@ int TestClient::powerOff(int slot)
     pkt.dut = slot;
     pkt.state = 0;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    _lastResponse = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
 
-    if(response.size())
+    if(_lastResponse.size())
     {
-        return response[0].toInt();
+        return _lastResponse[0].toInt();
     }
 
     return -1;
@@ -177,6 +203,8 @@ int TestClient::powerOff(int slot)
 
 int TestClient::readCSA(int gain)
 {
+    _isWaitingForResponse = true;
+
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -192,11 +220,11 @@ int TestClient::readCSA(int gain)
     pkt.h.dataLen = 1;
     pkt.gain = gain;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    _lastResponse = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
 
-    if(response.size())
+    if(_lastResponse.size())
     {
-        return response[0].toInt();
+        return _lastResponse[0].toInt();
     }
 
     return -1;
@@ -204,6 +232,8 @@ int TestClient::readCSA(int gain)
 
 int TestClient::readAIN(int slot, int AIN, int gain)
 {
+    _isWaitingForResponse = true;
+
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -226,11 +256,11 @@ int TestClient::readAIN(int slot, int AIN, int gain)
 
     _currentSlot = slot;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    _lastResponse = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
 
-    if(response.size())
+    if(_lastResponse.size())
     {
-        return response[0].toInt();
+        return _lastResponse[0].toInt();
     }
 
     return -1;
@@ -238,6 +268,8 @@ int TestClient::readAIN(int slot, int AIN, int gain)
 
 int TestClient::daliOn()
 {
+    _isWaitingForResponse = true;
+
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -253,11 +285,11 @@ int TestClient::daliOn()
     pkt.h.dataLen = 1;
     pkt.state = 1;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    _lastResponse = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
 
-    if(response.size())
+    if(_lastResponse.size())
     {
-        return response[0].toInt();
+        return _lastResponse[0].toInt();
     }
 
     return -1;
@@ -265,6 +297,8 @@ int TestClient::daliOn()
 
 int TestClient::daliOff()
 {
+    _isWaitingForResponse = true;
+
 #pragma pack (push, 1)
     struct Pkt
     {
@@ -280,11 +314,11 @@ int TestClient::daliOff()
     pkt.h.dataLen = 1;
     pkt.state = 0;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    _lastResponse = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
 
-    if(response.size())
+    if(_lastResponse.size())
     {
-        return response[0].toInt();
+        return _lastResponse[0].toInt();
     }
 
     return -1;
@@ -292,7 +326,9 @@ int TestClient::daliOff()
 
 QStringList TestClient::railtestCommand(int channel, const QByteArray &cmd)
 {
-    return _portManager.railtestCommand(channel, cmd);
+    _isWaitingForResponse = true;
+    _lastResponse = _portManager.railtestCommand(channel, cmd);
+    return _lastResponse;
 }
 
 void TestClient::testRadio(int slot)
@@ -399,6 +435,14 @@ void TestClient::resetDut(int slot)
     _duts[slot]["radioChecked"] = false;
     _duts[slot]["error"] = "";
 
+}
+
+void TestClient::waitForResponse()
+{
+    while(_isWaitingForResponse)
+    {
+        QCoreApplication::processEvents();
+    }
 }
 
 void TestClient::setDutProperty(int slot, const QString &property, const QVariant &value)

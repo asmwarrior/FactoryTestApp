@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     _printerManager->setLogger(_logger);
     _methodManager = new TestMethodManager(_settings);
     _methodManager->setLogger(_logger);
+    _syncSemaphore = QSharedPointer<QSemaphore>::create();
 
     auto availablePorts = QSerialPortInfo::availablePorts();
 
@@ -50,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
 
             _methodManager->scriptEngine()->globalObject().property("jlinkList").setProperty(i, _methodManager->scriptEngine()->newQObject(_JLinkList.last()));
 
-            auto testClient = new TestClient(_settings, i + 1);
+            auto testClient = new TestClient(_settings, _syncSemaphore, i + 1);
             testClient->setLogger(_logger);
             _testClientList.push_back(testClient);
             _testClientList.last()->setDutsNumbers(_settings->value(QString("TestBoard/duts" + QString().setNum(i + 1))).toString());
@@ -324,6 +325,18 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_startFullCycleTestingButton, &QPushButton::clicked, this, &MainWindow::startFullCycleTesting);
 
     connect(_session, &SessionManager::printLabel, _printerManager, &PrinterManager::addLabel);
+
+//    for(auto & testClient : _testClientList)
+//    {
+//        testClient->test();
+//    }
+
+//    while(!_syncSemaphore->tryAcquire(_testClientList.size(), 5000))
+//    {
+//        QCoreApplication::processEvents();
+//    }
+
+//    qDebug() << _syncSemaphore->available();
 }
 
 MainWindow::~MainWindow()

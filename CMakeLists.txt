@@ -34,7 +34,7 @@ set(SOURCES
 )
 
 
-add_executable(${PROJECT_NAME} WIN32
+add_executable(${PROJECT_NAME}
     ${SOURCES}
     "FactoryTestApp.qrc"
     "FactoryTestApp.rc"

@@ -77,7 +77,8 @@ GeneralCommands =
             for (var i = 0; i < testClientList.length; i++)
             {
                 let testClient = testClientList[i];
-                testClient.powerOff(slot);
+                testClient./*call_*/powerOff(slot);
+                testClient.waitForResponse();
                 testClient.resetDut(slot);
             }
         }
@@ -89,15 +90,18 @@ GeneralCommands =
             for (i = 0; i < testClientList.length; i++)
             {
                 var testClient = testClientList[i];
-                testClient.commandSequenceStarted();
+//                testClient.commandSequenceStarted();
                 testClient.setActive(false);
 
-                testClient.commandSequenceStarted();
-                testClient.setActive(false);
+                testClient./*call_*/readCSA(0);
+                testClient.waitForResponse();
+                var prevCSA = testClient.lastResponseInt();
 
-                var prevCSA = testClient.readCSA(0);
-                testClient.powerOn(slot);
-                var currCSA = testClient.readCSA(0);
+                testClient./*call_*/powerOn(slot);
+                testClient.waitForResponse();
+                testClient./*call_*/readCSA(0);
+                testClient.waitForResponse();
+                var currCSA = testClient.lastResponseInt();
 
                 if((currCSA - prevCSA) > 15)
                 {
@@ -113,7 +117,7 @@ GeneralCommands =
                     testClient.setDutProperty(slot, "checked", false);
                 }
 
-                testClient.commandSequenceFinished();
+//                testClient.commandSequenceFinished();
             }
         }
 
