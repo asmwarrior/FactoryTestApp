@@ -175,6 +175,100 @@ int TestClient::powerOff(int slot)
     return -1;
 }
 
+int TestClient::readDIN(int slot, int DIN)
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+        uint8_t
+                dut,
+                din;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_DIN);
+    pkt.h.sequence = 4;
+    pkt.h.dataLen = 2;
+    pkt.dut = slot;
+    pkt.din = DIN;
+
+    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+
+    if(response.size())
+    {
+        return response[0].toInt();
+    }
+
+    return -1;
+}
+
+int TestClient::setDOUT(int slot, int DOUT)
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+        uint8_t
+                dut,
+                dout,
+                state;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_WRITE_DOUT);
+    pkt.h.sequence = 5;
+    pkt.h.dataLen = 3;
+    pkt.dut = slot;
+    pkt.dout = DOUT;
+    pkt.state = 1;
+
+    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+
+    if(response.size())
+    {
+        return response[0].toInt();
+    }
+
+    return -1;
+}
+
+int TestClient::clearDOUT(int slot, int DOUT)
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+        uint8_t
+                dut,
+                dout,
+                state;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_WRITE_DOUT);
+    pkt.h.sequence = 6;
+    pkt.h.dataLen = 3;
+    pkt.dut = slot;
+    pkt.dout = DOUT;
+    pkt.state = 0;
+
+    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+
+    if(response.size())
+    {
+        return response[0].toInt();
+    }
+
+    return -1;
+}
+
 int TestClient::readCSA(int gain)
 {
 #pragma pack (push, 1)
@@ -279,6 +373,136 @@ int TestClient::daliOff()
     pkt.h.sequence = 11;
     pkt.h.dataLen = 1;
     pkt.state = 0;
+
+    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+
+    if(response.size())
+    {
+        return response[0].toInt();
+    }
+
+    return -1;
+}
+
+int TestClient::readDaliADC()
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_DALI_ADC);
+    pkt.h.sequence = 12;
+    pkt.h.dataLen = 0;
+
+    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+
+    if(response.size())
+    {
+        return response[0].toInt();
+    }
+
+    return -1;
+}
+
+int TestClient::readDinADC(int slot, int DIN)
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+        uint8_t
+                dut,
+                din;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_DIN_ADC);
+    pkt.h.sequence = 13;
+    pkt.h.dataLen = 2;
+    pkt.dut = slot;
+    pkt.din = DIN;
+
+    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+
+    if(response.size())
+    {
+        return response[0].toInt();
+    }
+
+    return -1;
+}
+
+int TestClient::read24V()
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_24V);
+    pkt.h.sequence = 14;
+    pkt.h.dataLen = 0;
+
+    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+
+    if(response.size())
+    {
+        return response[0].toInt();
+    }
+
+    return -1;
+}
+
+int TestClient::read3V()
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_3V);
+    pkt.h.sequence = 15;
+    pkt.h.dataLen = 0;
+
+    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+
+    if(response.size())
+    {
+        return response[0].toInt();
+    }
+
+    return -1;
+}
+
+int TestClient::readTemperature()
+{
+#pragma pack (push, 1)
+    struct Pkt
+    {
+        MB_Packet_t h;
+    };
+#pragma pack (pop)
+
+    Pkt pkt;
+
+    pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_TEMP);
+    pkt.h.sequence = 16;
+    pkt.h.dataLen = 0;
 
     auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
 

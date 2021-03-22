@@ -65,19 +65,18 @@ public slots:
     int switchSWD(int slot);
     int powerOn(int slot);
     int powerOff(int slot);
-//    void on_readDIN(int DUT, int DIN);
-//    void on_setDOUT(int DUT, int DOUT);
-//    void on_clearDOUT(int DUT, int DOUT);
+    int readDIN(int slot, int DIN);
+    int setDOUT(int slot, int DOUT);
+    int clearDOUT(int slot, int DOUT);
     int readCSA(int gain);
     int readAIN(int slot, int AIN, int gain);
-//    void on_configDebugSerial(int DUT, int baudRate = QSerialPort::Baud115200, unsigned char bits = QSerialPort::Data8, unsigned char parity = QSerialPort::NoParity, unsigned char stopBits = QSerialPort::OneStop);
     int daliOn();
     int daliOff();
-//    void on_readDaliADC();
-//    void on_readDinADC(int DUT, int DIN);
-//    void on_read24V();
-//    void on_read3V();
-//    void on_readTemperature();
+    int readDaliADC();
+    int readDinADC(int slot, int DIN);
+    int read24V();
+    int read3V();
+    int readTemperature();
 
     QStringList railtestCommand(int channel, const QByteArray &cmd);
     void testRadio(int slot);
