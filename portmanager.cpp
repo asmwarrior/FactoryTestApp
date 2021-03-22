@@ -401,7 +401,7 @@ void PortManager::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
 
 void PortManager::waitCommandFinished()
 {
-    QTime expire = QTime::currentTime().addMSecs(20000);
+    QTime expire = QTime::currentTime().addMSecs(15000);
     while(_mode != idleMode)
     {
         QCoreApplication::processEvents();

@@ -26,6 +26,7 @@ GeneralCommands =
         for (var i = 0; i < testClientList.length; i++)
         {
             let testClient = testClientList[i];
+            console.log(testClientList.length);
             logger.logInfo("Measuring board " + testClient.no() + " current: " + testClient.readCSA(0) + " mA");
         }
     },

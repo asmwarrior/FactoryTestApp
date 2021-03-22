@@ -67,7 +67,9 @@ MainWindow::MainWindow(QWidget *parent)
             if(_settings->value("multithread").toBool())
                 _testClientList.last()->moveToThread(_threads.last());
 
-            _methodManager->scriptEngine()->globalObject().property("testClientList").setProperty(i, _methodManager->scriptEngine()->newQObject(_testClientList.last()));
+            _methodManager->scriptEngine()->globalObject().property("testClientList")
+                                                          .setProperty(_methodManager->scriptEngine()->globalObject().property("testClientList")
+                                                          .property("length").toInt(), _methodManager->scriptEngine()->newQObject(_testClientList.last()));
             _threads.last()->start();
             _testClientList.last()->open();
             delay(200);
