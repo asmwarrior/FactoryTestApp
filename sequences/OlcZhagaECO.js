@@ -173,6 +173,7 @@ methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralComman
 methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
 methodManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
+methodManager.addFunctionToGeneralList("Read Temperature", GeneralCommands.readTemperature);
 methodManager.addFunctionToGeneralList("Supply power to DUTs", GeneralCommands.powerOn);
 methodManager.addFunctionToGeneralList("Power off DUTs", GeneralCommands.powerOff);
 methodManager.addFunctionToGeneralList("Read unique device identifiers (ID)", GeneralCommands.readChipId);

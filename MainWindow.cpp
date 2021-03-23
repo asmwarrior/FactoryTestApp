@@ -326,6 +326,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_startFullCycleTestingButton, &QPushButton::clicked, this, &MainWindow::startFullCycleTesting);
 
     connect(_session, &SessionManager::printLabel, _printerManager, &PrinterManager::addLabel);
+
+//    for (auto & portInfo : availablePorts)
+//    {
+//        if(portInfo.portName() == _settings->value("Railtest/rf_serial").toString())
+//        {
+//            _logger->logDebug("RF module ID: " + portInfo.serialNumber());
+//            break;
+//        }
+//    }
 }
 
 MainWindow::~MainWindow()
