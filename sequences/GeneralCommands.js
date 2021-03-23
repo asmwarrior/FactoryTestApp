@@ -111,7 +111,6 @@ GeneralCommands =
 
                 testClient.setTimeout(500);
                 console.log("Attempting slot " + slot + " of board " + testClient.no());
-                testClient.setActive(false);
 
                 var prevCSA = testClient.readCSA(0);
                 console.log("Prev CSA: " + prevCSA);
@@ -124,7 +123,6 @@ GeneralCommands =
                     logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no());
                     testClient.setDutProperty(slot, "state", 1);
                     testClient.setDutProperty(slot, "checked", true);
-                    testClient.setActive(true);
                 }
 
                 else
