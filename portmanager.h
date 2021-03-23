@@ -33,6 +33,8 @@ public slots:
     QStringList slipCommand(int channel, const QByteArray &frame);
     QStringList railtestCommand(int channel, const QByteArray &cmd);
 
+    void setTimeout(int value) {_timeout = value;}
+
 signals:
 
     void responseRecieved(QStringList response);
@@ -61,6 +63,7 @@ private:
     QVariantList _syncReplies;
 
     QStringList _response;
+    int _timeout = 10000;
 };
 
 #endif // PORTMANAGER_H

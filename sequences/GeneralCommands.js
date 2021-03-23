@@ -88,6 +88,11 @@ GeneralCommands =
             for (var i = 0; i < testClientList.length; i++)
             {
                 let testClient = testClientList[i];
+
+                if(!testClient.isConnected())
+                    continue;
+
+                testClient.setTimeout(500);
                 testClient.powerOff(slot);
                 testClient.resetDut(slot);
             }
@@ -100,15 +105,19 @@ GeneralCommands =
             for (i = 0; i < testClientList.length; i++)
             {
                 var testClient = testClientList[i];
-                testClient.commandSequenceStarted();
-                testClient.setActive(false);
 
-                testClient.commandSequenceStarted();
+                if(!testClient.isConnected())
+                    continue;
+
+                testClient.setTimeout(500);
+                console.log("Attempting slot " + slot + " of board " + testClient.no());
                 testClient.setActive(false);
 
                 var prevCSA = testClient.readCSA(0);
+                console.log("Prev CSA: " + prevCSA);
                 testClient.powerOn(slot);
                 var currCSA = testClient.readCSA(0);
+                console.log("Curr CSA: " + currCSA);
 
                 if((currCSA - prevCSA) > 15)
                 {
@@ -124,7 +133,7 @@ GeneralCommands =
                     testClient.setDutProperty(slot, "checked", false);
                 }
 
-                testClient.commandSequenceFinished();
+                testClient.setTimeout(10000);
             }
         }
 

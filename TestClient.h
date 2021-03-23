@@ -34,8 +34,8 @@ public slots:
 
     int no() const {return _no;}
 
-    void setActive(bool state) {_isActive = state;}
     bool isActive() const; //True, if at least one DUT connected
+    bool isConnected() const {return _isConnected;}
 
     int dutsCount() const {return _duts.size();}
     Dut dut(int slot) const {return _duts[slot];}
@@ -81,6 +81,8 @@ public slots:
     QStringList railtestCommand(int channel, const QByteArray &cmd);
     void testRadio(int slot);
 
+    void setTimeout(int value) {_portManager.setTimeout(value);}
+
 signals:
 
     void test();
@@ -106,7 +108,7 @@ private:
 
     QMap<int, Dut> _duts;
 
-    bool _isActive = false; //True, if at least one DUT connected
+    bool _isConnected = false;
     int _currentSlot = 0;
 
     int _rfRSSI;

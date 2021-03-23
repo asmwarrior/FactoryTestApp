@@ -121,15 +121,16 @@ Nema =
 
         GeneralCommands.testConnection();
         GeneralCommands.detectDuts();
-        ZhagaECO.downloadRailtest();
+        Nema.downloadRailtest();
         GeneralCommands.readChipId();
-        ZhagaECO.checkAinVoltage();
+        Nema.checkAinVoltage();
         GeneralCommands.testAccelerometer();
         GeneralCommands.testLightSensor();
         GeneralCommands.testRadio();
+        GeneralCommands.testGNSS();
         GeneralCommands.testDALI();
-        ZhagaECO.checkTestingCompletion();
-        ZhagaECO.downloadSoftware();
+        Nema.checkTestingCompletion();
+        Nema.downloadSoftware();
 
 //        testClient.commandSequenceFinished();
     },

@@ -2,6 +2,7 @@
 
 #include <QCoreApplication>
 #include <QtEndian>
+#include <QSerialPortInfo>
 
 TestClient::TestClient(const QSharedPointer<QSettings> &settings, int no, QObject *parent)
     : QObject(parent),
@@ -37,6 +38,17 @@ void TestClient::setPort(const QString &portName)
 void TestClient::open()
 {
     _portManager.open();
+
+    setTimeout(500);
+    if(readCSA(0) != -1)
+    {
+        _isConnected = true;
+    }
+
+    else
+        qDebug() << "MeasBoard" << _no << "is not connected";
+
+    setTimeout(10000);
 }
 
 void TestClient::setDutsNumbers(QString numbers)
@@ -525,7 +537,18 @@ void TestClient::testRadio(int slot)
 
     connect(&rf, &RailtestClient::replyReceived, this, &TestClient::onRfReplyReceived);
 
-    if (!rf.open(_settings->value("Railtest/rf_serial").toString()))
+    auto availablePorts = QSerialPortInfo::availablePorts();
+    QString portName;
+    for (auto & portInfo : availablePorts)
+    {
+        if(portInfo.serialNumber() == _settings->value("Railtest/rf_serialID").toString())
+        {
+            portName = portInfo.portName();
+            break;
+        }
+    }
+
+    if (!rf.open(portName))
     {
         _logger->logError("Cannot open serial port for reference radio module!");
         return;
