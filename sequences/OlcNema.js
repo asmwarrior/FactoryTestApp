@@ -123,6 +123,46 @@ Nema =
 
     //---
 
+    detectDuts: function ()
+    {
+        actionHintWidget.showProgressHint("Detecting DUTs in the testing fixture...");
+        Nema.powerOn();
+
+        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (i = 0; i < testClientList.length; i++)
+            {
+                var testClient = testClientList[i];
+
+                if(!testClient.isConnected())
+                    continue;
+
+                testClient.setTimeout(500);
+                logger.logDebug("Attempting connection to slot " + slot + " of board " + testClient.no() + "...");
+
+                let voltage = testClient.readAIN(slot, 4, 0);
+
+                if(voltage > 45000 && voltage < 52000)
+                {
+                    logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no() + " detected.");
+                    testClient.setDutProperty(slot, "state", 1);
+                    testClient.setDutProperty(slot, "checked", true);
+                }
+
+                else
+                {
+                    testClient.setDutProperty(slot, "state", 0);
+                    testClient.setDutProperty(slot, "checked", false);
+                }
+
+                testClient.setTimeout(10000);
+            }
+        }
+
+        actionHintWidget.showProgressHint("READY");
+
+    },
+
     checkAinVoltage: function ()
     {
         actionHintWidget.showProgressHint("Checking voltage on AIN1...");
@@ -213,7 +253,7 @@ Nema =
 methodManager.addFunctionToGeneralList("Full cycle testing", Nema.startTesting);
 methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
 methodManager.addFunctionToGeneralList("Establish connection to sockets", Nema.openTestClients);
-methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
+methodManager.addFunctionToGeneralList("Detect DUTs", Nema.detectDuts);
 methodManager.addFunctionToGeneralList("Download Railtest", Nema.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
 methodManager.addFunctionToGeneralList("Read Temperature", GeneralCommands.readTemperature);

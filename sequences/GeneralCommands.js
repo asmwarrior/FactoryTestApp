@@ -185,7 +185,15 @@ GeneralCommands =
                 {
                     let testClient = testClientList[i];
                     let response = testClient.railtestCommand(slot, "accl");
-                    if (response[2].includes("X") && response[3].includes("Y") && response[4].includes("Z"))
+
+                    if(response.length < 5)
+                    {
+                        testClient.setDutProperty(slot, "accelChecked", false);
+                        testClient.addDutError(slot, response.join(' '));
+                        logger.logError("Accelerometer failture for DUT " + testClient.dutNo(slot) + ". No response recieved!");
+                    }
+
+                    else if (response[2].includes("X") && response[3].includes("Y") && response[4].includes("Z"))
                     {
                            let x = Number(response[2].slice(2, 5));
                            let y = Number(response[3].slice(2, 5));
