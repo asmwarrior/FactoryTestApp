@@ -3,6 +3,18 @@ methodManager.addMethod("OLC Zhaga ECO");
 
 ZhagaECO =
 {
+    measuringBoardIDs: ["5CDA73693935", "5CDA78693935", "5CDC87693935", "5CEE627B3935",  "5CDF60603935"],
+    RfModuleId: "AL03RZIAA",
+
+    //---
+
+    openTestClients: function ()
+    {
+        GeneralCommands.openTestClients(ZhagaECO.measuringBoardIDs);
+    },
+
+    //---
+
     downloadRailtest: function ()
     {
         actionHintWidget.showProgressHint("Downloading the Railtest...");
@@ -170,6 +182,7 @@ ZhagaECO =
 
 methodManager.addFunctionToGeneralList("Full cycle testing", ZhagaECO.startTesting);
 methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
+methodManager.addFunctionToGeneralList("Establish connection to sockets", ZhagaECO.openTestClients);
 methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
 methodManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);

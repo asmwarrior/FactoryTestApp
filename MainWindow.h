@@ -49,8 +49,8 @@ private:
 
     void setControlsEnabled(bool state);
 
-    QString _workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
-//    QString _workDirectory = QDir(".").absolutePath(); //For test version
+//    QString _workDirectory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // For release version
+    QString _workDirectory = QDir(".").absolutePath(); //For test version
 //    QString _workDirectory = QDir("../..").absolutePath(); //For development
     QSharedPointer<QSettings> _settings;
     PrinterManager* _printerManager;

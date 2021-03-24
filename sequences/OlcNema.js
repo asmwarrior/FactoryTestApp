@@ -3,6 +3,47 @@ methodManager.addMethod("OLC Nema");
 
 Nema =
 {
+    measuringBoardIDs: ["5CDA66603935", "5CDA626D3431", "5CDD786A3431", "5CE0646D3431",  "5CDC766A3431"],
+
+    //---
+
+    openTestClients: function ()
+    {
+        GeneralCommands.openTestClients(Nema.measuringBoardIDs);
+    },
+
+    //---
+
+    powerOn: function ()
+    {
+            for (var i = 0; i < testClientList.length; i++)
+            {
+                if(testClientList[i].no() === 5)
+                {
+                    testClientList[i].powerOn(1);
+                    logger.logInfo("All connected DUTs are switched ON");
+                    break;
+                }
+            }
+    },
+
+    //---
+
+    powerOff: function ()
+    {
+            for (var i = 0; i < testClientList.length; i++)
+            {
+                if(testClientList[i].no() === 5)
+                {
+                    testClientList[i].powerOff(1);
+                    logger.logInfo("All connected DUTs are switched OFF");
+                    break;
+                }
+            }
+    },
+
+    //---
+
     downloadRailtest: function ()
     {
         actionHintWidget.showProgressHint("Downloading the Railtest...");
@@ -171,12 +212,13 @@ Nema =
 
 methodManager.addFunctionToGeneralList("Full cycle testing", Nema.startTesting);
 methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
+methodManager.addFunctionToGeneralList("Establish connection to sockets", Nema.openTestClients);
 methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
 methodManager.addFunctionToGeneralList("Download Railtest", Nema.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
 methodManager.addFunctionToGeneralList("Read Temperature", GeneralCommands.readTemperature);
-methodManager.addFunctionToGeneralList("Supply power to DUTs", GeneralCommands.powerOn);
-methodManager.addFunctionToGeneralList("Power off DUTs", GeneralCommands.powerOff);
+methodManager.addFunctionToGeneralList("Supply power to DUTs", Nema.powerOn);
+methodManager.addFunctionToGeneralList("Power off DUTs", Nema.powerOff);
 methodManager.addFunctionToGeneralList("Read unique device identifiers (ID)", GeneralCommands.readChipId);
 methodManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", Nema.checkAinVoltage);
 methodManager.addFunctionToGeneralList("Test accelerometer", GeneralCommands.testAccelerometer);

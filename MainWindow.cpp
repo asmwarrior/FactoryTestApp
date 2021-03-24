@@ -55,14 +55,14 @@ MainWindow::MainWindow(QWidget *parent)
             _testClientList.push_back(testClient);
             _testClientList.last()->setDutsNumbers(_settings->value(QString("TestBoard/duts" + QString().setNum(i + 1))).toString());
 
-            for (auto & portInfo : availablePorts)
-            {
-                if(portInfo.serialNumber() == _settings->value(QString("Railtest/serialID%1").arg(QString().setNum(i + 1))).toString())
-                {
-                    _testClientList.last()->setPort(portInfo.portName());
-                    break;
-                }
-            }
+//            for (auto & portInfo : availablePorts)
+//            {
+//                if(portInfo.serialNumber() == _settings->value(QString("Railtest/serialID%1").arg(QString().setNum(i + 1))).toString())
+//                {
+//                    _testClientList.last()->setPort(portInfo.portName());
+//                    break;
+//                }
+//            }
 
             if(_settings->value("multithread").toBool())
                 _testClientList.last()->moveToThread(_threads.last());
@@ -71,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent)
                                                           .setProperty(_methodManager->scriptEngine()->globalObject().property("testClientList")
                                                           .property("length").toInt(), _methodManager->scriptEngine()->newQObject(_testClientList.last()));
             _threads.last()->start();
-            _testClientList.last()->open();
+//            _testClientList.last()->open();
             delay(200);
         }
     }
@@ -326,6 +326,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_startFullCycleTestingButton, &QPushButton::clicked, this, &MainWindow::startFullCycleTesting);
 
     connect(_session, &SessionManager::printLabel, _printerManager, &PrinterManager::addLabel);
+
+//    for (auto & portInfo : availablePorts)
+//    {
+//        _logger->logDebug(QString(portInfo.serialNumber() + " " + portInfo.portName()));
+//    }
 
 //    for (auto & portInfo : availablePorts)
 //    {

@@ -30,7 +30,8 @@ public:
     QMap<int, Dut> getDuts() {return _duts;}
 
 public slots:
-    void on_test() {qDebug() << thread();}
+
+    void open(QString id);
 
     int no() const {return _no;}
 
@@ -85,7 +86,6 @@ public slots:
 
 signals:
 
-    void test();
     void responseRecieved(QStringList response);
 
     void dutChanged(Dut);

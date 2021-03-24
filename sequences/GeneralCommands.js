@@ -21,6 +21,19 @@ GeneralCommands =
         }
     },
 
+    //---
+
+    openTestClients: function (portsIdList)
+    {
+        for (var i = 0; i < testClientList.length; i++)
+        {
+            let testClient = testClientList[i];
+            testClient.open(portsIdList[i]);
+        }
+    },
+
+    //---
+
     readCSA: function()
     {
         for (var i = 0; i < testClientList.length; i++)
@@ -110,17 +123,15 @@ GeneralCommands =
                     continue;
 
                 testClient.setTimeout(500);
-                console.log("Attempting slot " + slot + " of board " + testClient.no());
+                logger.logDebug("Attempting connection to slot " + slot + " of board " + testClient.no() + "...");
 
                 var prevCSA = testClient.readCSA(0);
-                console.log("Prev CSA: " + prevCSA);
                 testClient.powerOn(slot);
                 var currCSA = testClient.readCSA(0);
-                console.log("Curr CSA: " + currCSA);
 
                 if((currCSA - prevCSA) > 15)
                 {
-                    logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no());
+                    logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no() + " detected.");
                     testClient.setDutProperty(slot, "state", 1);
                     testClient.setDutProperty(slot, "checked", true);
                 }

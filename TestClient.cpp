@@ -10,7 +10,6 @@ TestClient::TestClient(const QSharedPointer<QSettings> &settings, int no, QObjec
       _no(no),
       _settings(settings)
 {
-    connect(this, &TestClient::test, this, &TestClient::on_test);
     connect(&_portManager, &PortManager::responseRecieved, this, &TestClient::responseRecieved);
 
     connect(this, &TestClient::slotFullyTested, [this](int slot){emit dutFullyTested(_duts[slot]);});
@@ -39,7 +38,7 @@ void TestClient::open()
 {
     _portManager.open();
 
-    setTimeout(500);
+    setTimeout(1000);
     if(readCSA(0) != -1)
     {
         _isConnected = true;
@@ -49,6 +48,32 @@ void TestClient::open()
         qDebug() << "MeasBoard" << _no << "is not connected";
 
     setTimeout(10000);
+}
+
+void TestClient::open(QString id)
+{
+    auto availablePorts = QSerialPortInfo::availablePorts();
+    for (auto & portInfo : availablePorts)
+    {
+        if(portInfo.serialNumber() == id)
+        {
+            _portManager.setPort(portInfo.portName());
+            _portManager.open();
+
+            setTimeout(1000);
+            if(readCSA(0) != -1)
+            {
+                _isConnected = true;
+                _logger->logDebug(QString("Connection to the Measuring Board %1 has been established").arg(_no));
+            }
+
+            else
+                _logger->logDebug(QString("Connection to the Measuring Board %1 has NOT been established").arg(_no));
+
+            setTimeout(10000);
+            break;
+        }
+    }
 }
 
 void TestClient::setDutsNumbers(QString numbers)
