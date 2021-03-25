@@ -127,6 +127,13 @@ ZhagaECO =
 
     //---
 
+    testRadio: function ()
+    {
+        GeneralCommands.testRadio(ZhagaECO.RfModuleId);
+    },
+
+    //---
+
     startTesting: function ()
     {
 //        testClient.commandSequenceStarted();
@@ -193,7 +200,7 @@ methodManager.addFunctionToGeneralList("Read unique device identifiers (ID)", Ge
 methodManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", ZhagaECO.checkAinVoltage);
 methodManager.addFunctionToGeneralList("Test accelerometer", GeneralCommands.testAccelerometer);
 methodManager.addFunctionToGeneralList("Test light sensor", GeneralCommands.testLightSensor);
-methodManager.addFunctionToGeneralList("Test radio interface", GeneralCommands.testRadio);
+methodManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio);
 methodManager.addFunctionToGeneralList("Test DALI", GeneralCommands.testDALI);
 methodManager.addFunctionToGeneralList("Check Testing Completion", ZhagaECO.checkTestingCompletion);
 methodManager.addFunctionToGeneralList("Download Software", ZhagaECO.downloadSoftware);

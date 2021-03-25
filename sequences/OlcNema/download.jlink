@@ -1,0 +1,12 @@
+swdselect
+si swd
+speed 5000
+Device EFR32FG12PXXXF1024
+connect
+erase
+loadfile dummy_btl_efr32xg12.s37
+loadfile railtest_nema.hex
+r
+g
+q
+

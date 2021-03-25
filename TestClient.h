@@ -80,7 +80,7 @@ public slots:
     int readTemperature();
 
     QStringList railtestCommand(int channel, const QByteArray &cmd);
-    void testRadio(int slot);
+    void testRadio(int slot, QString RfModuleId);
 
     void setTimeout(int value) {_portManager.setTimeout(value);}
 

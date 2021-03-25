@@ -331,15 +331,6 @@ MainWindow::MainWindow(QWidget *parent)
 //    {
 //        _logger->logDebug(QString(portInfo.serialNumber() + " " + portInfo.portName()));
 //    }
-
-//    for (auto & portInfo : availablePorts)
-//    {
-//        if(portInfo.portName() == _settings->value("Railtest/rf_serial").toString())
-//        {
-//            _logger->logDebug("RF module ID: " + portInfo.serialNumber());
-//            break;
-//        }
-//    }
 }
 
 MainWindow::~MainWindow()

@@ -556,7 +556,7 @@ QStringList TestClient::railtestCommand(int channel, const QByteArray &cmd)
     return _portManager.railtestCommand(channel, cmd);
 }
 
-void TestClient::testRadio(int slot)
+void TestClient::testRadio(int slot, QString RfModuleId)
 {
     RailtestClient rf;
 
@@ -566,7 +566,7 @@ void TestClient::testRadio(int slot)
     QString portName;
     for (auto & portInfo : availablePorts)
     {
-        if(portInfo.serialNumber() == _settings->value("Railtest/rf_serialID").toString())
+        if(portInfo.serialNumber() == RfModuleId)
         {
             portName = portInfo.portName();
             break;
@@ -615,14 +615,14 @@ void TestClient::testRadio(int slot)
 
     if (_rfCount < 8)
     {
-        _logger->logError(QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount));
+        _logger->logError(QString("Radio Interface failure for DUT %1: packet lost (%2)!").arg(dutNo(slot)).arg(_rfCount));
         _duts[slot]["radioChecked"] = false;
         _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount);
     }
 
     else if (_rfRSSI < -50 || _rfRSSI > 20)
     {
-        _logger->logError(QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI));
+        _logger->logError(QString("Radio Interface failure for DUT %1: RSSI (%2) is out of bounds!").arg(dutNo(slot)).arg(_rfRSSI));
         _duts[slot]["radioChecked"] = false;
         _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI);
     }

@@ -4,6 +4,7 @@ methodManager.addMethod("OLC Nema");
 Nema =
 {
     measuringBoardIDs: ["5CDA66603935", "5CDA626D3431", "5CDD786A3431", "5CE0646D3431",  "5CDC766A3431"],
+    RfModuleId: "A5XK3RJTA",
 
     //---
 
@@ -56,8 +57,6 @@ Nema =
                 let jlink = jlinkList[i];
                 if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
                 {
-                    testClient.powerOn(slot);
-                    delay(1000);
                     testClient.switchSWD(slot);
 
                     jlink.selectByUSB();
@@ -66,15 +65,16 @@ Nema =
                     jlink.select();
                     jlink.setSpeed(5000);
                     jlink.connect();
-//                    if(jlink.erase() < 0)
-//                    {
-//                        return;
-//                    }
+                    if(jlink.erase() < 0)
+                    {
+                        logger.logDebug("Unable to earase chip.")
+                        return;
+                    }
 
-//                    jlink.downloadFile("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", 0);
-//                    jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex", 0);
-//                    jlink.reset();
-//                    jlink.go();
+                    jlink.downloadFile("sequences/OlcNema/dummy_btl_efr32xg12.s37", 0);
+                    jlink.downloadFile("sequences/OlcNema/railtest_nema.hex", 0);
+                    jlink.reset();
+                    jlink.go();
                     jlink.close();
                 }
             }
@@ -137,7 +137,7 @@ Nema =
                 if(!testClient.isConnected())
                     continue;
 
-                testClient.setTimeout(500);
+                testClient.setTimeout(300);
                 logger.logDebug("Attempting connection to slot " + slot + " of board " + testClient.no() + "...");
 
                 let voltage = testClient.readAIN(slot, 4, 0);
@@ -194,12 +194,15 @@ Nema =
         actionHintWidget.showProgressHint("READY");
     },
 
+    testRadio: function ()
+    {
+        GeneralCommands.testRadio(Nema.RfModuleId);
+    },
+
     //---
 
     startTesting: function ()
     {
-//        testClient.commandSequenceStarted();
-
         GeneralCommands.testConnection();
         GeneralCommands.detectDuts();
         Nema.downloadRailtest();
@@ -212,8 +215,6 @@ Nema =
         GeneralCommands.testDALI();
         Nema.checkTestingCompletion();
         Nema.downloadSoftware();
-
-//        testClient.commandSequenceFinished();
     },
 
     //---
@@ -263,7 +264,7 @@ methodManager.addFunctionToGeneralList("Read unique device identifiers (ID)", Ge
 methodManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", Nema.checkAinVoltage);
 methodManager.addFunctionToGeneralList("Test accelerometer", GeneralCommands.testAccelerometer);
 methodManager.addFunctionToGeneralList("Test light sensor", GeneralCommands.testLightSensor);
-methodManager.addFunctionToGeneralList("Test radio interface", GeneralCommands.testRadio);
+methodManager.addFunctionToGeneralList("Test radio interface", Nema.testRadio);
 methodManager.addFunctionToGeneralList("Test GNSS", GeneralCommands.testGNSS);
 methodManager.addFunctionToGeneralList("Test DALI", GeneralCommands.testDALI);
 methodManager.addFunctionToGeneralList("Check Testing Completion", Nema.checkTestingCompletion);

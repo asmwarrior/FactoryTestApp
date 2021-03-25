@@ -199,11 +199,11 @@ GeneralCommands =
                            let y = Number(response[3].slice(2, 5));
                            let z = Number(response[4].slice(2, 5));
 
-                           if (x > 10 || x < -10 || y > 10 || y < -10 || z < 80 || z > 100)
+                           if (x > 10 || x < -10 || y > 10 || y < -10 || z < -90 || z > 100)
                            {
                                testClient.setDutProperty(slot, "accelChecked", false);
                                testClient.addDutError(slot, response.join(' '));
-                               logger.logDebug("Accelerometer failure: X=" + x +", Y=" + y + ", Z=" + z + ".");
+                               logger.logDebug("Accelerometer failure for DUT " + testClient.dutNo(slot) + "; X=" + x +", Y=" + y + ", Z=" + z + ".");
                                logger.logError("Accelerometer failture for DUT " + testClient.dutNo(slot));
                            }
                            else
@@ -217,7 +217,8 @@ GeneralCommands =
                     {
                         testClient.setDutProperty(slot, "accelChecked", false);
                         testClient.addDutError(slot, response.join(' '));
-                        logger.logError("Accelerometer failture for DUT " + testClient.dutNo(slot));
+                        logger.logError("Accelerometer failture for DUT " + testClient.dutNo(slot) + ". Invalid response recieved!");
+                        logger.logDebug("Accelerometer failure. Invalid response: " + response);
                     }
                 }
             }
@@ -269,7 +270,7 @@ GeneralCommands =
         actionHintWidget.showProgressHint("READY");
     },
 
-    testRadio: function ()
+    testRadio: function (RfModuleId)
     {
         actionHintWidget.showProgressHint("Testing radio interface...");
 
@@ -279,7 +280,7 @@ GeneralCommands =
             {
                 if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
                 {
-                    testClientList[i].testRadio(slot);
+                    testClientList[i].testRadio(slot, RfModuleId);
                 }
             }
         }
