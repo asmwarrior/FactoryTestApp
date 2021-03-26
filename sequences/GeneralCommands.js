@@ -252,29 +252,36 @@ GeneralCommands =
                 {
                     let testClient = testClientList[i];
                     let response = testClient.railtestCommand(slot, "lsen");
-                    if (response[2].includes("opwr"))
-                    {
-                           let x = Number(response[2].slice(5, 5));
+                    let patternFound = false;
 
-                           if (x < 0)
-                           {
-                               testClientList.setDutProperty(slot, "lightSensChecked", false);
-                               testClientList.addDutError(slot, response.join(' '));
-                               logger.logDebug("Light sensor failure: X=" + x  + ".");
-                               logger.logError("Light sensor failture for DUT " + testClient.dutNo(slot));
-                           }
-                           else
-                           {
-                               testClient.setDutProperty(slot, "lightSensChecked", true);
-                               logger.logSuccess("Light sensor for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
-                           }
+                    if(response.length > 1)
+                    {
+                        if (response[2].includes("opwr"))
+                        {
+                            patternFound = true;
+                            let x = Number(response[2].slice(5, 5));
+
+                            if (x < 0)
+                            {
+                                testClientList.setDutProperty(slot, "lightSensChecked", false);
+                                testClientList.addDutError(slot, response.join(' '));
+                                logger.logDebug("Light sensor failure: X=" + x  + ".");
+                                logger.logError("Light sensor failture for DUT " + testClient.dutNo(slot));
+                            }
+                            else
+                            {
+                                testClient.setDutProperty(slot, "lightSensChecked", true);
+                                logger.logSuccess("Light sensor for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
+                            }
+                        }
                     }
 
-                    else
+                    if(!patternFound)
                     {
                         testClient.setDutProperty(slot, "lightSensChecked", false);
                         testClient.addDutError(slot, response.join(' '));
                         logger.logError("Light sensor failture for DUT " + testClient.dutNo(slot));
+                        logger.logDebug("Light sensor failture for DUT " + testClient.dutNo(slot) + ": " + response.join(' '));
                     }
                 }
             }
