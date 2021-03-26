@@ -615,14 +615,16 @@ void TestClient::testRadio(int slot, QString RfModuleId)
 
     if (_rfCount < 8)
     {
-        _logger->logError(QString("Radio Interface failure for DUT %1: packet lost (%2)!").arg(dutNo(slot)).arg(_rfCount));
+        _logger->logError(QString("Radio Interface testing failure for DUT %1!").arg(dutNo(slot)));
+        _logger->logDebug(QString("Radio Interface failure for DUT %1: packet lost (%2)!").arg(dutNo(slot)).arg(_rfCount));
         _duts[slot]["radioChecked"] = false;
         _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount);
     }
 
     else if (_rfRSSI < -50 || _rfRSSI > 20)
     {
-        _logger->logError(QString("Radio Interface failure for DUT %1: RSSI (%2) is out of bounds!").arg(dutNo(slot)).arg(_rfRSSI));
+        _logger->logError(QString("Radio Interface testing failure for DUT %1!").arg(dutNo(slot)));
+        _logger->logDebug(QString("Radio Interface failure for DUT %1: RSSI (%2) is out of bounds!").arg(dutNo(slot)).arg(_rfRSSI));
         _duts[slot]["radioChecked"] = false;
         _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI);
     }
