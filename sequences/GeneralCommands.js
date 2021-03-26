@@ -185,35 +185,48 @@ GeneralCommands =
                 {
                     let testClient = testClientList[i];
                     let response = testClient.railtestCommand(slot, "accl");
+                    let patternFound = false;
 
-                    if(response.length < 5)
+                    if(response.length < 3)
                     {
                         testClient.setDutProperty(slot, "accelChecked", false);
                         testClient.addDutError(slot, response.join(' '));
                         logger.logError("Accelerometer failture for DUT " + testClient.dutNo(slot) + ". No response recieved!");
                     }
 
-                    else if (response[2].includes("X") && response[3].includes("Y") && response[4].includes("Z"))
+                    else
                     {
-                           let x = Number(response[2].slice(2, 5));
-                           let y = Number(response[3].slice(2, 5));
-                           let z = Number(response[4].slice(2, 5));
+                        for (let j = 0; j < response.length; j++)
+                        {
+                            if((j + 2) < response.length)
+                            {
+                                if (response[j].includes("X") && response[j + 1].includes("Y") && response[j + 2].includes("Z"))
+                                {
+                                    patternFound = true;
+                                    let x = Number(response[j].slice(2, 5));
+                                    let y = Number(response[j + 1].slice(2, 5));
+                                    let z = Number(response[j + 2].slice(2, 5));
 
-                           if (x > 10 || x < -10 || y > 10 || y < -10 || z < -90 || z > 100)
-                           {
-                               testClient.setDutProperty(slot, "accelChecked", false);
-                               testClient.addDutError(slot, response.join(' '));
-                               logger.logDebug("Accelerometer failure for DUT " + testClient.dutNo(slot) + "; X=" + x +", Y=" + y + ", Z=" + z + ".");
-                               logger.logError("Accelerometer failture for DUT " + testClient.dutNo(slot));
-                           }
-                           else
-                           {
-                               testClient.setDutProperty(slot, "accelChecked", true);
-                               logger.logSuccess("Accelerometer for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
-                           }
+                                    if (x > 10 || x < -10 || y > 10 || y < -10 || z < -90 || z > 100)
+                                    {
+                                        testClient.setDutProperty(slot, "accelChecked", false);
+                                        testClient.addDutError(slot, response.join(' '));
+                                        logger.logDebug("Accelerometer failure for DUT " + testClient.dutNo(slot) + "; X=" + x +", Y=" + y + ", Z=" + z + ".");
+                                        logger.logError("Accelerometer failture for DUT " + testClient.dutNo(slot));
+                                    }
+                                    else
+                                    {
+                                        testClient.setDutProperty(slot, "accelChecked", true);
+                                        logger.logSuccess("Accelerometer for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
+                                    }
+
+                                    break;
+                                }
+                            }
+                        }
                     }
 
-                    else
+                    if(!patternFound)
                     {
                         testClient.setDutProperty(slot, "accelChecked", false);
                         testClient.addDutError(slot, response.join(' '));
