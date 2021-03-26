@@ -194,9 +194,63 @@ Nema =
         actionHintWidget.showProgressHint("READY");
     },
 
+    //---
+
     testRadio: function ()
     {
         GeneralCommands.testRadio(Nema.RfModuleId);
+    },
+
+    //---
+
+    testDALI: function ()
+    {
+        actionHintWidget.showProgressHint("Testing DALI interface...");
+
+        for (var i = 0; i < testClientList.length; i++)
+        {
+            testClientList[i].daliOn();
+        }
+
+        for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (let i = 0; i < testClientList.length; i++)
+            {
+                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
+                {
+                    let testClient = testClientList[i];
+                    testClient.switchSWD(slot);
+                    testClient.powerOn(slot);
+                    delay(1000);
+
+                    let resp = testClient.railtestCommand(slot, "dali 0xFE80 16 0 0");
+                    let responseString = testClient.railtestCommand(slot, "dali 0xFF90 16 0 1000000").join(' ');
+
+                    if(responseString.includes("error:0"))
+                    {
+                        testClient.setDutProperty(slot, "daliChecked", true);
+                        logger.logSuccess("DALI interface for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
+                    }
+
+                    else
+                    {
+                        testClient.setDutProperty(slot, "daliChecked", false);
+                        testClient.addDutError(slot, responseString);
+                        logger.logError("DALI testing for DUT " + testClient.dutNo(slot) + " has been failed!");
+                        logger.logDebug("DALI failure: " + responseString  + ".");
+                    }
+
+                    testClient.railtestCommand(slot, "dali 0xFE80 16 0 0");
+                }
+            }
+        }
+
+        for (i = 0; i < testClientList.length; i++)
+        {
+            testClientList[i].daliOff();
+        }
+
+        actionHintWidget.showProgressHint("READY");
     },
 
     //---
@@ -266,6 +320,6 @@ methodManager.addFunctionToGeneralList("Test accelerometer", GeneralCommands.tes
 methodManager.addFunctionToGeneralList("Test light sensor", GeneralCommands.testLightSensor);
 methodManager.addFunctionToGeneralList("Test radio interface", Nema.testRadio);
 methodManager.addFunctionToGeneralList("Test GNSS", GeneralCommands.testGNSS);
-methodManager.addFunctionToGeneralList("Test DALI", GeneralCommands.testDALI);
+methodManager.addFunctionToGeneralList("Test DALI", Nema.testDALI);
 methodManager.addFunctionToGeneralList("Check Testing Completion", Nema.checkTestingCompletion);
 methodManager.addFunctionToGeneralList("Download Software", Nema.downloadSoftware);

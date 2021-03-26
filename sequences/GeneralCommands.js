@@ -330,7 +330,7 @@ GeneralCommands =
                     testClient.powerOn(slot);
                     delay(1000);
 
-                    testClient.railtestCommand(slot, "dali 0xFE80 16 0 0");
+                    let resp = testClient.railtestCommand(slot, "dali 0xFE80 16 0 0");
                     let responseString = testClient.railtestCommand(slot, "dali 0xFF90 16 0 1000000").join(' ');
 
                     if(responseString.includes("error:0"))
