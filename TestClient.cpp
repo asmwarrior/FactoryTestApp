@@ -556,7 +556,7 @@ QStringList TestClient::railtestCommand(int channel, const QByteArray &cmd)
     return _portManager.railtestCommand(channel, cmd);
 }
 
-void TestClient::testRadio(int slot, QString RfModuleId)
+void TestClient::testRadio(int slot, QString RfModuleId, int channel, int power, int minRSSI, int maxRSSI, int count)
 {
     RailtestClient rf;
 
@@ -591,7 +591,7 @@ void TestClient::testRadio(int slot, QString RfModuleId)
     _rfCount = 0;
     rf.syncCommand("setBleMode", "1", 500);
     rf.syncCommand("setBle1Mbps", "1", 500);
-    rf.syncCommand("setChannel", "19", 500);
+    rf.syncCommand("setChannel", QString().setNum(channel).toLocal8Bit(), 500);
 
     railtestCommand(slot, "rx 0");
     delay(500);
@@ -606,6 +606,7 @@ void TestClient::testRadio(int slot, QString RfModuleId)
     delay(500);
 
     railtestCommand(slot, "setPower 80");
+    railtestCommand(slot, QString("setPower %1").arg(power).toLocal8Bit());
     delay(500);
 
     rf.syncCommand("rx", "1", 500);
@@ -613,7 +614,7 @@ void TestClient::testRadio(int slot, QString RfModuleId)
     railtestCommand(slot, "tx 11");
     delay(3000);
 
-    if (_rfCount < 8)
+    if (_rfCount < count)
     {
         _logger->logError(QString("Radio Interface testing failure for DUT %1!").arg(dutNo(slot)));
         _logger->logDebug(QString("Radio Interface failure for DUT %1: packet lost (%2)!").arg(dutNo(slot)).arg(_rfCount));
@@ -621,7 +622,7 @@ void TestClient::testRadio(int slot, QString RfModuleId)
         _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount);
     }
 
-    else if (_rfRSSI < -50 || _rfRSSI > 20)
+    else if (_rfRSSI < minRSSI || _rfRSSI > maxRSSI)
     {
         _logger->logError(QString("Radio Interface testing failure for DUT %1!").arg(dutNo(slot)));
         _logger->logDebug(QString("Radio Interface failure for DUT %1: RSSI (%2) is out of bounds!").arg(dutNo(slot)).arg(_rfRSSI));

@@ -3,6 +3,11 @@ methodManager.addMethod("OLC Zhaga STD");
 
 ZhagaSTD =
 {
+    measuringBoardIDs: ["5CDA73693935", "5CDA78693935", "5CDC87693935", "5CEE627B3935",  "5CDF60603935"],
+    RfModuleId: "AL03RZIAA",
+
+    //---
+
     downloadRailtest: function ()
     {
         for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
@@ -72,19 +77,11 @@ ZhagaSTD =
         }
     },
 
+    //---
+
     testRadio: function ()
     {
-        testClient.commandSequenceStarted();
-
-        for(var slot = 1; slot < testClient.dutsCount() + 1; slot++)
-        {
-            if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
-            {
-                testClient.on_testRadio(slot);
-            }
-        }
-
-        testClient.commandSequenceFinished();
+        GeneralCommands.testRadio(ZhagaSTD.RfModuleId, 19, 80, -50, 50, 7);
     },
 
     //---
@@ -149,8 +146,8 @@ ZhagaSTD =
                             testClient.dutProperty(slot, "voltageChecked") &&
                             testClient.dutProperty(slot, "lightSensChecked") &&
                             testClient.dutProperty(slot, "daliChecked") &&
-                            //testClient.dutProperty(slot, "gnssChecked") &&
-                            //testClient.dutProperty(slot, "radioChecked") &&
+                            testClient.dutProperty(slot, "gnssChecked") &&
+                            testClient.dutProperty(slot, "radioChecked") &&
                             testClient.dutProperty(slot, "accelChecked")
                             )
                     {
@@ -181,7 +178,7 @@ methodManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", ZhagaSTD
 methodManager.addFunctionToGeneralList("Test accelerometer", GeneralCommands.testAccelerometer);
 methodManager.addFunctionToGeneralList("Test light sensor", GeneralCommands.testLightSensor);
 methodManager.addFunctionToGeneralList("Test DALI", GeneralCommands.testDALI);
-methodManager.addFunctionToGeneralList("Test radio interface", ZhagaECO.testRadio);
+methodManager.addFunctionToGeneralList("Test radio interface", ZhagaSTD.testRadio);
 methodManager.addFunctionToGeneralList("Test GNSS", GeneralCommands.testGNSS);
 methodManager.addFunctionToGeneralList("Check Testing Completion", ZhagaSTD.checkTestingCompletion);
 methodManager.addFunctionToGeneralList("Download Software", ZhagaSTD.downloadSoftware);

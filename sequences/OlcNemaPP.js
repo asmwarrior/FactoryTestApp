@@ -198,7 +198,7 @@ NemaPP =
 
     testRadio: function ()
     {
-        GeneralCommands.testRadio(NemaPP.RfModuleId);
+        GeneralCommands.testRadio(NemaPP.RfModuleId, 19, 80, -60, 60, 7);
     },
 
     //---
@@ -255,41 +255,6 @@ NemaPP =
 
     //---
 
-    testGNSS: function ()
-    {
-        actionHintWidget.showProgressHint("Testing GNSS module...");
-
-        for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
-        {
-            for (let i = 0; i < testClientList.length; i++)
-            {
-                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
-                {
-                    let testClient = testClientList[i];
-                    let responseString = testClient.railtestCommand(slot, "gnrx 3").join(' ');
-                    if (responseString.includes("line"))
-                    {
-                        testClient.setDutProperty(slot, "gnssChecked", true);
-                        logger.logSuccess("GNSS module for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
-                    }
-
-                    else
-                    {
-                        testClient.setDutProperty(slot, "gnssChecked", false);
-                        testClient.addDutError(slot, responseString);
-                        logger.logDebug("GNSS module failture: " + responseString + ".");
-                        logger.logError("GNSS module failture for DUT " + testClient.dutNo(slot));
-
-                    }
-                }
-            }
-        }
-
-        actionHintWidget.showProgressHint("READY");
-    },
-
-    //---
-
     startTesting: function ()
     {
         GeneralCommands.testConnection();
@@ -300,9 +265,7 @@ NemaPP =
         NemaPP.testDALI();
         NemaPP.checkAinVoltage();
         GeneralCommands.testAccelerometer();
-        GeneralCommands.testLightSensor();
         NemaPP.testRadio();
-        NemaPP.testGNSS();
         NemaPP.checkTestingCompletion();
         NemaPP.downloadSoftware();
         NemaPP.powerOff();
@@ -321,7 +284,6 @@ NemaPP =
                 {
                     if( testClient.dutProperty(slot, "id") !== "" &&
                             testClient.dutProperty(slot, "voltageChecked") &&
-                            testClient.dutProperty(slot, "lightSensChecked") &&
                             testClient.dutProperty(slot, "daliChecked") &&
                             testClient.dutProperty(slot, "radioChecked") &&
                             testClient.dutProperty(slot, "accelChecked")
@@ -354,9 +316,7 @@ methodManager.addFunctionToGeneralList("Power off DUTs", NemaPP.powerOff);
 methodManager.addFunctionToGeneralList("Read unique device identifiers (ID)", GeneralCommands.readChipId);
 methodManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", NemaPP.checkAinVoltage);
 methodManager.addFunctionToGeneralList("Test accelerometer", GeneralCommands.testAccelerometer);
-methodManager.addFunctionToGeneralList("Test light sensor", GeneralCommands.testLightSensor);
 methodManager.addFunctionToGeneralList("Test radio interface", NemaPP.testRadio);
-methodManager.addFunctionToGeneralList("Test GNSS", NemaPP.testGNSS);
 methodManager.addFunctionToGeneralList("Test DALI", NemaPP.testDALI);
 methodManager.addFunctionToGeneralList("Check Testing Completion", NemaPP.checkTestingCompletion);
 methodManager.addFunctionToGeneralList("Download Software", NemaPP.downloadSoftware);

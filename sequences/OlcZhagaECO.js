@@ -129,7 +129,7 @@ ZhagaECO =
 
     testRadio: function ()
     {
-        GeneralCommands.testRadio(ZhagaECO.RfModuleId);
+        GeneralCommands.testRadio(ZhagaECO.RfModuleId, 19, 80, -50, 50, 7);
     },
 
     //---
