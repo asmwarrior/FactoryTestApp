@@ -65,14 +65,14 @@ NemaPP =
                     jlink.select();
                     jlink.setSpeed(5000);
                     jlink.connect();
-                    if(jlink.erase() < 0)
-                    {
-                        logger.logDebug("Unable to earase chip.")
-                        return;
-                    }
+//                    if(jlink.erase() < 0)
+//                    {
+//                        logger.logDebug("Unable to earase chip.")
+//                        return;
+//                    }
 
-                    jlink.downloadFile("sequences/OlcNemaPP/dummy_btl_efr32xg12.s37", 0);
-                    jlink.downloadFile("sequences/OlcNemaPP/railtest_nema.hex", 0);
+//                    jlink.downloadFile("sequences/OlcNemaPP/dummy_btl_efr32xg12.s37", 0);
+//                    jlink.downloadFile("sequences/OlcNemaPP/railtest_nema.hex", 0);
                     jlink.reset();
                     jlink.go();
                     jlink.close();
@@ -95,10 +95,9 @@ NemaPP =
             {
                 let testClient = testClientList[i];
                 let jlink = jlinkList[i];
-                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot) && (testClient.dutState(slot) === 2))
                 {
-                    testClient.powerOn(slot);
-                    delay(1000);
+                    logger.logInfo("Downloading software for DUT " + testClient.dutNo(slot));
                     testClient.switchSWD(slot);
 
                     jlink.selectByUSB();
@@ -138,7 +137,7 @@ NemaPP =
                     continue;
 
                 testClient.setTimeout(300);
-                logger.logDebug("Attempting connection to slot " + slot + " of board " + testClient.no() + "...");
+//                logger.logDebug("Attempting connection to slot " + slot + " of board " + testClient.no() + "...");
 
                 let voltage = testClient.readAIN(slot, 4, 0);
 
@@ -259,6 +258,7 @@ NemaPP =
     {
         GeneralCommands.testConnection();
         NemaPP.openTestClients();
+        NemaPP.detectDuts();
         NemaPP.detectDuts();
         NemaPP.downloadRailtest();
         GeneralCommands.readChipId();

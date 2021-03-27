@@ -53,7 +53,7 @@ ZhagaSTD =
             {
                 let testClient = testClientList[i];
                 let jlink = jlinkList[i];
-                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot) && (testClient.dutState(slot) === 2))
                 {
                     testClient.powerOn(slot);
                     delay(1000);

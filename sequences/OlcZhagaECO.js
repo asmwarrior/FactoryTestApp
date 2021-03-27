@@ -66,7 +66,7 @@ ZhagaECO =
             {
                 let testClient = testClientList[i];
                 let jlink = jlinkList[i];
-                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot) && (testClient.dutState(slot) === 2))
                 {
                     testClient.powerOn(slot);
                     delay(1000);
@@ -136,8 +136,6 @@ ZhagaECO =
 
     startTesting: function ()
     {
-//        testClient.commandSequenceStarted();
-
         GeneralCommands.testConnection();
         GeneralCommands.detectDuts();
         ZhagaECO.downloadRailtest();
@@ -149,8 +147,6 @@ ZhagaECO =
         GeneralCommands.testDALI();
         ZhagaECO.checkTestingCompletion();
         ZhagaECO.downloadSoftware();
-
-//        testClient.commandSequenceFinished();
     },
 
     //---
