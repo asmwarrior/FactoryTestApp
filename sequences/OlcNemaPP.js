@@ -1,7 +1,7 @@
 var SLOTS_NUMBER = 3
-methodManager.addMethod("OLC Nema");
+methodManager.addMethod("OLC NemaPP");
 
-Nema =
+NemaPP =
 {
     measuringBoardIDs: ["5CDA66603935", "5CDA626D3431", "5CDD786A3431", "5CE0646D3431",  "5CDC766A3431"],
     RfModuleId: "A5XK3RJTA",
@@ -10,7 +10,7 @@ Nema =
 
     openTestClients: function ()
     {
-        GeneralCommands.openTestClients(Nema.measuringBoardIDs);
+        GeneralCommands.openTestClients(NemaPP.measuringBoardIDs);
     },
 
     //---
@@ -71,8 +71,8 @@ Nema =
                         return;
                     }
 
-                    jlink.downloadFile("sequences/OlcNema/dummy_btl_efr32xg12.s37", 0);
-                    jlink.downloadFile("sequences/OlcNema/railtest_nema.hex", 0);
+                    jlink.downloadFile("sequences/OlcNemaPP/dummy_btl_efr32xg12.s37", 0);
+                    jlink.downloadFile("sequences/OlcNemaPP/railtest_nema.hex", 0);
                     jlink.reset();
                     jlink.go();
                     jlink.close();
@@ -126,7 +126,7 @@ Nema =
     detectDuts: function ()
     {
         actionHintWidget.showProgressHint("Detecting DUTs in the testing fixture...");
-        Nema.powerOn();
+        NemaPP.powerOn();
 
         for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
         {
@@ -198,7 +198,7 @@ Nema =
 
     testRadio: function ()
     {
-        GeneralCommands.testRadio(Nema.RfModuleId);
+        GeneralCommands.testRadio(NemaPP.RfModuleId);
     },
 
     //---
@@ -293,19 +293,19 @@ Nema =
     startTesting: function ()
     {
         GeneralCommands.testConnection();
-        Nema.openTestClients();
-        Nema.detectDuts();
-        Nema.downloadRailtest();
+        NemaPP.openTestClients();
+        NemaPP.detectDuts();
+        NemaPP.downloadRailtest();
         GeneralCommands.readChipId();
-        Nema.testDALI();
-        Nema.checkAinVoltage();
+        NemaPP.testDALI();
+        NemaPP.checkAinVoltage();
         GeneralCommands.testAccelerometer();
         GeneralCommands.testLightSensor();
-        Nema.testRadio();
-        Nema.testGNSS();
-        Nema.checkTestingCompletion();
-        Nema.downloadSoftware();
-        Nema.powerOff();
+        NemaPP.testRadio();
+        NemaPP.testGNSS();
+        NemaPP.checkTestingCompletion();
+        NemaPP.downloadSoftware();
+        NemaPP.powerOff();
     },
 
     //---
@@ -342,21 +342,21 @@ Nema =
     }
 }
 
-methodManager.addFunctionToGeneralList("Full cycle testing", Nema.startTesting);
+methodManager.addFunctionToGeneralList("Full cycle testing", NemaPP.startTesting);
 methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
-methodManager.addFunctionToGeneralList("Establish connection to sockets", Nema.openTestClients);
-methodManager.addFunctionToGeneralList("Detect DUTs", Nema.detectDuts);
-methodManager.addFunctionToGeneralList("Download Railtest", Nema.downloadRailtest);
+methodManager.addFunctionToGeneralList("Establish connection to sockets", NemaPP.openTestClients);
+methodManager.addFunctionToGeneralList("Detect DUTs", NemaPP.detectDuts);
+methodManager.addFunctionToGeneralList("Download Railtest", NemaPP.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
 methodManager.addFunctionToGeneralList("Read Temperature", GeneralCommands.readTemperature);
-methodManager.addFunctionToGeneralList("Supply power to DUTs", Nema.powerOn);
-methodManager.addFunctionToGeneralList("Power off DUTs", Nema.powerOff);
+methodManager.addFunctionToGeneralList("Supply power to DUTs", NemaPP.powerOn);
+methodManager.addFunctionToGeneralList("Power off DUTs", NemaPP.powerOff);
 methodManager.addFunctionToGeneralList("Read unique device identifiers (ID)", GeneralCommands.readChipId);
-methodManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", Nema.checkAinVoltage);
+methodManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", NemaPP.checkAinVoltage);
 methodManager.addFunctionToGeneralList("Test accelerometer", GeneralCommands.testAccelerometer);
 methodManager.addFunctionToGeneralList("Test light sensor", GeneralCommands.testLightSensor);
-methodManager.addFunctionToGeneralList("Test radio interface", Nema.testRadio);
-methodManager.addFunctionToGeneralList("Test GNSS", Nema.testGNSS);
-methodManager.addFunctionToGeneralList("Test DALI", Nema.testDALI);
-methodManager.addFunctionToGeneralList("Check Testing Completion", Nema.checkTestingCompletion);
-methodManager.addFunctionToGeneralList("Download Software", Nema.downloadSoftware);
+methodManager.addFunctionToGeneralList("Test radio interface", NemaPP.testRadio);
+methodManager.addFunctionToGeneralList("Test GNSS", NemaPP.testGNSS);
+methodManager.addFunctionToGeneralList("Test DALI", NemaPP.testDALI);
+methodManager.addFunctionToGeneralList("Check Testing Completion", NemaPP.checkTestingCompletion);
+methodManager.addFunctionToGeneralList("Download Software", NemaPP.downloadSoftware);
