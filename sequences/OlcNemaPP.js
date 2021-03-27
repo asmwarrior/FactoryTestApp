@@ -195,6 +195,71 @@ NemaPP =
 
     //---
 
+    testRTC: function ()
+    {
+        actionHintWidget.showProgressHint("Testing RTC...");
+
+        let currentDate = new Date();
+        let year = String(currentDate.getFullYear());
+        year = year.slice(2);
+
+        for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (let i = 0; i < testClientList.length; i++)
+            {
+                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
+                {
+                    let testClient = testClientList[i];
+                    testClient.railtestCommand(slot, "srtc" +
+                                                     " " + year +
+                                                     " " + currentDate.getMonth() +
+                                                     " " + currentDate.getDate() +
+                                                     " " + currentDate.getHours() +
+                                                     " " + currentDate.getMinutes() +
+                                                     " " + currentDate.getSeconds());
+                }
+            }
+        }
+
+        NemaPP.powerOff();
+        delay(5000);
+        NemaPP.powerOn();
+        delay(1000);
+
+        for(slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (i = 0; i < testClientList.length; i++)
+            {
+                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
+                {
+                    let testClient = testClientList[i];
+                    let response = testClient.railtestCommand(slot, "rtc");
+                    if (response.length < 7)
+                        response = testClient.railtestCommand(slot, "rtc");
+
+                    let responseString = response.join(' ');
+
+                    if(responseString.includes("year:" + year))
+                    {
+                        testClientList[i].setDutProperty(slot, "rtcChecked", true);
+                        logger.logSuccess("RTC module for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
+                    }
+
+                    else
+                    {
+                        testClientList[i].setDutProperty(slot, "rtcChecked", false);
+                        logger.logError("RTC module testing for DUT " + testClient.dutNo(slot) + " has been failed!.");
+                        logger.logDebug("RTC value for DUT " + testClient.dutNo(slot) + ": " + response.slice(7));
+                    }
+                }
+            }
+        }
+
+        actionHintWidget.showProgressHint("READY");
+    },
+
+    //---
+
     testRadio: function ()
     {
         GeneralCommands.testRadio(NemaPP.RfModuleId, 19, 80, -60, 60, 7);
@@ -263,6 +328,7 @@ NemaPP =
         NemaPP.downloadRailtest();
         GeneralCommands.readChipId();
         NemaPP.testDALI();
+        NemaPP.testRTC();
         NemaPP.checkAinVoltage();
         GeneralCommands.testAccelerometer();
         NemaPP.testRadio();
@@ -286,6 +352,7 @@ NemaPP =
                             testClient.dutProperty(slot, "voltageChecked") &&
                             testClient.dutProperty(slot, "daliChecked") &&
                             testClient.dutProperty(slot, "radioChecked") &&
+                            testClient.dutProperty(slot, "rtcChecked") &&
                             testClient.dutProperty(slot, "accelChecked")
                             )
                     {
@@ -314,6 +381,8 @@ methodManager.addFunctionToGeneralList("Read Temperature", GeneralCommands.readT
 methodManager.addFunctionToGeneralList("Supply power to DUTs", NemaPP.powerOn);
 methodManager.addFunctionToGeneralList("Power off DUTs", NemaPP.powerOff);
 methodManager.addFunctionToGeneralList("Read unique device identifiers (ID)", GeneralCommands.readChipId);
+methodManager.addFunctionToGeneralList("Read Real time clock (RTC) values", GeneralCommands.readRTC);
+methodManager.addFunctionToGeneralList("Test Real time clock (RTC) module", NemaPP.testRTC);
 methodManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", NemaPP.checkAinVoltage);
 methodManager.addFunctionToGeneralList("Test accelerometer", GeneralCommands.testAccelerometer);
 methodManager.addFunctionToGeneralList("Test radio interface", NemaPP.testRadio);

@@ -173,6 +173,32 @@ GeneralCommands =
         actionHintWidget.showProgressHint("READY");
     },
 
+    //---
+
+    readRTC: function ()
+    {
+        actionHintWidget.showProgressHint("Reading RTC values...");
+
+        for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (let i = 0; i < testClientList.length; i++)
+            {
+                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
+                {
+                    let testClient = testClientList[i];
+                    let response = testClient.railtestCommand(slot, "rtc");
+
+                    logger.logInfo("Current RTC value for DUT " + testClient.dutNo(slot) + " has been read.");
+                    logger.logDebug("RTC value for DUT " + testClient.dutNo(slot) + ": " + response.slice(7));
+                }
+            }
+        }
+
+        actionHintWidget.showProgressHint("READY");
+    },
+
+    //---
+
     testAccelerometer: function ()
     {
         actionHintWidget.showProgressHint("Testing Accelerometer...");
@@ -240,6 +266,8 @@ GeneralCommands =
         actionHintWidget.showProgressHint("READY");
     },
 
+    //--
+
     testLightSensor: function ()
     {
         actionHintWidget.showProgressHint("Testing light sensor...");
@@ -290,6 +318,8 @@ GeneralCommands =
         actionHintWidget.showProgressHint("READY");
     },
 
+    //---
+
     testRadio: function (RfModuleId, channel, power, minRSSI, maxRSSI, count)
     {
         actionHintWidget.showProgressHint("Testing radio interface...");
@@ -307,6 +337,8 @@ GeneralCommands =
 
         actionHintWidget.showProgressHint("READY");
     },
+
+   //---
 
     testDALI: function ()
     {

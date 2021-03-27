@@ -17,6 +17,7 @@ static Dut dutTemplate {
     {"daliChecked", false},
     {"radioChecked", false},
     {"gnssChecked", false},
+    {"rtcChecked", false},
     {"error", ""}
 };
 
