@@ -319,6 +319,28 @@ NemaPP =
 
     //---
 
+    test12V: function ()
+    {
+        actionHintWidget.showProgressHint("Testing 12V output...");
+
+        for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (let i = 0; i < testClientList.length; i++)
+            {
+                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
+                {
+                    let testClient = testClientList[i];
+
+//                    testClient.railtestCommand(slot, "12vout 0");
+                }
+            }
+        }
+
+        actionHintWidget.showProgressHint("READY");
+    },
+
+    //---
+
     startTesting: function ()
     {
         GeneralCommands.testConnection();
@@ -387,5 +409,6 @@ methodManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", NemaPP.c
 methodManager.addFunctionToGeneralList("Test accelerometer", GeneralCommands.testAccelerometer);
 methodManager.addFunctionToGeneralList("Test radio interface", NemaPP.testRadio);
 methodManager.addFunctionToGeneralList("Test DALI", NemaPP.testDALI);
+methodManager.addFunctionToGeneralList("Test 12V output", NemaPP.test12V);
 methodManager.addFunctionToGeneralList("Check Testing Completion", NemaPP.checkTestingCompletion);
 methodManager.addFunctionToGeneralList("Download Software", NemaPP.downloadSoftware);
