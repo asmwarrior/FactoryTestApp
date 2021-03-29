@@ -194,7 +194,7 @@ methodManager.addFunctionToGeneralList("Full cycle testing", ZhagaECO.startTesti
 methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
 methodManager.addFunctionToGeneralList("Establish connection to sockets", ZhagaECO.openTestClients);
 methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
-methodManager.addFunctionToGeneralList("Earase chip", GeneralCommands.earaseChip);
+methodManager.addFunctionToGeneralList("Erase chip", GeneralCommands.earaseChip);
 methodManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
 methodManager.addFunctionToGeneralList("Read Temperature", GeneralCommands.readTemperature);
