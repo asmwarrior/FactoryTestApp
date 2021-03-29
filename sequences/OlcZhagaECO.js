@@ -37,15 +37,15 @@ ZhagaECO =
                     jlink.select();
                     jlink.setSpeed(5000);
                     jlink.connect();
-//                    if(jlink.erase() < 0)
-//                    {
-//                        return;
-//                    }
+                    if(jlink.erase() < 0)
+                    {
+                        return;
+                    }
 
-//                    jlink.downloadFile("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", 0);
-//                    jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex", 0);
-//                    jlink.reset();
-//                    jlink.go();
+                    jlink.downloadFile("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", 0);
+                    jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex", 0);
+                    jlink.reset();
+                    jlink.go();
                     jlink.close();
                 }
             }
@@ -136,8 +136,14 @@ ZhagaECO =
 
     startTesting: function ()
     {
-
+        GeneralCommands.testConnection();
         ZhagaECO.openTestClients();
+
+        if(!GeneralCommands.isMethodCorrect)
+            return;
+
+        GeneralCommands.detectDuts();
+        GeneralCommands.detectDuts();
         GeneralCommands.detectDuts();
         ZhagaECO.downloadRailtest();
         GeneralCommands.readChipId();
@@ -188,6 +194,7 @@ methodManager.addFunctionToGeneralList("Full cycle testing", ZhagaECO.startTesti
 methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
 methodManager.addFunctionToGeneralList("Establish connection to sockets", ZhagaECO.openTestClients);
 methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
+methodManager.addFunctionToGeneralList("Earase chip", GeneralCommands.earaseChip);
 methodManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
 methodManager.addFunctionToGeneralList("Read Temperature", GeneralCommands.readTemperature);

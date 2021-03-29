@@ -8,6 +8,13 @@ ZhagaSTD =
 
     //---
 
+    openTestClients: function ()
+    {
+        GeneralCommands.openTestClients(ZhagaSTD.measuringBoardIDs);
+    },
+
+    //---
+
     downloadRailtest: function ()
     {
         for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
@@ -114,9 +121,12 @@ ZhagaSTD =
 
     startTesting: function ()
     {
-//        testClient.commandSequenceStarted();
-
         GeneralCommands.testConnection();
+        ZhagaSTD.openTestClients();
+
+        if(!GeneralCommands.isMethodCorrect)
+            return;
+
         GeneralCommands.detectDuts();
         ZhagaECO.downloadRailtest();
         GeneralCommands.readChipId();
@@ -168,6 +178,7 @@ ZhagaSTD =
 
 methodManager.addFunctionToGeneralList("Full cycle testing", ZhagaSTD.startTesting);
 methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
+methodManager.addFunctionToGeneralList("Establish connection to sockets", ZhagaSTD.openTestClients);
 methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
 methodManager.addFunctionToGeneralList("Download Railtest", ZhagaSTD.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);

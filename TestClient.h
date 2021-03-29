@@ -31,6 +31,7 @@ public:
 
 public slots:
 
+    QStringList availiblePorts() const;
     void open(QString id);
 
     int no() const {return _no;}

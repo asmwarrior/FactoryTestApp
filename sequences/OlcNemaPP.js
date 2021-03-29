@@ -343,7 +343,12 @@ NemaPP =
 
     startTesting: function ()
     {
+        GeneralCommands.testConnection();
         NemaPP.openTestClients();
+
+        if(!GeneralCommands.isMethodCorrect)
+            return;
+
         NemaPP.detectDuts();
         NemaPP.detectDuts();
         NemaPP.downloadRailtest();

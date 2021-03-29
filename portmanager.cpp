@@ -99,7 +99,6 @@ void PortManager::open()
         _timeout = 1000;
         railtestCommand(1, " ");
         _timeout = 10000;
-        qDebug() << "serial port opened";
     }
 }
 

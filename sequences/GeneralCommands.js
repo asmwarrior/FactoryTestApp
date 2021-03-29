@@ -13,6 +13,8 @@ function delay(milliseconds)
 
 GeneralCommands =
 {
+    isMethodCorrect: false,
+
     testConnection: function ()
     {
         for (var i = 0; i < jlinkList.length; i++)
@@ -23,13 +25,70 @@ GeneralCommands =
 
     //---
 
+    earaseChip: function ()
+    {
+        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (var i = 0; i < testClientList.length; i++)
+            {
+                let testClient = testClientList[i];
+                let jlink = jlinkList[i];
+                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+                {
+                    testClient.powerOn(slot);
+                    delay(1000);
+                    testClient.switchSWD(slot);
+
+                    jlink.selectByUSB();
+                    jlink.open();
+                    jlink.setDevice("EFR32FG12PXXXF1024");
+                    jlink.select();
+                    jlink.setSpeed(5000);
+                    jlink.connect();
+                    jlink.erase();
+                    jlink.close();
+                }
+            }
+        }
+    },
+
+    //---
+
     openTestClients: function (portsIdList)
     {
-        for (var i = 0; i < testClientList.length; i++)
+        actionHintWidget.showProgressHint("Establishing connection to the sockets...");
+
+        let isListCorrect = false;
+        let availiblePorts = testClientList[0].availiblePorts();
+
+        for (var i = 0; i < availiblePorts.length; i++)
         {
-            let testClient = testClientList[i];
-            testClient.open(portsIdList[i]);
+            for (var j = 0; j < portsIdList.length; j++)
+            {
+                if(availiblePorts[i] === portsIdList[j])
+                {
+                    isListCorrect = true;
+                    GeneralCommands.isMethodCorrect = true;
+                }
+            }
         }
+
+        if(isListCorrect)
+        {
+            for (i = 0; i < testClientList.length; i++)
+            {
+                let testClient = testClientList[i];
+                testClient.open(portsIdList[i]);
+            }
+        }
+
+        else
+        {
+            GeneralCommands.isMethodCorrect = false;
+            logger.logError("The current test method is for a different test fixture!");
+        }
+
+        actionHintWidget.showProgressHint("READY");
     },
 
     //---
@@ -107,7 +166,8 @@ GeneralCommands =
 
                 testClient.setTimeout(500);
                 testClient.powerOff(slot);
-                testClient.resetDut(slot);
+//                testClient.resetDut(slot);
+                testClient.setTimeout(10000);
             }
         }
         delay(100);
@@ -122,27 +182,30 @@ GeneralCommands =
                 if(!testClient.isConnected())
                     continue;
 
-                testClient.setTimeout(500);
-                logger.logDebug("Attempting connection to slot " + slot + " of board " + testClient.no() + "...");
-
-                var prevCSA = testClient.readCSA(0);
-                testClient.powerOn(slot);
-                var currCSA = testClient.readCSA(0);
-
-                if((currCSA - prevCSA) > 15)
+                if(!testClientList[i].isDutChecked(slot))
                 {
-                    logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no() + " detected.");
-                    testClient.setDutProperty(slot, "state", 1);
-                    testClient.setDutProperty(slot, "checked", true);
-                }
+                    testClient.setTimeout(500);
+//                    logger.logDebug("Attempting connection to slot " + slot + " of board " + testClient.no() + "...");
 
-                else
-                {
-                    testClient.setDutProperty(slot, "state", 0);
-                    testClient.setDutProperty(slot, "checked", false);
-                }
+                    var prevCSA = testClient.readCSA(0);
+                    testClient.powerOn(slot);
+                    var currCSA = testClient.readCSA(0);
 
-                testClient.setTimeout(10000);
+                    if((currCSA - prevCSA) > 15)
+                    {
+                        logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no() + " detected.");
+                        testClient.setDutProperty(slot, "state", 1);
+                        testClient.setDutProperty(slot, "checked", true);
+                    }
+
+                    else
+                    {
+                        testClient.setDutProperty(slot, "state", 0);
+                        testClient.setDutProperty(slot, "checked", false);
+                    }
+
+                    testClient.setTimeout(10000);
+                }
             }
         }
 

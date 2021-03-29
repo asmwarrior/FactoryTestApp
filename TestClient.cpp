@@ -40,9 +40,7 @@ void TestClient::open()
 
     setTimeout(1000);
 
-    qDebug() << "starting reading CSA...";
     int csa = readCSA(0);
-    qDebug() << "CSA has been read";
 
     if(csa != -1)
     {
@@ -55,6 +53,17 @@ void TestClient::open()
     setTimeout(10000);
 }
 
+QStringList TestClient::availiblePorts() const
+{
+    auto availablePorts = QSerialPortInfo::availablePorts();
+    QStringList list;
+    for (auto & portInfo : availablePorts)
+    {
+        list.push_back(portInfo.serialNumber());
+    }
+    return list;
+}
+
 void TestClient::open(QString id)
 {
     auto availablePorts = QSerialPortInfo::availablePorts();
@@ -65,11 +74,8 @@ void TestClient::open(QString id)
             _portManager.setPort(portInfo.portName());
             _portManager.open();
 
-            qDebug() << "starting reading CSA...";
-            int csa = readCSA(0);
-            qDebug() << "CSA has been read: " << csa;
-
             setTimeout(1000);
+            int csa = readCSA(0);
             if(csa != -1)
             {
                 _isConnected = true;
