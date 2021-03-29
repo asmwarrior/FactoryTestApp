@@ -65,14 +65,14 @@ NemaPP =
                     jlink.select();
                     jlink.setSpeed(5000);
                     jlink.connect();
-//                    if(jlink.erase() < 0)
-//                    {
-//                        logger.logDebug("Unable to earase chip.")
-//                        return;
-//                    }
+                    if(jlink.erase() < 0)
+                    {
+                        logger.logDebug("Unable to earase chip.")
+                        return;
+                    }
 
-//                    jlink.downloadFile("sequences/OlcNemaPP/dummy_btl_efr32xg12.s37", 0);
-//                    jlink.downloadFile("sequences/OlcNemaPP/railtest_nema.hex", 0);
+                    jlink.downloadFile("sequences/OlcNemaPP/dummy_btl_efr32xg12.s37", 0);
+                    jlink.downloadFile("sequences/OlcNemaPP/railtest_nema.hex", 0);
                     jlink.reset();
                     jlink.go();
                     jlink.close();
@@ -343,7 +343,6 @@ NemaPP =
 
     startTesting: function ()
     {
-        GeneralCommands.testConnection();
         NemaPP.openTestClients();
         NemaPP.detectDuts();
         NemaPP.detectDuts();

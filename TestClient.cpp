@@ -39,7 +39,12 @@ void TestClient::open()
     _portManager.open();
 
     setTimeout(1000);
-    if(readCSA(0) != -1)
+
+    qDebug() << "starting reading CSA...";
+    int csa = readCSA(0);
+    qDebug() << "CSA has been read";
+
+    if(csa != -1)
     {
         _isConnected = true;
     }
@@ -60,8 +65,12 @@ void TestClient::open(QString id)
             _portManager.setPort(portInfo.portName());
             _portManager.open();
 
+            qDebug() << "starting reading CSA...";
+            int csa = readCSA(0);
+            qDebug() << "CSA has been read: " << csa;
+
             setTimeout(1000);
-            if(readCSA(0) != -1)
+            if(csa != -1)
             {
                 _isConnected = true;
                 _logger->logDebug(QString("Connection to the Measuring Board %1 has been established").arg(_no));

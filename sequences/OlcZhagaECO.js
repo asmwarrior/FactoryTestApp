@@ -136,14 +136,15 @@ ZhagaECO =
 
     startTesting: function ()
     {
-        GeneralCommands.testConnection();
+
+        ZhagaECO.openTestClients();
         GeneralCommands.detectDuts();
         ZhagaECO.downloadRailtest();
         GeneralCommands.readChipId();
         ZhagaECO.checkAinVoltage();
         GeneralCommands.testAccelerometer();
         GeneralCommands.testLightSensor();
-        GeneralCommands.testRadio();
+        ZhagaECO.testRadio();
         GeneralCommands.testDALI();
         ZhagaECO.checkTestingCompletion();
         ZhagaECO.downloadSoftware();

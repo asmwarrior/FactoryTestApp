@@ -92,10 +92,14 @@ void PortManager::open()
     }
 
     if (!_serial.open(QSerialPort::ReadWrite))
-        qDebug() << _serial.errorString();
+        qDebug() << "an error occures when opening serial port: " << _serial.errorString();
     else
     {
         _serial.readAll();
+        _timeout = 1000;
+        railtestCommand(1, " ");
+        _timeout = 10000;
+        qDebug() << "serial port opened";
     }
 }
 
