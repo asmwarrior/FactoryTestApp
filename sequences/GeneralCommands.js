@@ -103,7 +103,8 @@ GeneralCommands =
         for (var i = 0; i < testClientList.length; i++)
         {
             let testClient = testClientList[i];
-            logger.logInfo("Measuring board " + testClient.no() + " current: " + testClient.readCSA(0) + " mA");
+            if(testClient.isConnected())
+                logger.logInfo("Measuring board " + testClient.no() + " current: " + testClient.readCSA(0) + " mA");
         }
     },
 
@@ -115,9 +116,12 @@ GeneralCommands =
         {
             for (var i = 0; i < testClientList.length; i++)
             {
-                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
+                let testClient = testClientList[i];
+                if(!testClient.isConnected())
+                    continue;
+
+                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
                 {
-                    let testClient = testClientList[i];
                     testClient.powerOn(slot);
                     logger.logInfo("DUT " + testClient.dutNo(slot) + " is switched ON");
                 }
@@ -133,7 +137,11 @@ GeneralCommands =
         {
             for (var i = 0; i < testClientList.length; i++)
             {
-                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
+                let testClient = testClientList[i];
+                if(!testClient.isConnected())
+                    continue;
+
+                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
                 {
                     let testClient = testClientList[i];
                     testClient.powerOff(slot);
@@ -150,7 +158,8 @@ GeneralCommands =
         for (var i = 0; i < testClientList.length; i++)
         {
             let testClient = testClientList[i];
-            logger.logInfo("Measuring board " + testClient.no() + " temperature: " + testClient.readTemperature());
+            if(testClient.isConnected())
+                logger.logInfo("Measuring board " + testClient.no() + " temperature: " + testClient.readTemperature());
         }
     },
 
@@ -437,7 +446,8 @@ GeneralCommands =
 
         for (var i = 0; i < testClientList.length; i++)
         {
-            testClientList[i].daliOn();
+            if(testClientList[i].isConnected())
+                testClientList[i].daliOn();
         }
 
         for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
@@ -476,7 +486,8 @@ GeneralCommands =
 
         for (i = 0; i < testClientList.length; i++)
         {
-            testClientList[i].daliOff();
+            if(testClientList[i].isConnected())
+                testClientList[i].daliOff();
         }
 
         actionHintWidget.showProgressHint("READY");

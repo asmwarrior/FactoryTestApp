@@ -188,7 +188,7 @@ ZhagaECO =
 
     testRadio: function ()
     {
-        GeneralCommands.testRadio(ZhagaECO.RfModuleId, 19, 80, -50, 50, 7);
+        GeneralCommands.testRadio(ZhagaECO.RfModuleId, 19, 80, -70, 50, 7);
     },
 
     //---
@@ -202,9 +202,9 @@ ZhagaECO =
             return;
 
         GeneralCommands.clearDutsInfo();
-        GeneralCommands.detectDuts();
-        GeneralCommands.detectDuts();
-        GeneralCommands.detectDuts();
+        ZhagaECO.detectDuts();
+//        GeneralCommands.detectDuts();
+//        GeneralCommands.detectDuts();
         ZhagaECO.downloadRailtest();
         GeneralCommands.readChipId();
         ZhagaECO.checkAinVoltage();
