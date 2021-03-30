@@ -239,9 +239,17 @@ GeneralCommands =
                 {
                     let testClient = testClientList[i];
                     let response = testClient.railtestCommand(slot, "getmemw 0x0FE081F0 2");
-                    let id = response[response.length - 1].slice(2) + response[response.length - 3].slice(2);
-                    testClient.setDutProperty(slot, "id", id.toUpperCase());
-                    logger.logSuccess("ID for DUT " + testClient.dutNo(slot) + " has been read: " + testClient.dutProperty(slot, "id"));
+                    if(response.length > 4)
+                    {
+                        let id = response[response.length - 1].slice(2) + response[response.length - 3].slice(2);
+                        testClient.setDutProperty(slot, "id", id.toUpperCase());
+                        logger.logSuccess("ID for DUT " + testClient.dutNo(slot) + " has been read: " + testClient.dutProperty(slot, "id"));
+                    }
+
+                    else
+                    {
+                       logger.logError("Couldn't read ID for DUT " + testClient.dutNo(slot));
+                    }
                 }
             }
         }
