@@ -151,6 +151,20 @@ GeneralCommands =
 
     //---
 
+    clearDutsInfo: function ()
+    {
+        for (var i = 0; i < testClientList.length; i++)
+        {
+            let testClient = testClientList[i];
+            for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+            {
+                testClient.resetDut(slot);
+            }
+        }
+    },
+
+    //---
+
     detectDuts: function ()
     {
         actionHintWidget.showProgressHint("Detecting DUTs in the testing fixture...");
@@ -166,7 +180,6 @@ GeneralCommands =
 
                 testClient.setTimeout(500);
                 testClient.powerOff(slot);
-//                testClient.resetDut(slot);
                 testClient.setTimeout(10000);
             }
         }

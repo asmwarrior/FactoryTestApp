@@ -93,34 +93,34 @@ void SessionManager::writeDutRecordsToDatabase()
 
     //Text log file
 
-    QFile file(_settings->value("workDirectory").toString() + "/reports/log.txt");
+//    QFile file(_settings->value("workDirectory").toString() + "/reports/log.txt");
 
-    file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+//    file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
 
-    for(auto & record : _records)
-    {
-        file.write(    record.runningNumber.toLocal8Bit() + "; "
-                     + "ID: " +  record.id.toLocal8Bit() + "; "
-                     + "SOCKET: " +  record.no.toLocal8Bit() + "; "
-                     + "TEST CYCLE: " +  record.cycleNo.toLocal8Bit() + "; "
-                     + "BATCH NUMBER: " +  record.batchNumber.toLocal8Bit() + "; "
-                     + "TEST METHOD: " +  record.method.toLocal8Bit() + "; "
-                     + "OPERATOR: " +  record.operatorName.toLocal8Bit() + "; "
-                     + "DATE: " +  record.timeStamp.toLocal8Bit() + "; "
-                     + "RESULT: " +  record.state.toLocal8Bit());
+//    for(auto & record : _records)
+//    {
+//        file.write(    record.runningNumber.toLocal8Bit() + "; "
+//                     + "ID: " +  record.id.toLocal8Bit() + "; "
+//                     + "SOCKET: " +  record.no.toLocal8Bit() + "; "
+//                     + "TEST CYCLE: " +  record.cycleNo.toLocal8Bit() + "; "
+//                     + "BATCH NUMBER: " +  record.batchNumber.toLocal8Bit() + "; "
+//                     + "TEST METHOD: " +  record.method.toLocal8Bit() + "; "
+//                     + "OPERATOR: " +  record.operatorName.toLocal8Bit() + "; "
+//                     + "DATE: " +  record.timeStamp.toLocal8Bit() + "; "
+//                     + "RESULT: " +  record.state.toLocal8Bit());
 
-        if(record.error.size())
-        {
-            file.write(" ERROR DESC: " + record.error.toLocal8Bit() + "\n");
-        }
+//        if(record.error.size())
+//        {
+//            file.write(" ERROR DESC: " + record.error.toLocal8Bit() + "\n");
+//        }
 
-        else
-        {
-            file.write("\n");
-        }
-    }
+//        else
+//        {
+//            file.write("\n");
+//        }
+//    }
 
-    file.close();
+//    file.close();
 
     //CSV log file
 

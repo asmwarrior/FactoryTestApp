@@ -349,6 +349,7 @@ NemaPP =
         if(!GeneralCommands.isMethodCorrect)
             return;
 
+        GeneralCommands.clearDutsInfo();
         NemaPP.detectDuts();
         NemaPP.detectDuts();
         NemaPP.downloadRailtest();
@@ -400,6 +401,7 @@ NemaPP =
 methodManager.addFunctionToGeneralList("Full cycle testing", NemaPP.startTesting);
 methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
 methodManager.addFunctionToGeneralList("Establish connection to sockets", NemaPP.openTestClients);
+methodManager.addFunctionToGeneralList("Clear previous test results for DUTs", GeneralCommands.clearDutsInfo);
 methodManager.addFunctionToGeneralList("Detect DUTs", NemaPP.detectDuts);
 methodManager.addFunctionToGeneralList("Download Railtest", NemaPP.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);

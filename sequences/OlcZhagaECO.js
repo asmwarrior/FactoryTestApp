@@ -37,15 +37,15 @@ ZhagaECO =
                     jlink.select();
                     jlink.setSpeed(5000);
                     jlink.connect();
-                    if(jlink.erase() < 0)
-                    {
-                        return;
-                    }
+//                    if(jlink.erase() < 0)
+//                    {
+//                        return;
+//                    }
 
-                    jlink.downloadFile("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", 0);
-                    jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex", 0);
-                    jlink.reset();
-                    jlink.go();
+//                    jlink.downloadFile("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", 0);
+//                    jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex", 0);
+//                    jlink.reset();
+//                    jlink.go();
                     jlink.close();
                 }
             }
@@ -142,6 +142,7 @@ ZhagaECO =
         if(!GeneralCommands.isMethodCorrect)
             return;
 
+        GeneralCommands.clearDutsInfo();
         GeneralCommands.detectDuts();
         GeneralCommands.detectDuts();
         GeneralCommands.detectDuts();
@@ -193,6 +194,7 @@ ZhagaECO =
 methodManager.addFunctionToGeneralList("Full cycle testing", ZhagaECO.startTesting);
 methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
 methodManager.addFunctionToGeneralList("Establish connection to sockets", ZhagaECO.openTestClients);
+methodManager.addFunctionToGeneralList("Clear previous test results for DUTs", GeneralCommands.clearDutsInfo);
 methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
 methodManager.addFunctionToGeneralList("Erase chip", GeneralCommands.earaseChip);
 methodManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);

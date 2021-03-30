@@ -127,6 +127,9 @@ ZhagaSTD =
         if(!GeneralCommands.isMethodCorrect)
             return;
 
+        GeneralCommands.clearDutsInfo();
+        GeneralCommands.detectDuts();
+        GeneralCommands.detectDuts();
         GeneralCommands.detectDuts();
         ZhagaECO.downloadRailtest();
         GeneralCommands.readChipId();
@@ -179,6 +182,7 @@ ZhagaSTD =
 methodManager.addFunctionToGeneralList("Full cycle testing", ZhagaSTD.startTesting);
 methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
 methodManager.addFunctionToGeneralList("Establish connection to sockets", ZhagaSTD.openTestClients);
+methodManager.addFunctionToGeneralList("Clear previous test results for DUTs", GeneralCommands.clearDutsInfo);
 methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
 methodManager.addFunctionToGeneralList("Download Railtest", ZhagaSTD.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);

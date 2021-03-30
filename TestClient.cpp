@@ -689,6 +689,7 @@ void TestClient::resetDut(int slot)
     _duts[slot]["radioChecked"] = false;
     _duts[slot]["error"] = "";
 
+    emit dutChanged(_duts[slot]);
 }
 
 void TestClient::setDutProperty(int slot, const QString &property, const QVariant &value)
