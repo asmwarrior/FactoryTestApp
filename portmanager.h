@@ -2,6 +2,7 @@
 #define PORTMANAGER_H
 
 #include <QSerialPort>
+#include <QSharedPointer>
 
 #include "SlipProtocol.h"
 #include "Logger.h"
@@ -23,7 +24,7 @@ public:
                  QSerialPort::StopBits stopBits = QSerialPort::OneStop,
                  QSerialPort::FlowControl flowControl = QSerialPort::NoFlowControl);
 
-    void setLogger(Logger* logger) {_logger = logger;}
+    void setLogger(const QSharedPointer<Logger>& logger) {_logger = logger;}
 
 public slots:
 
@@ -52,7 +53,7 @@ private slots:
 
 private:
 
-    Logger* _logger;
+    QSharedPointer<Logger> _logger;
     QSerialPort _serial;
     Mode _mode = idleMode;
 

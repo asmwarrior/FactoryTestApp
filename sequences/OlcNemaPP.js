@@ -162,6 +162,8 @@ NemaPP =
 
     },
 
+    //---
+
     checkAinVoltage: function ()
     {
         actionHintWidget.showProgressHint("Checking voltage on AIN1...");

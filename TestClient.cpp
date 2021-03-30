@@ -27,6 +27,7 @@ TestClient::~TestClient()
 void TestClient::setLogger(const QSharedPointer<Logger> &logger)
 {
     _logger = logger;
+    _portManager.setLogger(logger);
 }
 
 void TestClient::setPort(const QString &portName)

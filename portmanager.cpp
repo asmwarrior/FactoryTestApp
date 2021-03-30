@@ -1,4 +1,4 @@
-#include "PortManager.h"
+#include "portmanager.h"
 
 #include <QtEndian>
 #include <QCoreApplication>
@@ -67,7 +67,7 @@ static inline void _encodeSymbol(QByteArray &buffer, char ch) Q_DECL_NOTHROW
 PortManager::PortManager(QObject *parent) : QObject(parent), _serial(this)
 {
     connect(&_serial, &QSerialPort::readyRead, this, &PortManager::onSerialPortReadyRead);
-//    connect(&_serial, &QSerialPort::errorOccurred, this, &PortManager::onSerialPortErrorOccurred);
+    connect(&_serial, &QSerialPort::errorOccurred, this, &PortManager::onSerialPortErrorOccurred);
 }
 
 void PortManager::setPort(const QString &name, qint32 baudRate, QSerialPort::DataBits dataBits, QSerialPort::Parity parity, QSerialPort::StopBits stopBits, QSerialPort::FlowControl flowControl)
@@ -117,10 +117,10 @@ QStringList PortManager::slipCommand(int channel, const QByteArray &frame)
     _response.clear();
     sendFrame(channel, frame);
 
-//    if(_response.isEmpty())
-//    {
-//        _logger->logDebug("Timeout for the response waiting.");
-//    }
+    if(_response.isEmpty())
+    {
+        _logger->logDebug("Timeout for the response waiting.");
+    }
     emit responseRecieved(_response);
     return _response;
 }
@@ -133,10 +133,10 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
     _syncReplies.clear();
     sendFrame(channel, cmd + "\r\n\r\n");
 
-//    if(_response.isEmpty())
-//    {
-//        _logger->logDebug("Timeout for the response waiting.");
-//    }
+    if(_response.isEmpty())
+    {
+        _logger->logDebug("Timeout for the response waiting.");
+    }
     emit responseRecieved(_response);
     return _response;
 }

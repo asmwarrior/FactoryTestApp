@@ -37,21 +37,78 @@ ZhagaECO =
                     jlink.select();
                     jlink.setSpeed(5000);
                     jlink.connect();
-//                    if(jlink.erase() < 0)
-//                    {
-//                        return;
-//                    }
+                    if(jlink.erase() < 0)
+                    {
+                        return;
+                    }
 
-//                    jlink.downloadFile("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", 0);
-//                    jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex", 0);
-//                    jlink.reset();
-//                    jlink.go();
+                    jlink.downloadFile("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", 0);
+                    jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex", 0);
+                    jlink.reset();
+                    jlink.go();
                     jlink.close();
                 }
             }
         }
 
         actionHintWidget.showProgressHint("READY");
+    },
+
+    //---
+
+    detectDuts: function ()
+    {
+        actionHintWidget.showProgressHint("Detecting DUTs in the testing fixture...");
+
+        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (var i = 0; i < testClientList.length; i++)
+            {
+                let testClient = testClientList[i];
+
+                if(!testClient.isConnected())
+                    continue;
+
+                testClient.setTimeout(500);
+                testClient.powerOn(slot);
+                testClient.setTimeout(10000);
+            }
+        }
+        delay(100);
+
+        for (slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (i = 0; i < testClientList.length; i++)
+            {
+                var testClient = testClientList[i];
+
+                if(!testClient.isConnected())
+                    continue;
+
+                testClient.setTimeout(300);
+//                logger.logDebug("Attempting connection to slot " + slot + " of board " + testClient.no() + "...");
+
+                let voltage = testClient.readAIN(slot, 1, 0);
+
+                if(voltage > 70000 && voltage < 72000)
+                {
+                    logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no() + " detected.");
+                    testClient.setDutProperty(slot, "state", 1);
+                    testClient.setDutProperty(slot, "checked", true);
+                }
+
+                else
+                {
+                    testClient.setDutProperty(slot, "state", 0);
+                    testClient.setDutProperty(slot, "checked", false);
+                }
+
+                testClient.setTimeout(10000);
+            }
+        }
+
+        actionHintWidget.showProgressHint("READY");
+
     },
 
     //---
@@ -195,7 +252,7 @@ methodManager.addFunctionToGeneralList("Full cycle testing", ZhagaECO.startTesti
 methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
 methodManager.addFunctionToGeneralList("Establish connection to sockets", ZhagaECO.openTestClients);
 methodManager.addFunctionToGeneralList("Clear previous test results for DUTs", GeneralCommands.clearDutsInfo);
-methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
+methodManager.addFunctionToGeneralList("Detect DUTs", ZhagaECO.detectDuts);
 methodManager.addFunctionToGeneralList("Erase chip", GeneralCommands.earaseChip);
 methodManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
