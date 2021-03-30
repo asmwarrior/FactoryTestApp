@@ -141,6 +141,9 @@ NemaPP =
 
                 let voltage = testClient.readAIN(slot, 4, 0);
 
+                if (voltage === 0)
+                    voltage = testClient.readAIN(slot, 4, 0);
+
                 if(voltage > 45000 && voltage < 52000)
                 {
                     logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no() + " detected.");

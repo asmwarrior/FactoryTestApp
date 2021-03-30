@@ -89,6 +89,8 @@ ZhagaECO =
 //                logger.logDebug("Attempting connection to slot " + slot + " of board " + testClient.no() + "...");
 
                 let voltage = testClient.readAIN(slot, 1, 0);
+                if(voltage === 0)
+                    voltage = testClient.readAIN(slot, 1, 0);
 
                 if(voltage > 70000 && voltage < 72000)
                 {

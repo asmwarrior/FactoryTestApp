@@ -84,6 +84,42 @@ ZhagaSTD =
         }
     },
 
+    testDOUT: function ()
+    {
+        actionHintWidget.showProgressHint("Testing digital output...");
+
+        for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (let i = 0; i < testClientList.length; i++)
+            {
+                if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
+                {
+                    let testClient = testClientList[i];
+
+                    testClient.setDOUT(slot, 1);
+                    delay(100);
+                    let response = testClient.railtestCommand(slot, "din");
+
+                    testClient.clearDOUT(slot, 1);
+                    delay(100);
+                    let response2 = testClient.railtestCommand(slot, "din");
+                    if(response.includes("state:1") && response2.includes("state:0"))
+                    {
+                        testClientList[i].setDutProperty(slot, "doutChecked", true);
+                        logger.logSuccess("Digital output for DUT " + testClient.dutNo(slot) + " has been tested.");
+                    }
+
+                    else
+                    {
+                       logger.logError("Faled to test digital output for DUT " + testClient.dutNo(slot));
+                    }
+                }
+            }
+        }
+
+        actionHintWidget.showProgressHint("READY");
+    },
+
     //---
 
     testRadio: function ()
@@ -190,6 +226,7 @@ methodManager.addFunctionToGeneralList("Supply power to DUTs", GeneralCommands.p
 methodManager.addFunctionToGeneralList("Power off DUTs", GeneralCommands.powerOff);
 methodManager.addFunctionToGeneralList("Read unique device identifiers (ID)", GeneralCommands.readChipId);
 methodManager.addFunctionToGeneralList("Check voltage on AIN 1 (3.3V)", ZhagaSTD.checkAinVoltage);
+methodManager.addFunctionToGeneralList("Test digital output", ZhagaSTD.testDOUT);
 methodManager.addFunctionToGeneralList("Test accelerometer", GeneralCommands.testAccelerometer);
 methodManager.addFunctionToGeneralList("Test light sensor", GeneralCommands.testLightSensor);
 methodManager.addFunctionToGeneralList("Test DALI", GeneralCommands.testDALI);
