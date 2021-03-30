@@ -78,7 +78,12 @@ GeneralCommands =
             for (i = 0; i < testClientList.length; i++)
             {
                 let testClient = testClientList[i];
-                testClient.open(portsIdList[i]);
+                let jlink = jlinkList[i];
+
+                if(jlink.isConnected())
+                    testClient.open(portsIdList[i]);
+                else
+                    logger.logError("Test connection to JLinks before establishing connection to sockets!")
             }
         }
 

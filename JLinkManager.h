@@ -25,6 +25,8 @@ class JLinkManager : public QObject
 
 public slots:
 
+    State state() const {return _state;}
+    bool isConnected() const;
     void selectByUSB();
     void open();
     void setDevice(const QString& device);

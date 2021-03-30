@@ -35,6 +35,14 @@ QString JLinkManager::getSN() const
     return _SN;
 }
 
+bool JLinkManager::isConnected() const
+{
+    if(_state == State::connectionTested)
+        return true;
+
+    return false;
+}
+
 void JLinkManager::selectByUSB()
 {
     if (JLINKARM_EMU_SelectByUSBSN(_SN.toUInt()) < 0)
