@@ -71,7 +71,6 @@ MainWindow::MainWindow(QWidget *parent)
                                                           .setProperty(_methodManager->scriptEngine()->globalObject().property("testClientList")
                                                           .property("length").toInt(), _methodManager->scriptEngine()->newQObject(_testClientList.last()));
             _threads.last()->start();
-//            _testClientList.last()->open();
             delay(200);
         }
     }
@@ -278,7 +277,6 @@ MainWindow::MainWindow(QWidget *parent)
         _methodManager->setCurrentMethod(methodName);
 
         _session->setMethod(methodName);
-
         _testFunctionsListWidget->clear();
         _testFunctionsListWidget->addItems(_methodManager->currentMethodGeneralFunctionNames());
         if(_testFunctionsListWidget->count() > 0)
@@ -353,6 +351,9 @@ MainWindow::~MainWindow()
     }
 
     _settings->setValue("operatorList", _operatorList.join("|"));
+
+    if(_selectMetodBox->isEnabled() && !_selectMetodBox->currentText().isEmpty())
+        _settings->setValue("lastMethod", _selectMetodBox->currentText());
 }
 
 void MainWindow::startNewSession()
@@ -371,10 +372,15 @@ void MainWindow::startNewSession()
     _selectMetodBox->setEnabled(true);
     _selectMetodBox->clear();
     _selectMetodBox->addItems(_methodManager->avaliableMethodsNames());
+
+    auto lastMethod = _settings->value("lastMethod").toString();
+    if(_methodManager->avaliableMethodsNames().contains(lastMethod))
+    {
+        _selectMetodBox->setCurrentText(lastMethod);
+    }
     _session->setMethod(_selectMetodBox->currentText());
-
-
     _methodManager->setCurrentMethod(_selectMetodBox->currentText());
+    _settings->setValue("lastMethod", _selectMetodBox->currentText());
 
     _manualCommandsCheckBox->setEnabled(true);
     _manualCommandsCheckBox->setChecked(false);
@@ -408,6 +414,7 @@ void MainWindow::finishSession()
     _session->writeDutRecordsToDatabase();
     _session->clear();
 
+    _settings->setValue("lastMethod", _selectMetodBox->currentText());
     _selectMetodBox->clear();
     _testFixtureWidget->reset();
     _operatorNameEdit->clear();
