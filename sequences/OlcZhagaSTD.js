@@ -35,15 +35,35 @@ ZhagaSTD =
                     jlink.select();
                     jlink.setSpeed(5000);
                     jlink.connect();
-//                    if(jlink.erase() < 0)
-//                    {
-//                        return;
-//                    }
 
-//                    jlink.downloadFile("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", 0);
-//                    jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex", 0);
-//                    jlink.reset();
-//                    jlink.go();
+                    let error = jlink.erase();
+                    if(error < 0)
+                    {
+                        logger.logError("Unable to earase chip flash memory in DUT " + testClient.dutNo(slot));
+                        logger.logDebug("An error occured when erasing chip in DUT " + testClient.dutNo(slot) + " Error code: " + error);
+                    }
+
+                    else
+                    {
+                        logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
+                    }
+
+                    jlink.downloadFile("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", 0);
+                    error = jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex", 0);
+
+                    if(error < 0)
+                    {
+                        logger.logError("Failed to load the Railtest into the chip flash memory for DUT " + testClient.dutNo(slot));
+                        logger.logDebug("An error occured when downloading olc_zhaga_2l4l_railtest.hex for DUT " + testClient.dutNo(slot) + " Error code: " + error);
+                    }
+
+                    else
+                    {
+                        logger.logInfo("Railtest firmware has been downloaded in DUT " + testClient.dutNo(slot));
+                    }
+
+                    jlink.reset();
+                    jlink.go();
                     jlink.close();
                 }
             }
@@ -72,14 +92,38 @@ ZhagaSTD =
                     jlink.select();
                     jlink.setSpeed(5000);
                     jlink.connect();
-//                    if(jlink.erase() < 0)
-//                    {
-//                        return;
-//                    }
 
-//                    jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_software.hex", 0);
+                    let error = jlink.erase();
+                    if(error < 0)
+                    {
+                        logger.logError("Unable to earase chip flash memory in DUT " + testClient.dutNo(slot));
+                        logger.logDebug("An error occured when erasing chip in DUT " + testClient.dutNo(slot) + " Error code: " + error);
+                    }
+
+                    else
+                    {
+                        logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
+                    }
+
+                    error = jlink.downloadFile("sequences/OlcZhagaSTD/ZhagaSTD_software.hex", 0);
+
+                    if(error < 0)
+                    {
+                        testClient.setDutProperty(slot, "state", 3);
+                        testClient.addDutError(slot, "Failed to load the sowtware");
+                        logger.logError("Failed to load the sowtware into the chip flash memory for DUT " + testClient.dutNo(slot));
+                        logger.logDebug("An error occured when downloading ZhagaSTD_software.hex for DUT " + testClient.dutNo(slot) + " Error code: " + error);
+                    }
+
+                    else
+                    {
+                        logger.logInfo("Software has been downloaded in DUT " + testClient.dutNo(slot));
+                    }
+
                     jlink.close();
                 }
+
+                testClient.slotFullyTested(slot);
             }
         }
     },
@@ -147,7 +191,7 @@ ZhagaSTD =
                     testClientList[i].setDutProperty(slot, "voltageChecked", false);
                     testClientList[i].addDutError(slot, response.join(' '));
                     logger.logDebug("Error voltage value on AIN 1 : " + voltage  + ".");
-                    logger.logError("Error voltage value on AIN 1 is detected! DUT " + testClientList[i].dutNo(slot));
+                    logger.logError("Error voltage value on AIN 1 is detected. DUT " + testClientList[i].dutNo(slot));
                 }
             }
         }
@@ -176,8 +220,7 @@ ZhagaSTD =
         GeneralCommands.testGNSS();
         ZhagaECO.checkTestingCompletion();
         ZhagaECO.downloadSoftware();
-
-//        testClient.commandSequenceFinished();
+        GeneralCommands.powerOff();
     },
 
     //---
@@ -208,7 +251,7 @@ ZhagaSTD =
                         testClient.setDutProperty(slot, "state", 3);
                     }
 
-                    testClient.slotFullyTested(slot);
+//                    testClient.slotFullyTested(slot);
                 }
             }
         }

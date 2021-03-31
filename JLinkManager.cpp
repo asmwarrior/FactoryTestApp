@@ -55,7 +55,7 @@ void JLinkManager::selectByUSB()
 void JLinkManager::open()
 {
     if(JLINKARM_Open())
-        _logger->logError("JLINK: An error occured when opening JLink programmer!");
+        _logger->logError("JLINK: An error occured when opening JLink programmer.");
 }
 
 void JLinkManager::setDevice(const QString &device)
@@ -87,7 +87,7 @@ void JLinkManager::connect()
 {
     if(JLINKARM_Connect())
     {
-        _logger->logError("JLINK: Could not connect to target!");
+        _logger->logError("JLINK: Could not connect to target.");
     }
 }
 
@@ -95,15 +95,6 @@ int JLinkManager::erase()
 {
     int error = 0;
     error = JLINK_EraseChip();
-    if(error < 0)
-    {
-        _logger->logError(QString("Error occured when erasing chip! Error code: %1. Check if the device is already programmed.").arg(error));
-    }
-    else
-    {
-        _logger->logInfo("Chip flash has been erased.");
-    }
-
     return error;
 }
 
@@ -117,16 +108,13 @@ void JLinkManager::go()
     JLINKARM_Go();
 }
 
-void JLinkManager::downloadFile(const QString &fileName, int adress)
+int JLinkManager::downloadFile(const QString &fileName, int adress)
 {
     int error = 0;
     JLINKARM_BeginDownload(0); // Indicates start of flash download
     error = JLINK_DownloadFile(QString(_settings->value("workDirectory").toString() + "/" + fileName).toLocal8Bit().data(), adress); // Load the application binary to address 0
     JLINKARM_EndDownload();
-    if(error < 0)
-        _logger->logError(QString("JLINK: Failed to load file %1! Error code: %2").arg(fileName).arg(error));
-    else
-        _logger->logInfo(QString("JLINK: File %1 has been downloaded").arg(fileName));
+    return error;
 }
 
 void JLinkManager::close()
@@ -138,7 +126,7 @@ void JLinkManager::on_establishConnection()
 {
     if(_SN.isEmpty())
     {
-        _logger->logError("No serial number for the JLink device provided!");
+        _logger->logError("No serial number for the JLink device provided.");
         return;
     }
 

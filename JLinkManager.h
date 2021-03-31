@@ -36,7 +36,7 @@ public slots:
     int erase();
     void reset();
     void go();
-    void downloadFile(const QString& fileName, int adress);
+    int downloadFile(const QString& fileName, int adress);
     void close();
 
     void on_establishConnection();

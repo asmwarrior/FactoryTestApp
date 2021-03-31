@@ -83,14 +83,14 @@ GeneralCommands =
                 if(jlink.isConnected())
                     testClient.open(portsIdList[i]);
                 else
-                    logger.logError("Test connection to JLinks before establishing connection to sockets!")
+                    logger.logError("Test connection to JLinks before establishing connection to sockets.")
             }
         }
 
         else
         {
             GeneralCommands.isMethodCorrect = false;
-            logger.logError("The current test method is for a different test fixture!");
+            logger.logError("The current test method is for a different test fixture.");
         }
 
         actionHintWidget.showProgressHint("READY");
@@ -159,7 +159,7 @@ GeneralCommands =
         {
             let testClient = testClientList[i];
             if(testClient.isConnected())
-                logger.logInfo("Measuring board " + testClient.no() + " temperature: " + testClient.readTemperature());
+                logger.logInfo("Measuring board " + testClient.no() + " temperature (raw ADC value): " + testClient.readTemperature());
         }
     },
 
@@ -315,7 +315,7 @@ GeneralCommands =
                     {
                         testClient.setDutProperty(slot, "accelChecked", false);
                         testClient.addDutError(slot, response.join(' '));
-                        logger.logError("Accelerometer failture for DUT " + testClient.dutNo(slot) + ". No response recieved!");
+                        logger.logError("Accelerometer failture for DUT " + testClient.dutNo(slot) + ". No response recieved.");
                     }
 
                     else
@@ -354,7 +354,7 @@ GeneralCommands =
                     {
                         testClient.setDutProperty(slot, "accelChecked", false);
                         testClient.addDutError(slot, response.join(' '));
-                        logger.logError("Accelerometer failture for DUT " + testClient.dutNo(slot) + ". Invalid response recieved!");
+                        logger.logError("Accelerometer failture for DUT " + testClient.dutNo(slot) + ". Invalid response recieved.");
                         logger.logDebug("Accelerometer failure. Invalid response: " + response);
                     }
                 }
@@ -474,7 +474,7 @@ GeneralCommands =
                     {
                         testClient.setDutProperty(slot, "daliChecked", false);
                         testClient.addDutError(slot, responseString);
-                        logger.logError("DALI testing for DUT " + testClient.dutNo(slot) + " has been failed!");
+                        logger.logError("DALI testing for DUT " + testClient.dutNo(slot) + " has been failed.");
                         logger.logDebug("DALI failure: " + responseString  + ".");
                     }
 

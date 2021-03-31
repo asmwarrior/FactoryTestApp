@@ -591,14 +591,14 @@ void TestClient::testRadio(int slot, QString RfModuleId, int channel, int power,
 
     if (!rf.open(portName))
     {
-        _logger->logError("Cannot open serial port for reference radio module!");
+        _logger->logError("Cannot open serial port for reference radio module.");
         return;
     }
 
     rf.syncCommand("reset", "", 2000);
     if (!rf.waitCommandPrompt())
     {
-        _logger->logError("Timeout waiting reference radio module command prompt!");
+        _logger->logError("Timeout waiting reference radio module command prompt.");
         return;
     }
 
@@ -632,18 +632,18 @@ void TestClient::testRadio(int slot, QString RfModuleId, int channel, int power,
 
     if (_rfCount < count)
     {
-        _logger->logError(QString("Radio Interface testing failure for DUT %1!").arg(dutNo(slot)));
-        _logger->logDebug(QString("Radio Interface failure for DUT %1: packet lost (%2)!").arg(dutNo(slot)).arg(_rfCount));
+        _logger->logError(QString("Radio Interface testing failure for DUT %1.").arg(dutNo(slot)));
+        _logger->logDebug(QString("Radio Interface failure for DUT %1: packet lost (%2).").arg(dutNo(slot)).arg(_rfCount));
         _duts[slot]["radioChecked"] = false;
-        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: packet lost (%1)!").arg(_rfCount);
+        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: packet lost (%1).").arg(_rfCount);
     }
 
     else if (_rfRSSI < minRSSI || _rfRSSI > maxRSSI)
     {
-        _logger->logError(QString("Radio Interface testing failure for DUT %1!").arg(dutNo(slot)));
-        _logger->logDebug(QString("Radio Interface failure for DUT %1: RSSI (%2) is out of bounds!").arg(dutNo(slot)).arg(_rfRSSI));
+        _logger->logError(QString("Radio Interface testing failure for DUT %1.").arg(dutNo(slot)));
+        _logger->logDebug(QString("Radio Interface failure for DUT %1: RSSI (%2) is out of bounds.").arg(dutNo(slot)).arg(_rfRSSI));
         _duts[slot]["radioChecked"] = false;
-        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: RSSI (%1) is out of bounds!").arg(_rfRSSI);
+        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: RSSI (%1) is out of bounds.").arg(_rfRSSI);
     }
 
     else
