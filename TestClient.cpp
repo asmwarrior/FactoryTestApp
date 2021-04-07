@@ -80,7 +80,7 @@ void TestClient::open(QString id)
             if(csa != -1)
             {
                 _isConnected = true;
-                _logger->logDebug(QString("Connection to the Measuring Board %1 has been established").arg(_no));
+                _logger->logDebug(QString("Connection to the Measuring Board %1 has been established on %2").arg(_no).arg(portInfo.portName()));
             }
 
             else
@@ -618,11 +618,13 @@ void TestClient::testRadio(int slot, QString RfModuleId, int channel, int power,
     railtestCommand(slot, "setBle1Mbps 1");
     delay(500);
 
-    railtestCommand(slot, "setChannel 19");
+    railtestCommand(slot, QString("setChannel %1").arg(channel).toLocal8Bit());
     delay(500);
 
-    railtestCommand(slot, "setPower 80");
     railtestCommand(slot, QString("setPower %1").arg(power).toLocal8Bit());
+    delay(500);
+
+    railtestCommand(slot, "setTxDelay 10");
     delay(500);
 
     rf.syncCommand("rx", "1", 500);
@@ -630,7 +632,7 @@ void TestClient::testRadio(int slot, QString RfModuleId, int channel, int power,
     railtestCommand(slot, "tx 11");
     delay(3000);
 
-    if (_rfCount < count)
+    if (_rfCount < (count - 2))
     {
         _logger->logError(QString("Radio Interface testing failure for DUT %1.").arg(dutNo(slot)));
         _logger->logDebug(QString("Radio Interface failure for DUT %1: packet lost (%2).").arg(dutNo(slot)).arg(_rfCount));
@@ -638,17 +640,18 @@ void TestClient::testRadio(int slot, QString RfModuleId, int channel, int power,
         _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: packet lost (%1).").arg(_rfCount);
     }
 
-    else if (_rfRSSI < minRSSI || _rfRSSI > maxRSSI)
-    {
-        _logger->logError(QString("Radio Interface testing failure for DUT %1.").arg(dutNo(slot)));
-        _logger->logDebug(QString("Radio Interface failure for DUT %1: RSSI (%2) is out of bounds.").arg(dutNo(slot)).arg(_rfRSSI));
-        _duts[slot]["radioChecked"] = false;
-        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: RSSI (%1) is out of bounds.").arg(_rfRSSI);
-    }
+//    else if (_rfRSSI < minRSSI || _rfRSSI > maxRSSI)
+//    {
+//        _logger->logError(QString("Radio Interface testing failure for DUT %1.").arg(dutNo(slot)));
+//        _logger->logDebug(QString("Radio Interface failure for DUT %1: RSSI (%2) is out of bounds.").arg(dutNo(slot)).arg(_rfRSSI));
+//        _duts[slot]["radioChecked"] = false;
+//        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: RSSI (%1) is out of bounds.").arg(_rfRSSI);
+//    }
 
     else
     {
         _logger->logSuccess(QString("Radio interface for DUT %1 has been tested successfully.").arg(dutNo(slot)));
+        _logger->logDebug(QString("Radio Interface testing RSSI value for DUT %1:  (%2).").arg(dutNo(slot)).arg(_rfRSSI));
         _duts[slot]["radioChecked"] = true;
     }
 }

@@ -54,6 +54,152 @@ GeneralCommands =
 
     //---
 
+    downloadRailtest: function (dummyFileName, railtestFileName)
+    {
+        actionHintWidget.showProgressHint("Downloading the Railtest...");
+
+        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (var i = 0; i < testClientList.length; i++)
+            {
+                let testClient = testClientList[i];
+                let jlink = jlinkList[i];
+                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+                {
+                    testClient.powerOn(slot);
+                    delay(1000);
+                    testClient.switchSWD(slot);
+
+                    jlink.selectByUSB();
+                    jlink.open();
+                    jlink.setDevice("EFR32FG12PXXXF1024");
+                    jlink.select();
+                    jlink.setSpeed(5000);
+                    jlink.connect();
+
+                    let error = jlink.erase();
+                    if(error < 0)
+                    {
+                        testClient.setDutProperty(slot, "checked", false);
+                        testClient.setDutProperty(slot, "railtestDownloaded", false);
+                        logger.logError("Unable to earase chip flash memory in DUT " + testClient.dutNo(slot));
+                        logger.logDebug("An error occured when erasing chip in DUT " + testClient.dutNo(slot) + " Error code: " + error);
+                    }
+
+                    else
+                    {
+                        logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
+                    }
+
+                    if(testClient.isDutChecked(slot))
+                    {
+                        error = jlink.downloadFile(dummyFileName, 0);
+
+                        if(error < 0)
+                        {
+                            testClient.setDutProperty(slot, "checked", false);
+                            testClient.setDutProperty(slot, "railtestDownloaded", false);
+                            logger.logError("Failed to load the Railtest into the chip flash memory for DUT " + testClient.dutNo(slot));
+                            logger.logDebug("An error occured when downloading " + dummyFileName + " for DUT " + testClient.dutNo(slot) + " Error code: " + error);
+                        }
+
+                        else
+                        {
+                            error = jlink.downloadFile(railtestFileName, 0);
+
+                            if(error < 0)
+                            {
+                                testClient.setDutProperty(slot, "checked", false);
+                                testClient.setDutProperty(slot, "railtestDownloaded", false);
+                                logger.logError("Failed to load the Railtest into the chip flash memory for DUT " + testClient.dutNo(slot));
+                                logger.logDebug("An error occured when downloading " + railtestFileName + " for DUT " + testClient.dutNo(slot) + " Error code: " + error);
+                            }
+
+                            else
+                            {
+                                testClient.setDutProperty(slot, "railtestDownloaded", true);
+                                logger.logInfo("Railtest firmware has been downloaded in DUT " + testClient.dutNo(slot));
+                            }
+                        }
+                    }
+
+                    jlink.reset();
+                    jlink.go();
+                    jlink.close();
+                }
+            }
+        }
+
+        actionHintWidget.showProgressHint("READY");
+    },
+
+    //---
+
+    downloadSoftware: function (softwareFileName)
+    {
+        actionHintWidget.showProgressHint("Downloading the software...");
+
+        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (var i = 0; i < testClientList.length; i++)
+            {
+                let testClient = testClientList[i];
+                let jlink = jlinkList[i];
+                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot) && (testClient.dutState(slot) === 2))
+                {
+                    testClient.powerOn(slot);
+                    delay(1000);
+                    testClient.switchSWD(slot);
+
+                    jlink.selectByUSB();
+                    jlink.open();
+                    jlink.setDevice("EFR32FG12PXXXF1024");
+                    jlink.select();
+                    jlink.setSpeed(5000);
+                    jlink.connect();
+
+//                    let error = jlink.erase();
+//                    if(error < 0)
+//                    {
+//                        testClient.setDutProperty(slot, "state", 3);
+//                        testClient.addDutError(slot, "Failed to load the sowtware");
+//                        logger.logError("Unable to earase chip flash memory in DUT " + testClient.dutNo(slot));
+//                        logger.logDebug("An error occured when erasing chip in DUT " + testClient.dutNo(slot) + " Error code: " + error);
+//                    }
+
+//                    else
+//                    {
+//                        logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
+
+//                        error = jlink.downloadFile(softwareFileName, 0);
+
+//                        if(error < 0)
+//                        {
+//                            testClient.setDutProperty(slot, "state", 3);
+//                            testClient.addDutError(slot, "Failed to load the sowtware");
+//                            logger.logError("Failed to load the sowtware into the chip flash memory for DUT " + testClient.dutNo(slot));
+//                            logger.logDebug("An error occured when downloading " + softwareFileName + " for DUT " + testClient.dutNo(slot) + " Error code: " + error);
+
+//                        }
+
+//                        else
+//                        {
+//                            logger.logInfo("Software has been downloaded in DUT " + testClient.dutNo(slot));
+//                        }
+//                    }
+
+                    jlink.close();
+                }
+
+                testClient.slotFullyTested(slot);
+            }
+        }
+
+        actionHintWidget.showProgressHint("READY");
+    },
+
+    //---
+
     openTestClients: function (portsIdList)
     {
         actionHintWidget.showProgressHint("Establishing connection to the sockets...");
@@ -215,8 +361,12 @@ GeneralCommands =
 //                    logger.logDebug("Attempting connection to slot " + slot + " of board " + testClient.no() + "...");
 
                     var prevCSA = testClient.readCSA(0);
+                    if (prevCSA === 0)
+                        prevCSA = testClient.readCSA(0);
                     testClient.powerOn(slot);
                     var currCSA = testClient.readCSA(0);
+                    if (currCSA === 0)
+                        currCSA = testClient.readCSA(0);
 
                     if((currCSA - prevCSA) > 15)
                     {

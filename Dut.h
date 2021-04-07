@@ -10,6 +10,7 @@ static Dut dutTemplate {
     {"state", DutState::inactive},
     {"id", ""},
     {"no", 0},
+    {"railtestDownloaded", false},
     {"checked", false},
     {"voltageChecked", false},
     {"accelChecked", false},

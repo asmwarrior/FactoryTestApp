@@ -17,61 +17,82 @@ ZhagaECO =
 
     downloadRailtest: function ()
     {
-        actionHintWidget.showProgressHint("Downloading the Railtest...");
+        GeneralCommands.downloadRailtest("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", "sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex");
+//        actionHintWidget.showProgressHint("Downloading the Railtest...");
 
-        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
-        {
-            for (var i = 0; i < testClientList.length; i++)
-            {
-                let testClient = testClientList[i];
-                let jlink = jlinkList[i];
-                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
-                {
-                    testClient.powerOn(slot);
-                    delay(1000);
-                    testClient.switchSWD(slot);
+//        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+//        {
+//            for (var i = 0; i < testClientList.length; i++)
+//            {
+//                let testClient = testClientList[i];
+//                let jlink = jlinkList[i];
+//                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+//                {
+//                    testClient.powerOn(slot);
+//                    delay(1000);
+//                    testClient.switchSWD(slot);
 
-                    jlink.selectByUSB();
-                    jlink.open();
-                    jlink.setDevice("EFR32FG12PXXXF1024");
-                    jlink.select();
-                    jlink.setSpeed(5000);
-                    jlink.connect();
+//                    jlink.selectByUSB();
+//                    jlink.open();
+//                    jlink.setDevice("EFR32FG12PXXXF1024");
+//                    jlink.select();
+//                    jlink.setSpeed(5000);
+//                    jlink.connect();
 
-                    let error = jlink.erase();
-                    if(error < 0)
-                    {
-                        logger.logError("Unable to earase chip flash memory in DUT " + testClient.dutNo(slot));
-                        logger.logDebug("An error occured when erasing chip in DUT " + testClient.dutNo(slot) + " Error code: " + error);
-                    }
+//                    let error = jlink.erase();
+//                    if(error < 0)
+//                    {
+//                        testClient.setDutProperty(slot, "checked", false);
+//                        testClient.setDutProperty(slot, "railtestDownloaded", false);
+//                        logger.logError("Unable to earase chip flash memory in DUT " + testClient.dutNo(slot));
+//                        logger.logDebug("An error occured when erasing chip in DUT " + testClient.dutNo(slot) + " Error code: " + error);
+//                    }
 
-                    else
-                    {
-                        logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
-                    }
+//                    else
+//                    {
+//                        logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
+//                    }
 
-                    jlink.downloadFile("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", 0);
-                    error = jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex", 0);
+//                    if(testClient.isDutChecked(slot))
+//                    {
+//                        error = jlink.downloadFile("sequences/OLCZhagaECO/dummy_btl_efr32xg12.s37", 0);
 
-                    if(error < 0)
-                    {
-                        logger.logError("Failed to load the Railtest into the chip flash memory for DUT " + testClient.dutNo(slot));
-                        logger.logDebug("An error occured when downloading olc_zhaga_2l4l_railtest.hex for DUT " + testClient.dutNo(slot) + " Error code: " + error);
-                    }
+//                        if(error < 0)
+//                        {
+//                            testClient.setDutProperty(slot, "checked", false);
+//                            testClient.setDutProperty(slot, "railtestDownloaded", false);
+//                            logger.logError("Failed to load the Railtest into the chip flash memory for DUT " + testClient.dutNo(slot));
+//                            logger.logDebug("An error occured when downloading olc_zhaga_2l4l_railtest.hex for DUT " + testClient.dutNo(slot) + " Error code: " + error);
+//                        }
 
-                    else
-                    {
-                        logger.logInfo("Railtest firmware has been downloaded in DUT " + testClient.dutNo(slot));
-                    }
+//                        else
+//                        {
+//                            error = jlink.downloadFile("sequences/OLCZhagaECO/olc_zhaga_2l4l_railtest.hex", 0);
 
-                    jlink.reset();
-                    jlink.go();
-                    jlink.close();
-                }
-            }
-        }
+//                            if(error < 0)
+//                            {
+//                                testClient.setDutProperty(slot, "checked", false);
+//                                testClient.setDutProperty(slot, "railtestDownloaded", false);
+//                                logger.logError("Failed to load the Railtest into the chip flash memory for DUT " + testClient.dutNo(slot));
+//                                logger.logDebug("An error occured when downloading olc_zhaga_2l4l_railtest.hex for DUT " + testClient.dutNo(slot) + " Error code: " + error);
+//                            }
 
-        actionHintWidget.showProgressHint("READY");
+//                            else
+//                            {
+//                                testClient.setDutProperty(slot, "railtestDownloaded", true);
+//                                logger.logInfo("Railtest firmware has been downloaded in DUT " + testClient.dutNo(slot));
+//                            }
+//                        }
+//                    }
+
+//                    jlink.reset();
+//                    jlink.go();
+//                    jlink.close();
+//                }
+//            }
+//        }
+
+//        actionHintWidget.showProgressHint("READY");
     },
 
     //---
@@ -109,8 +130,14 @@ ZhagaECO =
 //                logger.logDebug("Attempting connection to slot " + slot + " of board " + testClient.no() + "...");
 
                 let voltage = testClient.readAIN(slot, 1, 0);
-                if(voltage === 0)
+
+                let counter = 0;
+                while((voltage === 0 || voltage === -1) && (counter < 50))
+                {
+                    delay(200);
                     voltage = testClient.readAIN(slot, 1, 0);
+                    counter++;
+                }
 
                 if(voltage > 70000 && voltage < 72000)
                 {
@@ -137,26 +164,27 @@ ZhagaECO =
 
     downloadSoftware: function ()
     {
-        actionHintWidget.showProgressHint("Downloading the software...");
+        GeneralCommands.downloadSoftware("sequences/OlcZhagaECO/ZhagaECO_software.hex");
+//        actionHintWidget.showProgressHint("Downloading the software...");
 
-        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
-        {
-            for (var i = 0; i < testClientList.length; i++)
-            {
-                let testClient = testClientList[i];
-                let jlink = jlinkList[i];
-                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot) && (testClient.dutState(slot) === 2))
-                {
-                    testClient.powerOn(slot);
-                    delay(1000);
-                    testClient.switchSWD(slot);
+//        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+//        {
+//            for (var i = 0; i < testClientList.length; i++)
+//            {
+//                let testClient = testClientList[i];
+//                let jlink = jlinkList[i];
+//                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot) && (testClient.dutState(slot) === 2))
+//                {
+//                    testClient.powerOn(slot);
+//                    delay(1000);
+//                    testClient.switchSWD(slot);
 
-                    jlink.selectByUSB();
-                    jlink.open();
-                    jlink.setDevice("EFR32FG12PXXXF1024");
-                    jlink.select();
-                    jlink.setSpeed(5000);
-                    jlink.connect();
+//                    jlink.selectByUSB();
+//                    jlink.open();
+//                    jlink.setDevice("EFR32FG12PXXXF1024");
+//                    jlink.select();
+//                    jlink.setSpeed(5000);
+//                    jlink.connect();
 
 //                    let error = jlink.erase();
 //                    if(error < 0)
@@ -186,14 +214,14 @@ ZhagaECO =
 //                        logger.logInfo("Software has been downloaded in DUT " + testClient.dutNo(slot));
 //                    }
 
-                    jlink.close();
-                }
+//                    jlink.close();
+//                }
 
-                testClient.slotFullyTested(slot);
-            }
-        }
+//                testClient.slotFullyTested(slot);
+//            }
+//        }
 
-        actionHintWidget.showProgressHint("READY");
+//        actionHintWidget.showProgressHint("READY");
     },
 
     //---
@@ -231,6 +259,10 @@ ZhagaECO =
 
     //---
 
+//    radioTest
+
+    //---
+
     testRadio: function ()
     {
         GeneralCommands.testRadio(ZhagaECO.RfModuleId, 19, 80, -70, 50, 7);
@@ -247,7 +279,7 @@ ZhagaECO =
             return;
 
         GeneralCommands.clearDutsInfo();
-        ZhagaECO.detectDuts();
+        GeneralCommands.detectDuts();
         ZhagaECO.downloadRailtest();
         GeneralCommands.readChipId();
         ZhagaECO.checkAinVoltage();
@@ -289,6 +321,12 @@ ZhagaECO =
 
 //                    testClient.slotFullyTested(slot);
                 }
+
+                else if(!testClient.dutProperty(slot, "railtestDownloaded"))
+                {
+                    testClient.setDutProperty(slot, "checked", true);
+                    testClient.setDutProperty(slot, "state", 3);
+                }
             }
         }
     }
@@ -298,7 +336,7 @@ methodManager.addFunctionToGeneralList("Full cycle testing", ZhagaECO.startTesti
 methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
 methodManager.addFunctionToGeneralList("Establish connection to sockets", ZhagaECO.openTestClients);
 methodManager.addFunctionToGeneralList("Clear previous test results for DUTs", GeneralCommands.clearDutsInfo);
-methodManager.addFunctionToGeneralList("Detect DUTs", ZhagaECO.detectDuts);
+methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
 methodManager.addFunctionToGeneralList("Erase chip", GeneralCommands.earaseChip);
 methodManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);

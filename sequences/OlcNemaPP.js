@@ -47,119 +47,122 @@ NemaPP =
 
     downloadRailtest: function ()
     {
-        actionHintWidget.showProgressHint("Downloading the Railtest...");
+        GeneralCommands.downloadRailtest("sequences/OlcNemaPP/dummy_btl_efr32xg12.s37", "sequences/OlcNemaPP/railtest_nema.hex");
+//        actionHintWidget.showProgressHint("Downloading the Railtest...");
 
-        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
-        {
-            for (var i = 0; i < testClientList.length; i++)
-            {
-                let testClient = testClientList[i];
-                let jlink = jlinkList[i];
-                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
-                {
-                    testClient.switchSWD(slot);
+//        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+//        {
+//            for (var i = 0; i < testClientList.length; i++)
+//            {
+//                let testClient = testClientList[i];
+//                let jlink = jlinkList[i];
+//                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+//                {
+//                    testClient.switchSWD(slot);
 
-                    jlink.selectByUSB();
-                    jlink.open();
-                    jlink.setDevice("EFR32FG12PXXXF1024");
-                    jlink.select();
-                    jlink.setSpeed(5000);
-                    jlink.connect();
+//                    jlink.selectByUSB();
+//                    jlink.open();
+//                    jlink.setDevice("EFR32FG12PXXXF1024");
+//                    jlink.select();
+//                    jlink.setSpeed(5000);
+//                    jlink.connect();
 
-                    let error = jlink.erase();
-                    if(error < 0)
-                    {
-                        logger.logError("Unable to earase chip flash memory in DUT " + testClient.dutNo(slot));
-                        logger.logDebug("An error occured when erasing chip in DUT " + testClient.dutNo(slot) + " Error code: " + error);
-                    }
+//                    let error = jlink.erase();
+//                    if(error < 0)
+//                    {
+//                        logger.logError("Unable to earase chip flash memory in DUT " + testClient.dutNo(slot));
+//                        logger.logDebug("An error occured when erasing chip in DUT " + testClient.dutNo(slot) + " Error code: " + error);
+//                    }
 
-                    else
-                    {
-                        logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
-                    }
+//                    else
+//                    {
+//                        logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
+//                    }
 
-                    jlink.downloadFile("sequences/OlcNemaPP/dummy_btl_efr32xg12.s37", 0);
-                    error = jlink.downloadFile("sequences/OlcNemaPP/railtest_nema.hex", 0);
+//                    jlink.downloadFile("sequences/OlcNemaPP/dummy_btl_efr32xg12.s37", 0);
+//                    error = jlink.downloadFile("sequences/OlcNemaPP/railtest_nema.hex", 0);
 
-                    if(error < 0)
-                    {
-                        logger.logError("Failed to load the Railtest into the chip flash memory for DUT " + testClient.dutNo(slot));
-                        logger.logDebug("An error occured when downloading railtest_nema.hex for DUT " + testClient.dutNo(slot) + " Error code: " + error);
-                    }
+//                    if(error < 0)
+//                    {
+//                        logger.logError("Failed to load the Railtest into the chip flash memory for DUT " + testClient.dutNo(slot));
+//                        logger.logDebug("An error occured when downloading railtest_nema.hex for DUT " + testClient.dutNo(slot) + " Error code: " + error);
+//                    }
 
-                    else
-                    {
-                        logger.logInfo("Railtest firmware has been downloaded in DUT " + testClient.dutNo(slot));
-                    }
+//                    else
+//                    {
+//                        logger.logInfo("Railtest firmware has been downloaded in DUT " + testClient.dutNo(slot));
+//                    }
 
-                    jlink.reset();
-                    jlink.go();
-                    jlink.close();
-                }
-            }
-        }
+//                    jlink.reset();
+//                    jlink.go();
+//                    jlink.close();
+//                }
+//            }
+//        }
 
-        actionHintWidget.showProgressHint("READY");
+//        actionHintWidget.showProgressHint("READY");
     },
 
     //---
 
     downloadSoftware: function ()
     {
-        actionHintWidget.showProgressHint("Downloading the software...");
+        GeneralCommands.downloadSoftware("sequences/OlcNemaPP/nemaPP_software.hex");
+//        actionHintWidget.showProgressHint("Downloading the software...");
 
-        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
-        {
-            for (var i = 0; i < testClientList.length; i++)
-            {
-                let testClient = testClientList[i];
-                let jlink = jlinkList[i];
-                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot) && (testClient.dutState(slot) === 2))
-                {
-                    logger.logInfo("Downloading software for DUT " + testClient.dutNo(slot));
-                    testClient.switchSWD(slot);
+//        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+//        {
+//            for (var i = 0; i < testClientList.length; i++)
+//            {
+//                let testClient = testClientList[i];
+//                let jlink = jlinkList[i];
+//                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot) && (testClient.dutState(slot) === 2))
+//                {
+//                    logger.logInfo("Downloading software for DUT " + testClient.dutNo(slot));
+//                    testClient.switchSWD(slot);
 
-                    jlink.selectByUSB();
-                    jlink.open();
-                    jlink.setDevice("EFR32FG12PXXXF1024");
-                    jlink.select();
-                    jlink.setSpeed(5000);
-                    jlink.connect();
-                    let error = jlink.erase();
-                    if(error < 0)
-                    {
-                        logger.logError("Unable to earase chip flash memory in DUT " + testClient.dutNo(slot));
-                        logger.logDebug("An error occured when erasing chip in DUT " + testClient.dutNo(slot) + " Error code: " + error);
-                    }
+//                    jlink.selectByUSB();
+//                    jlink.open();
+//                    jlink.setDevice("EFR32FG12PXXXF1024");
+//                    jlink.select();
+//                    jlink.setSpeed(5000);
+//                    jlink.connect();
 
-                    else
-                    {
-                        logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
-                    }
+//                    let error = jlink.erase();
+//                    if(error < 0)
+//                    {
+//                        logger.logError("Unable to earase chip flash memory in DUT " + testClient.dutNo(slot));
+//                        logger.logDebug("An error occured when erasing chip in DUT " + testClient.dutNo(slot) + " Error code: " + error);
+//                    }
 
-                    error = jlink.downloadFile("sequences/OlcNemaPP/nemaPP_software.hex", 0);
+//                    else
+//                    {
+//                        logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
+//                    }
 
-                    if(error < 0)
-                    {
-                        testClient.setDutProperty(slot, "state", 3);
-                        testClient.addDutError(slot, "Failed to load the sowtware");
-                        logger.logError("Failed to load the sowtware into the chip flash memory for DUT " + testClient.dutNo(slot));
-                        logger.logDebug("An error occured when downloading nemaPP_software.hex for DUT " + testClient.dutNo(slot) + " Error code: " + error);
-                    }
+//                    error = jlink.downloadFile("sequences/OlcNemaPP/nemaPP_software.hex", 0);
 
-                    else
-                    {
-                        logger.logInfo("Software has been downloaded in DUT " + testClient.dutNo(slot));
-                    }
+//                    if(error < 0)
+//                    {
+//                        testClient.setDutProperty(slot, "state", 3);
+//                        testClient.addDutError(slot, "Failed to load the sowtware");
+//                        logger.logError("Failed to load the sowtware into the chip flash memory for DUT " + testClient.dutNo(slot));
+//                        logger.logDebug("An error occured when downloading nemaPP_software.hex for DUT " + testClient.dutNo(slot) + " Error code: " + error);
+//                    }
 
-                    jlink.close();
-                }
+//                    else
+//                    {
+//                        logger.logInfo("Software has been downloaded in DUT " + testClient.dutNo(slot));
+//                    }
 
-                testClient.slotFullyTested(slot);
-            }
-        }
+//                    jlink.close();
+//                }
 
-        actionHintWidget.showProgressHint("READY");
+//                testClient.slotFullyTested(slot);
+//            }
+//        }
+
+//        actionHintWidget.showProgressHint("READY");
     },
 
     //---
@@ -182,8 +185,14 @@ NemaPP =
 
                 let voltage = testClient.readAIN(slot, 4, 0);
 
-                if (voltage === 0)
+                let counter = 0;
+                while((voltage === 0 || voltage === -1) && (counter < 50))
+                {
+                    delay(200);
                     voltage = testClient.readAIN(slot, 4, 0);
+                    console.log(testClientList[i].dutNo(slot) + " : " + voltage);
+                    counter++;
+                }
 
                 if(voltage > 45000 && voltage < 52000)
                 {
@@ -397,7 +406,7 @@ NemaPP =
 
         GeneralCommands.clearDutsInfo();
         NemaPP.detectDuts();
-        NemaPP.detectDuts();
+//        NemaPP.detectDuts();
         NemaPP.downloadRailtest();
         GeneralCommands.readChipId();
         NemaPP.testDALI();
@@ -438,6 +447,12 @@ NemaPP =
                     }
 
 //                    testClient.slotFullyTested(slot);
+                }
+
+                else if(!testClient.dutProperty(slot, "railtestDownloaded"))
+                {
+                    testClient.setDutProperty(slot, "checked", true);
+                    testClient.setDutProperty(slot, "state", 3);
                 }
             }
         }
