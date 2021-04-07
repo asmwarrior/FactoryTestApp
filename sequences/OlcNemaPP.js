@@ -449,7 +449,7 @@ NemaPP =
 //                    testClient.slotFullyTested(slot);
                 }
 
-                else if(!testClient.dutProperty(slot, "railtestDownloaded"))
+                else if(testClient.isDutAvailable(slot) && !testClient.dutProperty(slot, "railtestDownloaded"))
                 {
                     testClient.setDutProperty(slot, "checked", true);
                     testClient.setDutProperty(slot, "state", 3);

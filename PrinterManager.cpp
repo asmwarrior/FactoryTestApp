@@ -17,13 +17,13 @@ PrinterManager::PrinterManager(const QSharedPointer<QSettings>& settings, QObjec
     connect(&_timer, &QTimer::timeout, this, &PrinterManager::sendLabeltoPrinter);
     _timer.start(10000);
 
-//    DutRecord record;
-//    record.id = "FF121234AB3456CD";
-//    record.method = "OLC Zhaga ECO";
-//    record.cycleNo = "1";
-//    record.no = "7";
-//    record.runningNumber = "0072";
-//    addLabel(record);
+    DutRecord record;
+    record.id = "FF121234AB3456CD";
+    record.method = "OLC NemaPP";
+    record.cycleNo = "1";
+    record.no = "7";
+    record.runningNumber = "0072";
+    addLabel(record);
 }
 
 PrinterManager::~PrinterManager()
@@ -53,7 +53,8 @@ void PrinterManager::sendLabeltoPrinter()
         _logger->logError(QString("Cannot open label file '%1' for writing").arg(_fileName));
 
 
-    file.write(QString("LABELNAME = \"%1\"\n").arg(_labelName).toLocal8Bit());
+//    file.write(QString("LABELNAME = \"%1\"\n").arg(_labelName).toLocal8Bit());
+    file.write(QString("LABELNAME = \"%1\"\n").arg(QString(currentRecord.method + ".lab")).toLocal8Bit());
     file.write(QString("LABELQUANTITY = \"%1\"\n").arg(_quantity).toLocal8Bit());
 
     if (!_printer.isEmpty())
