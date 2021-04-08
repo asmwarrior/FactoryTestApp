@@ -447,25 +447,28 @@ void MainWindow::finishSession()
 
 void MainWindow::startFullCycleTesting()
 {
-    _session->writeDutRecordsToDatabase();
-    _session->increaseCyclesCount();
-    _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
-
-    setControlsEnabled(false);
-    startFunction("Full cycle testing");
-
-    _actionHintWidget->showProgressHint(HINT_READY);
-    _session->writeDutRecordsToDatabase();
-    setControlsEnabled(true);
-    _newSessionButton->setEnabled(false);
-    _operatorNameEdit->setEnabled(false);
-    _batchNumberEdit->setEnabled(false);
-    _batchInfoEdit->setEnabled(false);
-
-    if(!_manualCommandsCheckBox->isChecked())
+    for (int i = 0; i < 25; i++)
     {
-        _testFunctionsListWidget->setEnabled(false);
-        _startSelectedTestButton->setEnabled(false);
+        _session->writeDutRecordsToDatabase();
+        _session->increaseCyclesCount();
+        _actionHintWidget->showProgressHint(HINT_DETECT_DUTS);
+
+        setControlsEnabled(false);
+        startFunction("Full cycle testing");
+
+        _actionHintWidget->showProgressHint(HINT_READY);
+        _session->writeDutRecordsToDatabase();
+        setControlsEnabled(true);
+        _newSessionButton->setEnabled(false);
+        _operatorNameEdit->setEnabled(false);
+        _batchNumberEdit->setEnabled(false);
+        _batchInfoEdit->setEnabled(false);
+
+        if(!_manualCommandsCheckBox->isChecked())
+        {
+            _testFunctionsListWidget->setEnabled(false);
+            _startSelectedTestButton->setEnabled(false);
+        }
     }
 }
 

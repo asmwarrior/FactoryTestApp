@@ -602,14 +602,14 @@ GeneralCommands =
                             {
                                 testClientList.setDutProperty(slot, "lightSensChecked", false);
                                 testClientList.addDutError(slot, response.join(' '));
-                                logger.logDebug("Light sensor failure: X=" + x  + ".");
+                                logger.logDebug("Light sensor failure: OPWR=" + x  + ".");
                                 logger.logError("Light sensor failture for DUT " + testClient.dutNo(slot));
                             }
                             else
                             {
                                 testClient.setDutProperty(slot, "lightSensChecked", true);
                                 logger.logSuccess("Light sensor for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
-                                logger.logDebug("Light sensor value: X=" + x);
+                                logger.logDebug("Light sensor value: OPWR=" + x);
                             }
                         }
                     }

@@ -91,7 +91,7 @@ ZhagaECO =
 
     downloadSoftware: function ()
     {
-        GeneralCommands.downloadSoftware("sequences/OlcZhagaECO/final_image_olc.hex");
+        GeneralCommands.downloadSoftware("sequences/OlcZhagaECO/olc_zhaga_software.hex");
     },
 
     //---
@@ -154,11 +154,11 @@ ZhagaECO =
         GeneralCommands.unlockAndEraseChip();
         ZhagaECO.downloadRailtest();
         GeneralCommands.readChipId();
+        GeneralCommands.testDALI();
         ZhagaECO.checkAinVoltage();
         GeneralCommands.testAccelerometer();
         GeneralCommands.testLightSensor();
         ZhagaECO.testRadio();
-        GeneralCommands.testDALI();
         ZhagaECO.checkTestingCompletion();
         ZhagaECO.downloadSoftware();
         GeneralCommands.powerOff();
