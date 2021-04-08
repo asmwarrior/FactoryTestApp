@@ -17,13 +17,13 @@ PrinterManager::PrinterManager(const QSharedPointer<QSettings>& settings, QObjec
     connect(&_timer, &QTimer::timeout, this, &PrinterManager::sendLabeltoPrinter);
     _timer.start(10000);
 
-    DutRecord record;
-    record.id = "FF121234AB3456CD";
-    record.method = "OLC NemaPP";
-    record.cycleNo = "1";
-    record.no = "7";
-    record.runningNumber = "0072";
-    addLabel(record);
+//    DutRecord record;
+//    record.id = "FF121234AB3456CD";
+//    record.method = "OLC NemaPP";
+//    record.cycleNo = "1";
+//    record.no = "7";
+//    record.runningNumber = "0072";
+//    addLabel(record);
 }
 
 PrinterManager::~PrinterManager()

@@ -54,6 +54,43 @@ GeneralCommands =
 
     //---
 
+    unlockAndEraseChip: function ()
+    {
+        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (var i = 0; i < testClientList.length; i++)
+            {
+                let testClient = testClientList[i];
+                let jlink = jlinkList[i];
+                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+                {
+                    testClient.powerOn(slot);
+                    testClient.switchSWD(slot);
+                    delay(1000);
+
+                    jlink.selectByUSB();
+                    jlink.open();
+                    jlink.setDevice("EFR32FG12PXXXF1024");
+                    jlink.select();
+                    jlink.setSpeed(5000);
+                    jlink.connect();
+                    if (jlink.erase() < 0)
+                    {
+                        testClient.powerOff(slot);
+                        delay(5000);
+                        testClient.powerOn(slot);
+                        jlink.connect();
+                        jlink.erase();
+                    }
+
+                    jlink.close();
+                }
+            }
+        }
+    },
+
+    //---
+
     downloadRailtest: function (dummyFileName, railtestFileName)
     {
         actionHintWidget.showProgressHint("Downloading the Railtest...");
@@ -89,6 +126,7 @@ GeneralCommands =
                     else
                     {
                         logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
+                        logger.logDebug("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
                     }
 
                     if(testClient.isDutChecked(slot))
@@ -119,6 +157,7 @@ GeneralCommands =
                             {
                                 testClient.setDutProperty(slot, "railtestDownloaded", true);
                                 logger.logInfo("Railtest firmware has been downloaded in DUT " + testClient.dutNo(slot));
+                                logger.logDebug("Railtest firmware has been downloaded in DUT " + testClient.dutNo(slot));
                             }
                         }
                     }
@@ -137,6 +176,7 @@ GeneralCommands =
 
     downloadSoftware: function (softwareFileName)
     {
+        logger.logInfo("Software downloading started");
         actionHintWidget.showProgressHint("Downloading the software...");
 
         for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
@@ -145,7 +185,7 @@ GeneralCommands =
             {
                 let testClient = testClientList[i];
                 let jlink = jlinkList[i];
-                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot) && (testClient.dutState(slot) === 2))
+                if(testClient.isDutChecked(slot) && (testClient.dutState(slot) === 2))
                 {
                     testClient.powerOn(slot);
                     delay(1000);
@@ -170,6 +210,7 @@ GeneralCommands =
 //                    else
 //                    {
 //                        logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
+//                        logger.logDebug("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
 
 //                        error = jlink.downloadFile(softwareFileName, 0);
 
@@ -185,13 +226,15 @@ GeneralCommands =
 //                        else
 //                        {
 //                            logger.logInfo("Software has been downloaded in DUT " + testClient.dutNo(slot));
+//                            logger.logDebug("Software has been downloaded in DUT " + testClient.dutNo(slot));
 //                        }
 //                    }
 
                     jlink.close();
                 }
 
-                testClient.slotFullyTested(slot);
+                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+                    testClient.slotFullyTested(slot);
             }
         }
 
@@ -229,7 +272,10 @@ GeneralCommands =
                 if(jlink.isConnected())
                     testClient.open(portsIdList[i]);
                 else
-                    logger.logError("Test connection to JLinks before establishing connection to sockets.")
+                {
+                    logger.logError("Test connection to JLinks before establishing connection to sockets.");
+                    logger.logDebug("Test connection to JLinks before establishing connection to sockets.");
+                }
             }
         }
 
@@ -237,6 +283,7 @@ GeneralCommands =
         {
             GeneralCommands.isMethodCorrect = false;
             logger.logError("The current test method is for a different test fixture.");
+            logger.logDebug("The current test method is for a different test fixture.");
         }
 
         actionHintWidget.showProgressHint("READY");
@@ -250,7 +297,10 @@ GeneralCommands =
         {
             let testClient = testClientList[i];
             if(testClient.isConnected())
+            {
                 logger.logInfo("Measuring board " + testClient.no() + " current: " + testClient.readCSA(0) + " mA");
+                logger.logDebug("Measuring board " + testClient.no() + " current: " + testClient.readCSA(0) + " mA");
+            }
         }
     },
 
@@ -270,6 +320,7 @@ GeneralCommands =
                 {
                     testClient.powerOn(slot);
                     logger.logInfo("DUT " + testClient.dutNo(slot) + " is switched ON");
+                    logger.logDebug("DUT " + testClient.dutNo(slot) + " is switched ON");
                 }
             }
         }
@@ -292,6 +343,7 @@ GeneralCommands =
                     let testClient = testClientList[i];
                     testClient.powerOff(slot);
                     logger.logInfo("DUT " + testClient.dutNo(slot) + " is switched OFF");
+                    logger.logDebug("DUT " + testClient.dutNo(slot) + " is switched OFF");
                 }
             }
         }
@@ -305,7 +357,10 @@ GeneralCommands =
         {
             let testClient = testClientList[i];
             if(testClient.isConnected())
+            {
                 logger.logInfo("Measuring board " + testClient.no() + " temperature (raw ADC value): " + testClient.readTemperature());
+                logger.logDebug("Measuring board " + testClient.no() + " temperature (raw ADC value): " + testClient.readTemperature());
+            }
         }
     },
 
@@ -371,12 +426,14 @@ GeneralCommands =
                     if((currCSA - prevCSA) > 15)
                     {
                         logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no() + " detected.");
+                        logger.logDebug("Device connected to the slot " + slot + " of the test board " + testClient.no() + " detected.");
                         testClient.setDutProperty(slot, "state", 1);
                         testClient.setDutProperty(slot, "checked", true);
                     }
 
                     else
                     {
+                        logger.logDebug("No device connected to the slot " + slot + " of the test board " + testClient.no() + " detected.");
                         testClient.setDutProperty(slot, "state", 0);
                         testClient.setDutProperty(slot, "checked", false);
                     }
@@ -408,11 +465,13 @@ GeneralCommands =
                         let id = response[response.length - 1].slice(2) + response[response.length - 3].slice(2);
                         testClient.setDutProperty(slot, "id", id.toUpperCase());
                         logger.logSuccess("ID for DUT " + testClient.dutNo(slot) + " has been read: " + testClient.dutProperty(slot, "id"));
+                        logger.logDebug("ID for DUT " + testClient.dutNo(slot) + ": " + testClient.dutProperty(slot, "id"));
                     }
 
                     else
                     {
                        logger.logError("Couldn't read ID for DUT " + testClient.dutNo(slot));
+                       logger.logDebug("Couldn't read ID for DUT " + testClient.dutNo(slot));
                     }
                 }
             }
@@ -466,6 +525,7 @@ GeneralCommands =
                         testClient.setDutProperty(slot, "accelChecked", false);
                         testClient.addDutError(slot, response.join(' '));
                         logger.logError("Accelerometer failture for DUT " + testClient.dutNo(slot) + ". No response recieved.");
+                        logger.logDebug("Accelerometer failture for DUT " + testClient.dutNo(slot) + ". No response recieved.");
                     }
 
                     else
@@ -492,6 +552,7 @@ GeneralCommands =
                                     {
                                         testClient.setDutProperty(slot, "accelChecked", true);
                                         logger.logSuccess("Accelerometer for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
+                                        logger.logDebug("Accelerometer values for DUT " + testClient.dutNo(slot) + "; X=" + x +", Y=" + y + ", Z=" + z);
                                     }
 
                                     break;
@@ -548,6 +609,7 @@ GeneralCommands =
                             {
                                 testClient.setDutProperty(slot, "lightSensChecked", true);
                                 logger.logSuccess("Light sensor for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
+                                logger.logDebug("Light sensor value: X=" + x);
                             }
                         }
                     }
@@ -592,32 +654,30 @@ GeneralCommands =
     {
         actionHintWidget.showProgressHint("Testing DALI interface...");
 
-        GeneralCommands.powerOff();
+        GeneralCommands.powerOn();
 
         for (var i = 0; i < testClientList.length; i++)
         {
             if(testClientList[i].isConnected())
                 testClientList[i].daliOn();
         }
+        delay(500);
 
-        for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+//        for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        for(let slot = 3; slot > 0; slot--)
         {
             for (let i = 0; i < testClientList.length; i++)
             {
                 if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
                 {
                     let testClient = testClientList[i];
-                    testClient.switchSWD(slot);
-                    testClient.powerOn(slot);
-                    delay(1000);
-
-                    let resp = testClient.railtestCommand(slot, "dali 0xFE80 16 0 0");
                     let responseString = testClient.railtestCommand(slot, "dali 0xFF90 16 0 1000000").join(' ');
 
                     if(responseString.includes("error:0"))
                     {
                         testClient.setDutProperty(slot, "daliChecked", true);
                         logger.logSuccess("DALI interface for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
+                        logger.logDebug("DALI interface for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
                     }
 
                     else
@@ -625,11 +685,8 @@ GeneralCommands =
                         testClient.setDutProperty(slot, "daliChecked", false);
                         testClient.addDutError(slot, responseString);
                         logger.logError("DALI testing for DUT " + testClient.dutNo(slot) + " has been failed.");
-                        logger.logDebug("DALI failure: " + responseString  + ".");
+                        logger.logDebug("DALI failure for DUT " + testClient.dutNo(slot) + ": " + responseString);
                     }
-
-                    testClient.railtestCommand(slot, "dali 0xFE80 16 0 0");
-                    testClient.powerOff(slot);
                 }
             }
         }
@@ -662,13 +719,14 @@ GeneralCommands =
                     {
                         testClient.setDutProperty(slot, "gnssChecked", true);
                         logger.logSuccess("GNSS module for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
+                        logger.logDebug("GNSS module for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
                     }
 
                     else
                     {
                         testClient.setDutProperty(slot, "gnssChecked", false);
                         testClient.addDutError(slot, responseString);
-                        logger.logDebug("GNSS module failture: " + responseString + ".");
+                        logger.logDebug("GNSS module failture: " + responseString);
                         logger.logError("GNSS module failture for DUT " + testClient.dutNo(slot));
 
                     }

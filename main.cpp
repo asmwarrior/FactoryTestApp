@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     a.setApplicationName("CapelonTestStation");
 
     MainWindow w;
-    w.setWindowTitle("Capelon Test Station 0.6");
+    w.setWindowTitle("Capelon Test Station 0.6.9");
     w.setFixedSize(1200, 900);
     w.show();
 

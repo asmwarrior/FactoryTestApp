@@ -127,7 +127,11 @@ QStringList PortManager::slipCommand(int channel, const QByteArray &frame)
 
 QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
 {
+    if(channel > 3)
+        return QStringList();
+
     _mode = railMode;
+    _railReply[channel].clear();
     _response.clear();
     _syncCommand = cmd;
     _syncReplies.clear();
@@ -194,7 +198,7 @@ void PortManager::processResponsePacket()
 void PortManager::decodeFrame() Q_DECL_NOTHROW
 {
     QByteArray decodedBuffer;
-    static QByteArray railReply;
+//    static QByteArray railReply;
 
     // Write unescaped buffer.
     decodedBuffer.reserve(_recvBuffer.size());
@@ -256,6 +260,7 @@ void PortManager::decodeFrame() Q_DECL_NOTHROW
 
     // Frame received successfully.
 
+    int channel = decodedBuffer.at(0);
     QByteArray frame = decodedBuffer.mid(1, frameSize - 1);
 
     switch(_mode)
@@ -265,11 +270,14 @@ void PortManager::decodeFrame() Q_DECL_NOTHROW
         break;
 
     case railMode:
-        railReply += frame;
-        if(frame.contains("> "))
+        if(channel < 4)
         {
-            onSlipPacketReceived(decodedBuffer.at(0), railReply);
-            railReply.clear();
+            _railReply[channel] += frame;
+            if(frame.contains("> "))
+            {
+                onSlipPacketReceived(channel, _railReply[channel]);
+                _railReply[channel].clear();
+            }
         }
         break;
     }
@@ -398,6 +406,7 @@ void PortManager::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
     encodedBuffer.append(END_SLIP_OCTET);
 
     // Write encoded frame to serial port.
+//    qDebug() << "Frame to be sended: " << frame << " ; encoded: " << encodedBuffer;
     _serial.write(encodedBuffer);
     waitCommandFinished();
 }

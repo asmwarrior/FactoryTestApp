@@ -65,6 +65,8 @@ private:
 
     QStringList _response;
     int _timeout = 10000;
+
+    QByteArray _railReply[4];
 };
 
 #endif // PORTMANAGER_H

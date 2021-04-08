@@ -1,6 +1,8 @@
 #include "MainWindow.h"
 
 #include <QCoreApplication>
+#include <QGuiApplication>
+#include <QClipboard>
 #include <QStandardPaths>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -324,6 +326,17 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_startFullCycleTestingButton, &QPushButton::clicked, this, &MainWindow::startFullCycleTesting);
 
     connect(_session, &SessionManager::printLabel, _printerManager, &PrinterManager::addLabel);
+
+    connect(_copyLogWidgetButton, &QPushButton::clicked, [this]()
+    {
+        QString text;
+        for (int i = 0; i < _childProcessOutputLogWidget->count(); i++)
+        {
+            text += _childProcessOutputLogWidget->item(i)->text() + "\n";
+        }
+
+        QGuiApplication::clipboard()->setText(text);
+    });
 
 //    for (auto & portInfo : availablePorts)
 //    {

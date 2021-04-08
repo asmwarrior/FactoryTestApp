@@ -237,7 +237,7 @@ NemaPP =
                     else
                     {
                         testClientList[i].setDutProperty(slot, "voltageChecked", false);
-                        testClientList[i].addDutError(slot, response.join(' '));
+                        testClientList[i].addDutError(slot, "Error voltage on AIN1");
                         logger.logDebug("Error voltage value on AIN 1 : " + voltage  + " for DUT " + testClientList[i].dutNo(slot));
                         logger.logError("Error voltage value on AIN 1 is detected for DUT " + testClientList[i].dutNo(slot));
                     }

@@ -80,6 +80,9 @@ void SessionManager::clear()
 
 void SessionManager::writeDutRecordsToDatabase()
 {
+    if(_records.isEmpty())
+        return;
+
     for(auto & record : _records)
     {
         record.cycleNo = QString().setNum(_testCyclesCount);

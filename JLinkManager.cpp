@@ -136,6 +136,7 @@ void JLinkManager::on_establishConnection()
     {
         _state = unknown;
         _logger->logError("No connection to JLink with S/N " + _SN);
+        _logger->logDebug("No connection to JLink with S/N " + _SN);
     }
 
     else
