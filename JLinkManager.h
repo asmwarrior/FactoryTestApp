@@ -53,7 +53,7 @@ private:
     void clearErrorBuffer();
 
     void logOut(const char* log) {_logger->logInfo(log);}
-    void errorOut(const char* log) {_logger->logError(QString("JLINK ERROR: %1").arg(log));}
+    void errorOut(const char* log) {_logger->logDebug(QString("JLINK ERROR: %1").arg(log));}
 
     QSharedPointer<QSettings> _settings;
     QSharedPointer<Logger> _logger;

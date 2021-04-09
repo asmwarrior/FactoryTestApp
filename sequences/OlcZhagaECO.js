@@ -134,9 +134,15 @@ ZhagaECO =
 
     //---
 
+    powerTable: [   -100, -100, -100,
+                    -100, -100, -100,
+                    -100, -100, -100,
+                    -100, -100, -100,
+                    -100, -100, -100  ],
+
     testRadio: function ()
     {
-        GeneralCommands.testRadio(ZhagaECO.RfModuleId, 19, 80, -70, 50, 7);
+        GeneralCommands.testRadio(ZhagaECO.RfModuleId, 19, ZhagaECO.powerTable, -90, 0, 50);
     },
 
     //---
@@ -162,16 +168,6 @@ ZhagaECO =
         ZhagaECO.checkTestingCompletion();
         ZhagaECO.downloadSoftware();
         GeneralCommands.powerOff();
-    },
-
-    //---
-
-    startTesting25: function ()
-    {
-        for (let i = 0; i < 25; i++)
-        {
-            ZhagaECO.startTesting();
-        }
     },
 
     //---
@@ -213,7 +209,6 @@ ZhagaECO =
 }
 
 methodManager.addFunctionToGeneralList("Full cycle testing", ZhagaECO.startTesting);
-//methodManager.addFunctionToGeneralList("Full cycle testing (25 times)", ZhagaECO.startTesting25);
 methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralCommands.testConnection);
 methodManager.addFunctionToGeneralList("Establish connection to sockets", ZhagaECO.openTestClients);
 methodManager.addFunctionToGeneralList("Clear previous test results for DUTs", GeneralCommands.clearDutsInfo);

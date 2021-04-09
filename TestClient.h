@@ -114,6 +114,8 @@ private:
 
     int _rfRSSI;
     int _rfCount;
+
+    QVector<int> _rssiValues;
 };
 
 #endif // TESTCLIENT_H

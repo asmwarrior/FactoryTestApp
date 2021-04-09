@@ -207,9 +207,31 @@ NemaPP =
 
     //---
 
+    powerTable: [   -100, -100, -100,
+                    -50, -100, -100,
+                    -100, -100, -100,
+                    -100, -100, -100,
+                    -100, -100, -100  ],
+
     testRadio: function ()
     {
-        GeneralCommands.testRadio(NemaPP.RfModuleId, 19, 80, -60, 60, 7);
+        GeneralCommands.testRadio(NemaPP.RfModuleId, 19, NemaPP.powerTable, -90, 0, 50);
+    },
+
+    testRadioDebug: function ()
+    {
+        logger.logDebug("Starting radio debugging cycle...");
+        for (let power = 80; power >= -200; power -= 20)
+        {
+            let table = [power, power, power,
+                         power, power, power,
+                         power, power, power,
+                         power, power, power,
+                         power, power, power];
+
+            GeneralCommands.testRadio(NemaPP.RfModuleId, 19, table, -60, 60, 200);
+        }
+
     },
 
     //---
@@ -359,6 +381,7 @@ methodManager.addFunctionToGeneralList("Download Railtest", NemaPP.downloadRailt
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
 methodManager.addFunctionToGeneralList("Read Temperature", GeneralCommands.readTemperature);
 methodManager.addFunctionToGeneralList("Supply power to DUTs", NemaPP.powerOn);
+//methodManager.addFunctionToGeneralList("Test radio debug", NemaPP.testRadioDebug);
 methodManager.addFunctionToGeneralList("Power off DUTs", NemaPP.powerOff);
 methodManager.addFunctionToGeneralList("Read unique device identifiers (ID)", GeneralCommands.readChipId);
 methodManager.addFunctionToGeneralList("Read Real time clock (RTC) values", GeneralCommands.readRTC);

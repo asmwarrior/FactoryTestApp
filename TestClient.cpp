@@ -3,6 +3,7 @@
 #include <QCoreApplication>
 #include <QtEndian>
 #include <QSerialPortInfo>
+#include <math.h>
 
 TestClient::TestClient(const QSharedPointer<QSettings> &settings, int no, QObject *parent)
     : QObject(parent),
@@ -575,6 +576,7 @@ QStringList TestClient::railtestCommand(int channel, const QByteArray &cmd)
 void TestClient::testRadio(int slot, QString RfModuleId, int channel, int power, int minRSSI, int maxRSSI, int count)
 {
     RailtestClient rf;
+    _rssiValues.clear();
 
     connect(&rf, &RailtestClient::replyReceived, this, &TestClient::onRfReplyReceived);
 
@@ -592,6 +594,8 @@ void TestClient::testRadio(int slot, QString RfModuleId, int channel, int power,
     if (!rf.open(portName))
     {
         _logger->logError("Cannot open serial port for reference radio module.");
+        _logger->logDebug("Cannot open serial port for reference radio module.");
+        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + "Cannot open serial port for reference radio module.";
         return;
     }
 
@@ -599,6 +603,8 @@ void TestClient::testRadio(int slot, QString RfModuleId, int channel, int power,
     if (!rf.waitCommandPrompt())
     {
         _logger->logError("Timeout waiting reference radio module command prompt.");
+        _logger->logDebug("Timeout waiting reference radio module command prompt.");
+        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + "Timeout waiting reference radio module command prompt.";
         return;
     }
 
@@ -624,15 +630,27 @@ void TestClient::testRadio(int slot, QString RfModuleId, int channel, int power,
     railtestCommand(slot, QString("setPower %1").arg(power).toLocal8Bit());
     delay(500);
 
-    railtestCommand(slot, "setTxDelay 10");
+    railtestCommand(slot, "setTxDelay 25");
     delay(500);
 
     rf.syncCommand("rx", "1", 500);
 
-    railtestCommand(slot, "tx 11");
-    delay(3000);
+    railtestCommand(slot, QString("tx %1").arg(count).toLocal8Bit());
+    delay(5000);
 
-    if (_rfCount < (count - 2))
+    double sumRSSI = 0;
+    for (auto & i : _rssiValues)
+    {
+        sumRSSI += i;
+    }
+    double averageRSSI = sumRSSI / _rssiValues.size();
+
+    double s0 = 0;
+    foreach(int v, _rssiValues) s0 += pow(v - averageRSSI, 2);
+    s0 = sqrt(s0 / (_rssiValues.size() - 1));
+    _logger->logDebug(QString("For DUT %1 power: %2, packet recieved: %3, Average RSSI: %4, S0: %5.").arg(dutNo(slot)).arg(power).arg(_rssiValues.size()).arg(averageRSSI).arg(s0));
+
+    if (_rfCount < (2 * count / 3))
     {
         _logger->logError(QString("Radio Interface testing failure for DUT %1.").arg(dutNo(slot)));
         _logger->logDebug(QString("Radio Interface failure for DUT %1: packet lost (%2).").arg(dutNo(slot)).arg(_rfCount));
@@ -640,18 +658,17 @@ void TestClient::testRadio(int slot, QString RfModuleId, int channel, int power,
         _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: packet lost (%1).").arg(_rfCount);
     }
 
-//    else if (_rfRSSI < minRSSI || _rfRSSI > maxRSSI)
-//    {
-//        _logger->logError(QString("Radio Interface testing failure for DUT %1.").arg(dutNo(slot)));
-//        _logger->logDebug(QString("Radio Interface failure for DUT %1: RSSI (%2) is out of bounds.").arg(dutNo(slot)).arg(_rfRSSI));
-//        _duts[slot]["radioChecked"] = false;
-//        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: RSSI (%1) is out of bounds.").arg(_rfRSSI);
-//    }
+    else if (averageRSSI < minRSSI)
+    {
+        _logger->logError(QString("Radio Interface testing failure for DUT %1.").arg(dutNo(slot)));
+        _logger->logDebug(QString("Radio Interface failure for DUT %1: RSSI (%2) is out of bounds.").arg(dutNo(slot)).arg(averageRSSI));
+        _duts[slot]["radioChecked"] = false;
+        _duts[slot]["error"] = _duts[slot]["error"].toString() + "; " + QString("Radio Interface failure: RSSI (%1) is out of bounds.").arg(averageRSSI);
+    }
 
     else
     {
         _logger->logSuccess(QString("Radio interface for DUT %1 has been tested successfully.").arg(dutNo(slot)));
-        _logger->logDebug(QString("Radio Interface testing RSSI value for DUT %1:  (%2).").arg(dutNo(slot)).arg(_rfRSSI));
         _duts[slot]["radioChecked"] = true;
     }
 }
@@ -666,6 +683,8 @@ void TestClient::onRfReplyReceived(QString id, QVariantMap params)
         if (ok)
         {
             ++_rfCount;
+//            _logger->logDebug(QString("RSSI value recieved: %1").arg(rssi));
+            _rssiValues.push_back(rssi);
             if (rssi < _rfRSSI)
                 _rfRSSI = rssi;
         }

@@ -447,7 +447,11 @@ void MainWindow::finishSession()
 
 void MainWindow::startFullCycleTesting()
 {
-    for (int i = 0; i < 25; i++)
+    int testCount = 1;
+    if(_settings->value("Debug/repeatTestAutomatically").toBool())
+        testCount = 25;
+
+    for (int i = 0; i < testCount; i++)
     {
         _session->writeDutRecordsToDatabase();
         _session->increaseCyclesCount();

@@ -630,7 +630,7 @@ GeneralCommands =
 
     //---
 
-    testRadio: function (RfModuleId, channel, power, minRSSI, maxRSSI, count)
+    testRadio: function (RfModuleId, channel, powerTable, minRSSI, maxRSSI, count)
     {
         actionHintWidget.showProgressHint("Testing radio interface...");
 
@@ -640,7 +640,8 @@ GeneralCommands =
             {
                 if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
                 {
-                    testClientList[i].testRadio(slot, RfModuleId, channel, power, minRSSI, maxRSSI, count);
+                    logger.logDebug("Radio testing for DUT " + testClientList[i].dutNo(slot) + " with power value: " + powerTable[testClientList[i].dutNo(slot) - 1]);
+                    testClientList[i].testRadio(slot, RfModuleId, channel, powerTable[testClientList[i].dutNo(slot) - 1], minRSSI, maxRSSI, count);
                 }
             }
         }

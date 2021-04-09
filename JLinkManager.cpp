@@ -91,9 +91,23 @@ void JLinkManager::connect()
     }
 }
 
+static void _ErrorOutHandler(const char* sError)
+{
+    qDebug() << sError;
+}
+
+static int _fHook(const char* sTitle, const char* sMsg, U32 Flags)
+{
+    return JLINK_DLG_BUTTON_YES;
+}
+
 int JLinkManager::erase()
 {
     int error = 0;
+    JLINK_SetHookUnsecureDialog(_fHook);
+    JLINKARM_SetErrorOutHandler(_ErrorOutHandler);
+    JLINKARM_SetWarnOutHandler(_ErrorOutHandler);
+
     error = JLINK_EraseChip();
     return error;
 }
