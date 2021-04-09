@@ -54,7 +54,7 @@ NemaPP =
 
     downloadSoftware: function ()
     {
-        GeneralCommands.downloadSoftware("sequences/OlcNemaPP/nemaPP_software.hex");
+        GeneralCommands.downloadSoftware("sequences/OlcNemaPP/olc_nema_pp_software.hex");
     },
 
     //---
