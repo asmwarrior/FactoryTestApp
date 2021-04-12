@@ -45,6 +45,43 @@ NemaPP =
 
     //---
 
+    unlockAndEraseChip: function ()
+    {
+        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
+        {
+            for (var i = 0; i < testClientList.length; i++)
+            {
+                let testClient = testClientList[i];
+                let jlink = jlinkList[i];
+                if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
+                {
+                    testClient.powerOn(slot);
+                    testClient.switchSWD(slot);
+                    delay(1000);
+
+                    jlink.selectByUSB();
+                    jlink.open();
+                    jlink.setDevice("EFR32FG12PXXXF1024");
+                    jlink.select();
+                    jlink.setSpeed(5000);
+                    jlink.connect();
+                    if (jlink.erase() < 0)
+                    {
+                        testClientList[4].powerOff(slot);
+                        delay(5000);
+                        testClientList[4].powerOn(slot);
+                        jlink.connect();
+                        jlink.erase();
+                    }
+
+                    jlink.close();
+                }
+            }
+        }
+    },
+
+    //---
+
     downloadRailtest: function ()
     {
         GeneralCommands.downloadRailtest("sequences/OlcNemaPP/dummy_btl_efr32xg12.s37", "sequences/OlcNemaPP/railtest_nema.hex");
@@ -63,6 +100,7 @@ NemaPP =
     {
         actionHintWidget.showProgressHint("Detecting DUTs in the testing fixture...");
         NemaPP.powerOn();
+        delay(1000);
 
         for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
         {
@@ -73,38 +111,27 @@ NemaPP =
                 if(!testClient.isConnected())
                     continue;
 
+                testClient.setDutProperty(slot, "state", 0);
+                testClient.setDutProperty(slot, "checked", false);
                 testClient.setTimeout(300);
-
-                let voltage = testClient.readAIN(slot, 4, 0);
-
-                let counter = 0;
-                while((voltage === 0 || voltage === -1) && (counter < 30))
+                for (j = 0; j < 3; j++)
                 {
-                    delay(200);
-                    voltage = testClient.readAIN(slot, 4, 0);
-                    console.log(testClientList[i].dutNo(slot) + " : " + voltage);
-                    counter++;
-                }
+                    let voltage = testClient.readAIN(slot, 4, 0);
 
-                if(voltage > 43000 && voltage < 52000)
-                {
-                    logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no() + " detected.");
-                    testClient.setDutProperty(slot, "state", 1);
-                    testClient.setDutProperty(slot, "checked", true);
+                    if (voltage > 40000)
+                    {
+                        logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no() + " detected.");
+                        testClient.setDutProperty(slot, "state", 1);
+                        testClient.setDutProperty(slot, "checked", true);
+                        break;
+                    }
+                    logger.logDebug("12V result: " + testClient.no() + ", " + slot + ", " + voltage);
                 }
-
-                else
-                {
-                    testClient.setDutProperty(slot, "state", 0);
-                    testClient.setDutProperty(slot, "checked", false);
-                }
-
                 testClient.setTimeout(10000);
             }
         }
 
         actionHintWidget.showProgressHint("READY");
-
     },
 
     //---
@@ -377,6 +404,7 @@ methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralComman
 methodManager.addFunctionToGeneralList("Establish connection to sockets", NemaPP.openTestClients);
 methodManager.addFunctionToGeneralList("Clear previous test results for DUTs", GeneralCommands.clearDutsInfo);
 methodManager.addFunctionToGeneralList("Detect DUTs", NemaPP.detectDuts);
+methodManager.addFunctionToGeneralList("Unlock and erase chip", NemaPP.unlockAndEraseChip);
 methodManager.addFunctionToGeneralList("Download Railtest", NemaPP.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
 methodManager.addFunctionToGeneralList("Read Temperature", GeneralCommands.readTemperature);

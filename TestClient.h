@@ -87,7 +87,7 @@ public slots:
 
 signals:
 
-    void responseRecieved(QStringList response);
+//    void responseRecieved(QStringList response);
 
     void dutChanged(Dut);
     void dutFullyTested(Dut);
@@ -116,6 +116,8 @@ private:
     int _rfCount;
 
     QVector<int> _rssiValues;
+
+    uint8_t _sequenceCounter = 0;
 };
 
 #endif // TESTCLIENT_H

@@ -38,7 +38,7 @@ public slots:
 
 signals:
 
-    void responseRecieved(QStringList response);
+//    void responseRecieved(QStringList response);
 
 private slots:
 
@@ -55,7 +55,8 @@ private:
 
     QSharedPointer<Logger> _logger;
     QSerialPort _serial;
-    Mode _mode = idleMode;
+    int _currentChannelWaitReply = -1;
+    uint8_t _currentSequence;
 
     bool _frameStarted;
     QByteArray _recvBuffer;

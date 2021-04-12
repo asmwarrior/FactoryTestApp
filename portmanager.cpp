@@ -6,10 +6,10 @@
 #include <QDebug>
 
 static constexpr char
-    END_SLIP_OCTET  = 0xC0,
-    END_SUBS_OCTET  = 0xDC,
-    ESC_SLIP_OCTET  = 0xDB,
-    ESC_SUBS_OCTET  = 0xDD;
+    END_SLIP_OCTET  = -64, //0xC0
+    END_SUBS_OCTET  = -36, //0xDC
+    ESC_SLIP_OCTET  = -37, //0xDB
+    ESC_SUBS_OCTET  = -35; //0xDD
 
 static constexpr int MIN_FRAME_SIZE = sizeof(quint8) + sizeof(quint16) + 1;
 
@@ -96,9 +96,6 @@ void PortManager::open()
     else
     {
         _serial.readAll();
-        _timeout = 1000;
-        railtestCommand(1, " ");
-        _timeout = 10000;
     }
 }
 
@@ -113,15 +110,16 @@ void PortManager::close()
 
 QStringList PortManager::slipCommand(int channel, const QByteArray &frame)
 {
-    _mode = slipMode;
     _response.clear();
+    _currentChannelWaitReply = channel;
+    _currentSequence = frame.at(2);
     sendFrame(channel, frame);
 
     if(_response.isEmpty())
     {
         _logger->logDebug("Timeout for the response waiting.");
     }
-    emit responseRecieved(_response);
+//    emit responseRecieved(_response);
     return _response;
 }
 
@@ -130,7 +128,7 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
     if(channel > 3)
         return QStringList();
 
-    _mode = railMode;
+    _currentChannelWaitReply = channel;
     _railReply[channel].clear();
     _response.clear();
     _syncCommand = cmd;
@@ -141,22 +139,20 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
     {
         _logger->logDebug("Timeout for the response waiting.");
     }
-    emit responseRecieved(_response);
+//    emit responseRecieved(_response);
     return _response;
 }
 
 void PortManager::onSerialPortReadyRead()
 {
-    switch (_mode)
+    if(_currentChannelWaitReply == -1)
     {
-    case idleMode:
         _serial.readAll();
-        break;
+    }
 
-    case slipMode:
-    case railMode:
+    else
+    {
         processResponsePacket();
-        break;
     }
 }
 
@@ -263,21 +259,20 @@ void PortManager::decodeFrame() Q_DECL_NOTHROW
     int channel = decodedBuffer.at(0);
     QByteArray frame = decodedBuffer.mid(1, frameSize - 1);
 
-    switch(_mode)
+    switch(channel)
     {
-    case slipMode:
+    case 0:
         onSlipPacketReceived(decodedBuffer.at(0), frame);
         break;
 
-    case railMode:
-        if(channel < 4)
+    case 1:
+    case 2:
+    case 3:
+        _railReply[channel] += frame;
+        if(frame.contains("> "))
         {
-            _railReply[channel] += frame;
-            if(frame.contains("> "))
-            {
-                onSlipPacketReceived(channel, _railReply[channel]);
-                _railReply[channel].clear();
-            }
+            onSlipPacketReceived(channel, _railReply[channel]);
+            _railReply[channel].clear();
         }
         break;
     }
@@ -285,6 +280,9 @@ void PortManager::decodeFrame() Q_DECL_NOTHROW
 
 void PortManager::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
 {
+    if(_currentChannelWaitReply != channel)
+        return;
+
     switch (channel)
     {
         case 0:
@@ -304,7 +302,12 @@ void PortManager::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcep
                             MB_GeneralResult_t *gr = (MB_GeneralResult_t*)pkt;
 
                             gr->errorCode = qFromBigEndian(gr->errorCode);
-                            _response.push_back(QString().setNum(gr->errorCode));
+                            if(gr->header.sequence == _currentSequence)
+                            {
+                                _response.push_back(QString().setNum(gr->errorCode));
+                                _currentChannelWaitReply = -1;
+                            }
+
                         }
                         break;
 
@@ -324,11 +327,10 @@ void PortManager::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcep
         case 2:
         case 3:
             _response = QString(frame).replace(QChar('{'), QChar(' ')).replace(QChar('}'), QChar(' ')).replace(QChar('\n'), QChar(' ')).replace(QChar('\r'), QChar(' ')).replace(QChar('>'), QChar(' ')).simplified().split(' ');
-//            processFrameFromRail(frame);
+            _currentChannelWaitReply = -1;
             break;
-    }
 
-    _mode = idleMode;
+    }
 }
 
 void PortManager::decodeRailtestReply(const QByteArray &reply)
@@ -414,13 +416,13 @@ void PortManager::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
 void PortManager::waitCommandFinished()
 {
     QTime expire = QTime::currentTime().addMSecs(_timeout);
-    while(_mode != idleMode)
+    while(_currentChannelWaitReply >= 0)
     {
         QCoreApplication::processEvents();
 
         if(QTime::currentTime() > expire)
         {
-            _mode = idleMode;
+           _currentChannelWaitReply = -1;
         }
     }
 }

@@ -11,7 +11,7 @@ TestClient::TestClient(const QSharedPointer<QSettings> &settings, int no, QObjec
       _no(no),
       _settings(settings)
 {
-    connect(&_portManager, &PortManager::responseRecieved, this, &TestClient::responseRecieved);
+//    connect(&_portManager, &PortManager::responseRecieved, this, &TestClient::responseRecieved);
 
     connect(this, &TestClient::slotFullyTested, [this](int slot){emit dutFullyTested(_duts[slot]);});
 
@@ -44,7 +44,7 @@ void TestClient::open()
 
     int csa = readCSA(0);
 
-    if(csa != -1)
+    if(csa > 0)
     {
         _isConnected = true;
     }
@@ -154,7 +154,7 @@ int TestClient::switchSWD(int slot)
     Pkt pkt;
 
     pkt.h.type = qToBigEndian<uint16_t>(MB_SWITCH_SWD);
-    pkt.h.sequence = 1;
+    pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 1;
     pkt.dut = slot;
 
@@ -184,7 +184,7 @@ int TestClient::powerOn(int slot)
     Pkt pkt;
 
     pkt.h.type = qToBigEndian<uint16_t>(MB_SWITCH_POWER);
-    pkt.h.sequence = 2;
+    pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 2;
     pkt.dut = slot;
     pkt.state = 1;
@@ -214,7 +214,7 @@ int TestClient::powerOff(int slot)
     Pkt pkt;
 
     pkt.h.type = qToBigEndian<uint16_t>(MB_SWITCH_POWER);
-    pkt.h.sequence = 3;
+    pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 2;
     pkt.dut = slot;
     pkt.state = 0;
@@ -244,7 +244,7 @@ int TestClient::readDIN(int slot, int DIN)
     Pkt pkt;
 
     pkt.h.type = qToBigEndian<uint16_t>(MB_READ_DIN);
-    pkt.h.sequence = 4;
+    pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 2;
     pkt.dut = slot;
     pkt.din = DIN;
@@ -275,7 +275,7 @@ int TestClient::setDOUT(int slot, int DOUT)
     Pkt pkt;
 
     pkt.h.type = qToBigEndian<uint16_t>(MB_WRITE_DOUT);
-    pkt.h.sequence = 5;
+    pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 3;
     pkt.dut = slot;
     pkt.dout = DOUT;
@@ -307,7 +307,7 @@ int TestClient::clearDOUT(int slot, int DOUT)
     Pkt pkt;
 
     pkt.h.type = qToBigEndian<uint16_t>(MB_WRITE_DOUT);
-    pkt.h.sequence = 6;
+    pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 3;
     pkt.dut = slot;
     pkt.dout = DOUT;
@@ -317,7 +317,7 @@ int TestClient::clearDOUT(int slot, int DOUT)
 
     if(response.size())
     {
-        return response[0].toInt();
+        return response.last().toInt();
     }
 
     return -1;
@@ -336,7 +336,7 @@ int TestClient::readCSA(int gain)
     Pkt pkt;
 
     pkt.h.type = qToBigEndian<uint16_t>(MB_READ_CSA);
-    pkt.h.sequence = 7;
+    pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 1;
     pkt.gain = gain;
 
@@ -366,7 +366,7 @@ int TestClient::readAIN(int slot, int AIN, int gain)
     Pkt pkt;
 
     pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ANALOG);
-    pkt.h.sequence = 8;
+    pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 3;
     pkt.dut = slot;
     pkt.ain = AIN;
@@ -397,7 +397,7 @@ int TestClient::daliOn()
     Pkt pkt;
 
     pkt.h.type = qToBigEndian<uint16_t>(MB_SWITCH_DALI);
-    pkt.h.sequence = 10;
+    pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 1;
     pkt.state = 1;
 
@@ -424,7 +424,7 @@ int TestClient::daliOff()
     Pkt pkt;
 
     pkt.h.type = qToBigEndian<uint16_t>(MB_SWITCH_DALI);
-    pkt.h.sequence = 11;
+    pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 1;
     pkt.state = 0;
 
@@ -450,7 +450,7 @@ int TestClient::readDaliADC()
     Pkt pkt;
 
     pkt.h.type = qToBigEndian<uint16_t>(MB_READ_DALI_ADC);
-    pkt.h.sequence = 12;
+    pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 0;
 
     auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
@@ -478,7 +478,7 @@ int TestClient::readDinADC(int slot, int DIN)
     Pkt pkt;
 
     pkt.h.type = qToBigEndian<uint16_t>(MB_READ_DIN_ADC);
-    pkt.h.sequence = 13;
+    pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 2;
     pkt.dut = slot;
     pkt.din = DIN;
@@ -505,7 +505,7 @@ int TestClient::read24V()
     Pkt pkt;
 
     pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_24V);
-    pkt.h.sequence = 14;
+    pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 0;
 
     auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
@@ -530,7 +530,7 @@ int TestClient::read3V()
     Pkt pkt;
 
     pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_3V);
-    pkt.h.sequence = 15;
+    pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 0;
 
     auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
@@ -555,7 +555,7 @@ int TestClient::readTemperature()
     Pkt pkt;
 
     pkt.h.type = qToBigEndian<uint16_t>(MB_READ_ADC_TEMP);
-    pkt.h.sequence = 16;
+    pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 0;
 
     auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
