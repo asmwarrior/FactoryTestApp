@@ -2,7 +2,6 @@
 #define PORTMANAGER_H
 
 #include <QSerialPort>
-#include <QSharedPointer>
 
 #include "SlipProtocol.h"
 #include "Logger.h"
@@ -12,8 +11,6 @@ class PortManager : public QObject
     Q_OBJECT
 
 public:
-
-    enum Mode {idleMode, railMode, slipMode};
 
     explicit PortManager(QObject *parent = nullptr);
 

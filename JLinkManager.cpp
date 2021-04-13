@@ -52,10 +52,49 @@ void JLinkManager::selectByUSB()
     }
 }
 
+static void STDCALL _JLink_errorOutHandler(const char *text)
+{
+    qCritical() << text;
+}
+
+static void _JLinkARM_errorOutHandler(const char *text)
+{
+    qCritical() << text;
+}
+
+static void STDCALL _JLink_warnOutHandler(const char *text)
+{
+    qWarning() << text;
+}
+
+static void _JLinkARM_warnOutHandler(const char *text)
+{
+    qWarning() << text;
+}
+
+static int _JLink_hookUnsecureDialog(const char *sTitle, const char *sMsg, U32 Flags)
+{
+    Q_UNUSED(sTitle);
+    Q_UNUSED(sMsg);
+    Q_UNUSED(Flags);
+
+    return JLINK_DLG_BUTTON_YES;
+}
+
 void JLinkManager::open()
 {
-    if(JLINKARM_Open())
+    JLINK_SetErrorOutHandler(_JLink_errorOutHandler);
+    JLINKARM_SetErrorOutHandler(_JLinkARM_errorOutHandler);
+
+    JLINK_SetWarnOutHandler(_JLink_warnOutHandler);
+    JLINKARM_SetWarnOutHandler(_JLinkARM_warnOutHandler);
+
+    if (JLINKARM_Open())
         _logger->logError("JLINK: An error occured when opening JLink programmer.");
+    else
+    {
+        JLINK_SetHookUnsecureDialog(_JLink_hookUnsecureDialog);
+    }
 }
 
 void JLinkManager::setDevice(const QString &device)
@@ -91,22 +130,9 @@ void JLinkManager::connect()
     }
 }
 
-static void _ErrorOutHandler(const char* sError)
-{
-    qDebug() << sError;
-}
-
-static int _fHook(const char* sTitle, const char* sMsg, U32 Flags)
-{
-    return JLINK_DLG_BUTTON_YES;
-}
-
 int JLinkManager::erase()
 {
     int error = 0;
-    JLINK_SetHookUnsecureDialog(_fHook);
-    JLINKARM_SetErrorOutHandler(_ErrorOutHandler);
-    JLINKARM_SetWarnOutHandler(_ErrorOutHandler);
 
     error = JLINK_EraseChip();
     return error;
