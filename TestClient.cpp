@@ -575,6 +575,8 @@ QStringList TestClient::railtestCommand(int channel, const QByteArray &cmd)
 
 void TestClient::testRadio(int slot, QString RfModuleId, int channel, int power, int minRSSI, int maxRSSI, int count)
 {
+    Q_UNUSED(maxRSSI);
+
     RailtestClient rf;
     _rssiValues.clear();
 
@@ -614,27 +616,13 @@ void TestClient::testRadio(int slot, QString RfModuleId, int channel, int power,
     rf.syncCommand("setBleMode", "1", 500);
     rf.syncCommand("setBle1Mbps", "1", 500);
     rf.syncCommand("setChannel", QString().setNum(channel).toLocal8Bit(), 500);
-
     railtestCommand(slot, "rx 0");
-    delay(500);
-
     railtestCommand(slot, "setBleMode 1");
-    delay(500);
-
     railtestCommand(slot, "setBle1Mbps 1");
-    delay(500);
-
     railtestCommand(slot, QString("setChannel %1").arg(channel).toLocal8Bit());
-    delay(500);
-
     railtestCommand(slot, QString("setPower %1").arg(power).toLocal8Bit());
-    delay(500);
-
     railtestCommand(slot, "setTxDelay 25");
-    delay(500);
-
     rf.syncCommand("rx", "1", 500);
-
     railtestCommand(slot, QString("tx %1").arg(count).toLocal8Bit());
     delay(5000);
 

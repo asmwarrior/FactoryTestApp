@@ -116,6 +116,7 @@ QStringList PortManager::slipCommand(const QByteArray &frame)
     if (frame.size() < (int)sizeof(MB_Packet_t))
         return QStringList();
 
+    QCoreApplication::processEvents();
     _serial.clear();
     sendFrame(0, frame);
     for (;;)
@@ -149,8 +150,11 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
     if (channel < 1 || channel > 3)
         return QStringList();
 
+    bool started = false;
+    QByteArray startPrefix = "{{(" + cmd.trimmed().split(' ').at(0).toLower() + ")}";
     QString response;
 
+    QCoreApplication::processEvents();
     _serial.clear();
     sendFrame(channel, cmd + "\r\n\r\n");
     for (;;)
@@ -169,9 +173,27 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
 
         if (decodeFrame(reply, ch, part) && ch == channel)
         {
-            response += part;
-            if (part.contains("\r\n> "))
-                break;
+            int idx;
+
+            response += part.toLower();
+            if (started)
+            {
+                idx = response.indexOf("\r\n> ");
+                if (idx >= 0)
+                {
+                    response = response.left(idx);
+                    break;
+                }
+            }
+            else
+            {
+                idx = response.indexOf(startPrefix);
+                if (idx >= 0)
+                {
+                    started = true;
+                    response = response.mid(idx);
+                }
+            }
         }
     }
 
