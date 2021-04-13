@@ -44,7 +44,6 @@ private:
     QByteArray waitForFrame(int msecs = 3000);
     static bool decodeFrame(const QByteArray &frame, int &channel, QByteArray &message);
     static QStringList decodeSlipResponse(const QByteArray &frame);
-    /* static QPair<QString, QVariant> decodeRailtestResponse(const QByteArray &message); */
 };
 
 #endif // PORTMANAGER_H

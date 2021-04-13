@@ -151,7 +151,7 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
         return QStringList();
 
     bool started = false;
-    QByteArray startPrefix = "{{(" + cmd.trimmed().split(' ').at(0).toLower() + ")}";
+    QByteArray startPrefix = "{{(" + cmd.trimmed().split(' ').at(0) + ")}";
     QString response;
 
     QCoreApplication::processEvents();
@@ -175,10 +175,10 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
         {
             int idx;
 
-            response += part.toLower();
+            response += part;
             if (started)
             {
-                idx = response.indexOf("\r\n> ");
+                idx = response.indexOf("\r\n> ", Qt::CaseInsensitive);
                 if (idx >= 0)
                 {
                     response = response.left(idx);
@@ -187,7 +187,7 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
             }
             else
             {
-                idx = response.indexOf(startPrefix);
+                idx = response.indexOf(startPrefix, Qt::CaseInsensitive);
                 if (idx >= 0)
                 {
                     started = true;
@@ -381,51 +381,3 @@ QStringList PortManager::decodeSlipResponse(const QByteArray &frame)
 
     return QStringList();
 }
-
-/*
-QPair<QString, QVariant> PortManager::decodeRailtestResponse(const QByteArray &reply)
-{
-    QPair<QString, QVariant> ret;
-
-    if (reply.startsWith("{{(") && reply.endsWith("}}"))
-    {
-        int idx = reply.indexOf(")}");
-
-        if (idx == -1)
-            return ret;
-
-        auto name = reply.mid(3, idx - 3);
-        auto params = reply.mid(idx + 2, reply.length() - idx - 3).split('}');
-        QVariantMap decodedParams;
-
-        foreach (auto param, params)
-            if (param.startsWith('{'))
-            {
-                idx = param.indexOf(':');
-                if (idx != -1)
-                    decodedParams.insert(param.mid(1, idx - 1), param.mid(idx + 1));
-            }
-
-        ret.first = name;
-        ret.second = decodedParams;
-
-        return ret;
-    }
-
-    if (reply.startsWith("{{") && reply.endsWith("}}"))
-    {
-        auto params = reply.mid(1, reply.length() - 2).split('}');
-        QVariantList decodedParams;
-
-        foreach (auto param, params)
-            if (param.startsWith('{'))
-                decodedParams.append(param.mid(1));
-
-        ret.second = decodedParams;
-
-        return ret;
-    }
-
-    return ret;
-}
-*/
