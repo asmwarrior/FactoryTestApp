@@ -140,13 +140,17 @@ MainWindow::MainWindow(QWidget *parent)
     QHBoxLayout* sessionButtonLayout = new QHBoxLayout;
     leftPanelLayout->addLayout(sessionButtonLayout);
     _newSessionButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/testOnly")), tr("Create new session"), this);
-    _newSessionButton->setFixedSize(165, 40);
+    _newSessionButton->setMinimumWidth(165);
+    _newSessionButton->setMinimumHeight(40);
+//    _newSessionButton->setFixedSize(165, 40);
     _newSessionButton->setEnabled(false);
     sessionButtonLayout->addWidget(_newSessionButton);
     sessionButtonLayout->addStretch();
 
     _finishSessionButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/finish")), tr("Finish current session"), this);
-    _finishSessionButton->setFixedSize(165, 40);
+    _finishSessionButton->setMinimumWidth(165);
+    _finishSessionButton->setMinimumHeight(40);
+//    _finishSessionButton->setFixedSize(165, 40);
     _finishSessionButton->setEnabled(false);
     sessionButtonLayout->addWidget(_finishSessionButton);
 
@@ -187,12 +191,16 @@ MainWindow::MainWindow(QWidget *parent)
     leftPanelLayout->addSpacing(9);
 
     _startFullCycleTestingButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/autoDownload")), tr("Start full cycle testing"), this);
-    _startFullCycleTestingButton->setFixedSize(165, 40);
+    _startFullCycleTestingButton->setMinimumWidth(165);
+    _startFullCycleTestingButton->setMinimumHeight(40);
+//    _startFullCycleTestingButton->setFixedSize(165, 40);
     _startFullCycleTestingButton->setEnabled(false);
     startTestingButtonsLayout->addWidget(_startFullCycleTestingButton);
 
     _startSelectedTestButton = new QPushButton(QIcon(QString::fromUtf8(":/icons/checked")), tr("Start Command"), this);
-    _startSelectedTestButton->setFixedSize(165, 40);
+    _startSelectedTestButton->setMinimumWidth(165);
+    _startSelectedTestButton->setMinimumHeight(40);
+//    _startSelectedTestButton->setFixedSize(165, 40);
     _startSelectedTestButton->setEnabled(false);
     startTestingButtonsLayout->addWidget(_startSelectedTestButton);
 
@@ -222,7 +230,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //Log widget
     _logWidget = new QListWidget(this);
-    _logWidget->setFixedHeight(200);
+//    _logWidget->setFixedHeight(200);
     logLayout->addWidget(_logWidget);
     _logger->setLogWidget(_logWidget);
 
@@ -242,7 +250,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //Widget for logging output of child processes
     _childProcessOutputLogWidget = new QListWidget(this);
-    _childProcessOutputLogWidget->setFixedHeight(200);
+//    _childProcessOutputLogWidget->setFixedHeight(200);
     logLayout->addWidget(_childProcessOutputLogWidget);
     _logger->setChildProcessLogWidget(_childProcessOutputLogWidget);
 

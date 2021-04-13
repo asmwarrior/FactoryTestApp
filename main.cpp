@@ -12,7 +12,9 @@ int main(int argc, char *argv[])
 
     MainWindow w;
     w.setWindowTitle("Capelon Test Station 0.6.40");
-    w.setFixedSize(1200, 900);
+    w.setMinimumWidth(1200);
+    w.setMinimumHeight(900);
+//    w.setFixedSize(1200, 900);
     w.show();
 
     return a.exec();
