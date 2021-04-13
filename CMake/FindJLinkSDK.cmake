@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 find_path(JLINKSDK_PREFIX Inc/JLinkARMDLL.h
     PATHS "${CMAKE_SOURCE_DIR}/3rdParty" "$ENV{ProgramFiles}/SEGGER"
-    PATH_SUFFIXES JLink_SDK_V694a JLink_SDK_V694c JLink_SDK_V696 JLink_SDK_V698a
+    PATH_SUFFIXES JLink_SDK_V698a JLink_SDK_V696 JLink_SDK_V694c JLink_SDK_V694a
     REQUIRED
 )
 
