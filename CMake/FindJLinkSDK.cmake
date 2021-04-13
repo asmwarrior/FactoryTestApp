@@ -13,7 +13,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(_jlinksdk_libraries JLink SYS UTIL)
 else()
     set(_jlinksdk_library_path_suffix Etc)
-    set(_jlinksdk_libraries JLink JLinkARM SYS UTIL)
+    set(_jlinksdk_libraries JLinkARM SYS UTIL)
 endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
