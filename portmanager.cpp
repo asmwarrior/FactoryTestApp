@@ -178,7 +178,7 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
             response += part;
             if (started)
             {
-                idx = response.indexOf("\r\n> ", Qt::CaseInsensitive);
+                idx = response.indexOf("\r\n> ", 0, Qt::CaseInsensitive);
                 if (idx >= 0)
                 {
                     response = response.left(idx);
@@ -187,7 +187,7 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
             }
             else
             {
-                idx = response.indexOf(startPrefix, Qt::CaseInsensitive);
+                idx = response.indexOf(startPrefix, 0, Qt::CaseInsensitive);
                 if (idx >= 0)
                 {
                     started = true;
