@@ -119,10 +119,14 @@ QStringList PortManager::slipCommand(const QByteArray &frame)
     QCoreApplication::processEvents();
     _serial.clear();
     sendFrame(0, frame);
+
+    qint64 timeout = QDateTime::currentMSecsSinceEpoch() + SLIP_TIMEOUT;
+
     for (;;)
     {
         QByteArray reply = waitForFrame(SLIP_TIMEOUT);
 
+        // Timeout when no reply received.
         if (reply.isEmpty())
         {
             QCoreApplication::processEvents();
@@ -142,6 +146,14 @@ QStringList PortManager::slipCommand(const QByteArray &frame)
 
             return decodeSlipResponse(message);
         }
+
+        // Timeout when no any frame decoded.
+        if (QDateTime::currentMSecsSinceEpoch() >= timeout)
+        {
+            QCoreApplication::processEvents();
+
+            return QStringList();
+        }
     }
 }
 
@@ -157,10 +169,14 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
     QCoreApplication::processEvents();
     _serial.clear();
     sendFrame(channel, cmd + "\r\n\r\n");
+
+    qint64 timeout = QDateTime::currentMSecsSinceEpoch() + RAILS_TIMEOUT;
+
     for (;;)
     {
         QByteArray reply = waitForFrame(RAILS_TIMEOUT);
 
+        // Timeout when no reply received.
         if (reply.isEmpty())
         {
             QCoreApplication::processEvents();
@@ -194,6 +210,14 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
                     response = response.mid(idx);
                 }
             }
+        }
+
+        // Timeout when no any frame decoded.
+        if (QDateTime::currentMSecsSinceEpoch() >= timeout)
+        {
+            QCoreApplication::processEvents();
+
+            return QStringList();
         }
     }
 
@@ -246,9 +270,11 @@ QByteArray PortManager::waitForFrame(int msecs)
 {
     bool started = false;
     QByteArray frame;
+    qint64 timeout = QDateTime::currentMSecsSinceEpoch() + msecs;
 
     for(;;)
     {
+        // Timeout when no response received.
         if (!_serial.waitForReadyRead(msecs))
             return QByteArray();
 
@@ -260,7 +286,7 @@ QByteArray PortManager::waitForFrame(int msecs)
                 if (started)
                 {
                     if (frame.size() >= MIN_FRAME_SIZE)
-                        return frame;
+                        return frame;                      // Full frame reached.
 
                     frame.clear();
                 }
@@ -273,6 +299,10 @@ QByteArray PortManager::waitForFrame(int msecs)
                 if (started)
                     frame.append(ch);
         }
+
+        // Timeout when no any full frame reached.
+        if (QDateTime::currentMSecsSinceEpoch() >= timeout)
+            return QByteArray();
     }
 }
 
