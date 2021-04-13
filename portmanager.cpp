@@ -70,7 +70,6 @@ static inline void _encodeSymbol(QByteArray &buffer, char ch) Q_DECL_NOTHROW
 
 PortManager::PortManager(QObject *parent) : QObject(parent), _serial(this)
 {
-    connect(&_serial, &QSerialPort::errorOccurred, this, &PortManager::onSerialPortErrorOccurred);
 }
 
 void PortManager::setPort(const QString &name, qint32 baudRate, QSerialPort::DataBits dataBits, QSerialPort::Parity parity, QSerialPort::StopBits stopBits, QSerialPort::FlowControl flowControl)
@@ -84,35 +83,33 @@ void PortManager::setPort(const QString &name, qint32 baudRate, QSerialPort::Dat
         && _serial.setFlowControl(flowControl);
 
     if (!res)
-        qCritical() << _serial.errorString();
+        qCritical() << "Serial port set() error:" << getSerialError();
 }
 
 void PortManager::open()
 {
     if (_serial.isOpen())
-    {
         _serial.close();
-    }
 
     if (!_serial.open(QSerialPort::ReadWrite))
-        qCritical() << "an error occures when opening serial port: " << _serial.errorString();
-    else
-    {
-        _serial.readAll();
-    }
+        qCritical() << "Serial open() error:" << getSerialError();
 }
 
 void PortManager::close()
 {
     if (_serial.isOpen())
-    {
-        _serial.flush();
         _serial.close();
-    }
 }
 
 QStringList PortManager::slipCommand(const QByteArray &frame)
 {
+    if (!_serial.isOpen())
+    {
+        qCritical() << "Serial is closed:" << _serial.portName();
+
+        return QStringList();
+    }
+
     if (frame.size() < (int)sizeof(MB_Packet_t))
         return QStringList();
 
@@ -159,6 +156,13 @@ QStringList PortManager::slipCommand(const QByteArray &frame)
 
 QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
 {
+    if (!_serial.isOpen())
+    {
+        qCritical() << "Serial is closed:" << _serial.portName();
+
+        return QStringList();
+    }
+
     if (channel < 1 || channel > 3)
         return QStringList();
 
@@ -226,11 +230,6 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
     return response.replace(QChar('{'), QChar(' ')).replace(QChar('}'), QChar(' ')).replace(QChar('\n'), QChar(' ')).replace(QChar('\r'), QChar(' ')).replace(QChar('>'), QChar(' ')).simplified().split(' ');
 }
 
-void PortManager::onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode)
-{
-    qCritical() << "Serial port error occurred " + QString().setNum(errorCode) + " on port " + _serial.portName();
-}
-
 void PortManager::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
 {
     QByteArray encodedBuffer;
@@ -263,7 +262,8 @@ void PortManager::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
     encodedBuffer.append(END_SLIP_OCTET);
 
     // Write encoded frame to serial port.
-    _serial.write(encodedBuffer);
+    if (_serial.write(encodedBuffer) < 0)
+        qCritical() << "Serial write() error:" << getSerialError();
 }
 
 QByteArray PortManager::waitForFrame(int msecs)
@@ -276,9 +276,21 @@ QByteArray PortManager::waitForFrame(int msecs)
     {
         // Timeout when no response received.
         if (!_serial.waitForReadyRead(msecs))
+        {
+            if (_serial.error())
+                qCritical() << "Serial waitForReadyRead() error:" << getSerialError();
+
             return QByteArray();
+        }
 
         QByteArray buffer = _serial.readAll();
+
+        if (buffer.isEmpty() && _serial.error())
+        {
+            qCritical() << "Serial readAll() error:" << getSerialError();
+
+            return QByteArray();
+        }
 
         foreach (char ch, buffer)
         {
@@ -410,4 +422,13 @@ QStringList PortManager::decodeSlipResponse(const QByteArray &frame)
     }
 
     return QStringList();
+}
+
+QString PortManager::getSerialError()
+{
+    QString ret = _serial.portName() + " " + _serial.errorString() + " (" + _serial.error() + ")";
+
+    _serial.clearError();
+
+    return ret;
 }

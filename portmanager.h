@@ -32,10 +32,6 @@ public slots:
     void close();
     void setTimeout(int value) { Q_UNUSED(value); }
 
-private slots:
-
-    void onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode);
-
 private:
 
     QSerialPort _serial;
@@ -44,6 +40,7 @@ private:
     QByteArray waitForFrame(int msecs = 3000);
     static bool decodeFrame(const QByteArray &frame, int &channel, QByteArray &message);
     static QStringList decodeSlipResponse(const QByteArray &frame);
+    QString getSerialError();
 };
 
 #endif // PORTMANAGER_H
