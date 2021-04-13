@@ -55,7 +55,6 @@ NemaPP =
                 let jlink = jlinkList[i];
                 if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
                 {
-                    testClient.powerOn(slot);
                     testClient.switchSWD(slot);
                     delay(1000);
 
@@ -67,11 +66,27 @@ NemaPP =
                     jlink.connect();
                     if (jlink.erase() < 0)
                     {
-                        testClientList[4].powerOff(slot);
+                        NemaPP.powerOff();
                         delay(5000);
-                        testClientList[4].powerOn(slot);
+                        NemaPP.powerOn();
                         jlink.connect();
-                        jlink.erase();
+                        if (jlink.erase() === 0)
+                        {
+                            logger.logInfo("Flash memory for the DUT " + testClient.dutNo(slot) + " has been unlocked and erased succesfully.");
+                            logger.logDebug("Flash memory for the DUT " + testClient.dutNo(slot) + " has been unlocked and erased succesfully.");
+                        }
+
+                        else
+                        {
+                            logger.logError("Flash memory for the DUT " + testClient.dutNo(slot) + " has NOT been unlocked and erased.");
+                            logger.logDebug("Flash memory for the DUT " + testClient.dutNo(slot) + " has NOT been unlocked and erased.");
+                        }
+                    }
+
+                    else
+                    {
+                        logger.logInfo("Flash memory for the DUT " + testClient.dutNo(slot) + " has been erased succesfully.");
+                        logger.logDebug("Flash memory for the DUT " + testClient.dutNo(slot) + " has been erased succesfully.");
                     }
 
                     jlink.close();

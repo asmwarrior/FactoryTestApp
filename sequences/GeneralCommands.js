@@ -198,37 +198,37 @@ GeneralCommands =
                     jlink.setSpeed(5000);
                     jlink.connect();
 
-                    let error = jlink.erase();
-                    if(error < 0)
-                    {
-                        testClient.setDutProperty(slot, "state", 3);
-                        testClient.addDutError(slot, "Failed to load the sowtware");
-                        logger.logError("Unable to earase chip flash memory in DUT " + testClient.dutNo(slot));
-                        logger.logDebug("An error occured when erasing chip in DUT " + testClient.dutNo(slot) + " Error code: " + error);
-                    }
+//                    let error = jlink.erase();
+//                    if(error < 0)
+//                    {
+//                        testClient.setDutProperty(slot, "state", 3);
+//                        testClient.addDutError(slot, "Failed to load the sowtware");
+//                        logger.logError("Unable to earase chip flash memory in DUT " + testClient.dutNo(slot));
+//                        logger.logDebug("An error occured when erasing chip in DUT " + testClient.dutNo(slot) + " Error code: " + error);
+//                    }
 
-                    else
-                    {
-                        logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
-                        logger.logDebug("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
+//                    else
+//                    {
+//                        logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
+//                        logger.logDebug("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
 
-                        error = jlink.downloadFile(softwareFileName, 0);
+//                        error = jlink.downloadFile(softwareFileName, 0);
 
-                        if(error < 0)
-                        {
-                            testClient.setDutProperty(slot, "state", 3);
-                            testClient.addDutError(slot, "Failed to load the sowtware");
-                            logger.logError("Failed to load the sowtware into the chip flash memory for DUT " + testClient.dutNo(slot));
-                            logger.logDebug("An error occured when downloading " + softwareFileName + " for DUT " + testClient.dutNo(slot) + " Error code: " + error);
+//                        if(error < 0)
+//                        {
+//                            testClient.setDutProperty(slot, "state", 3);
+//                            testClient.addDutError(slot, "Failed to load the sowtware");
+//                            logger.logError("Failed to load the sowtware into the chip flash memory for DUT " + testClient.dutNo(slot));
+//                            logger.logDebug("An error occured when downloading " + softwareFileName + " for DUT " + testClient.dutNo(slot) + " Error code: " + error);
 
-                        }
+//                        }
 
-                        else
-                        {
-                            logger.logInfo("Software has been downloaded in DUT " + testClient.dutNo(slot));
-                            logger.logDebug("Software has been downloaded in DUT " + testClient.dutNo(slot));
-                        }
-                    }
+//                        else
+//                        {
+//                            logger.logInfo("Software has been downloaded in DUT " + testClient.dutNo(slot));
+//                            logger.logDebug("Software has been downloaded in DUT " + testClient.dutNo(slot));
+//                        }
+//                    }
 
                     jlink.close();
                 }

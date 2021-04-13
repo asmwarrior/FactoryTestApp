@@ -5,6 +5,27 @@
 #include <QThread>
 #include <QCoreApplication>
 
+static void _ErrorOutHandler(const char* sError)
+{
+    qDebug() << sError;
+}
+
+static void STDCALL _ErrorOutHandler2(const char* sError)
+{
+    qDebug() << sError;
+}
+
+static int _fHook(const char* sTitle, const char* sMsg, U32 Flags)
+{
+    qDebug() << sMsg;
+    return JLINK_DLG_BUTTON_YES;
+}
+
+static void FlashNotifyDummy(JLINKARM_FLASH_EVENT Event, const JLINKARM_FLASH_NOTIFY_INFO * pNotifyInfo)
+{
+    qDebug() << "Flash notify has been hooked.";
+}
+
 JLinkManager::JLinkManager(const QSharedPointer<QSettings> &settings, QObject *parent)
     : QObject(parent), _settings(settings), _proc(this)
 {
@@ -54,8 +75,22 @@ void JLinkManager::selectByUSB()
 
 void JLinkManager::open()
 {
+//    JLINK_SetHookUnsecureDialog(_fHook);
+//    JLINK_SetErrorOutHandler(_ErrorOutHandler2);
+//    JLINKARM_SetErrorOutHandler(_ErrorOutHandler);
+//    JLINK_SetWarnOutHandler(_ErrorOutHandler2);
+//    JLINKARM_SetWarnOutHandler(_ErrorOutHandler);
+
     if(JLINKARM_Open())
         _logger->logError("JLINK: An error occured when opening JLink programmer.");
+    else
+    {
+//        JLINK_SetHookUnsecureDialog(_fHook);
+//        JLINK_SetErrorOutHandler(_ErrorOutHandler2);
+//        JLINKARM_SetErrorOutHandler(_ErrorOutHandler);
+//        JLINK_SetWarnOutHandler(_ErrorOutHandler2);
+//        JLINKARM_SetWarnOutHandler(_ErrorOutHandler);
+    }
 }
 
 void JLinkManager::setDevice(const QString &device)
@@ -91,22 +126,15 @@ void JLinkManager::connect()
     }
 }
 
-static void _ErrorOutHandler(const char* sError)
-{
-    qDebug() << sError;
-}
-
-static int _fHook(const char* sTitle, const char* sMsg, U32 Flags)
-{
-    return JLINK_DLG_BUTTON_YES;
-}
-
 int JLinkManager::erase()
 {
     int error = 0;
-    JLINK_SetHookUnsecureDialog(_fHook);
-    JLINKARM_SetErrorOutHandler(_ErrorOutHandler);
-    JLINKARM_SetWarnOutHandler(_ErrorOutHandler);
+//    JLINK_SetHookUnsecureDialog(_fHook);
+//    JLINK_SetErrorOutHandler(_ErrorOutHandler2);
+//    JLINKARM_SetErrorOutHandler(_ErrorOutHandler);
+//    JLINK_SetWarnOutHandler(_ErrorOutHandler2);
+//    JLINKARM_SetWarnOutHandler(_ErrorOutHandler);
+//    JLINK_FLASH_SetNotifyHandler(FlashNotifyDummy);
 
     error = JLINK_EraseChip();
     return error;
