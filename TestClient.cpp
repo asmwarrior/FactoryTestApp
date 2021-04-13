@@ -158,7 +158,7 @@ int TestClient::switchSWD(int slot)
     pkt.h.dataLen = 1;
     pkt.dut = slot;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    auto response = _portManager.slipCommand(QByteArray((char*)&pkt, sizeof(pkt)));
 
     if(response.size())
     {
@@ -189,7 +189,7 @@ int TestClient::powerOn(int slot)
     pkt.dut = slot;
     pkt.state = 1;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    auto response = _portManager.slipCommand(QByteArray((char*)&pkt, sizeof(pkt)));
 
     if(response.size())
     {
@@ -219,7 +219,7 @@ int TestClient::powerOff(int slot)
     pkt.dut = slot;
     pkt.state = 0;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    auto response = _portManager.slipCommand(QByteArray((char*)&pkt, sizeof(pkt)));
 
     if(response.size())
     {
@@ -249,7 +249,7 @@ int TestClient::readDIN(int slot, int DIN)
     pkt.dut = slot;
     pkt.din = DIN;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    auto response = _portManager.slipCommand(QByteArray((char*)&pkt, sizeof(pkt)));
 
     if(response.size())
     {
@@ -281,7 +281,7 @@ int TestClient::setDOUT(int slot, int DOUT)
     pkt.dout = DOUT;
     pkt.state = 1;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    auto response = _portManager.slipCommand(QByteArray((char*)&pkt, sizeof(pkt)));
 
     if(response.size())
     {
@@ -313,7 +313,7 @@ int TestClient::clearDOUT(int slot, int DOUT)
     pkt.dout = DOUT;
     pkt.state = 0;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    auto response = _portManager.slipCommand(QByteArray((char*)&pkt, sizeof(pkt)));
 
     if(response.size())
     {
@@ -340,7 +340,7 @@ int TestClient::readCSA(int gain)
     pkt.h.dataLen = 1;
     pkt.gain = gain;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    auto response = _portManager.slipCommand(QByteArray((char*)&pkt, sizeof(pkt)));
 
     if(response.size())
     {
@@ -374,7 +374,7 @@ int TestClient::readAIN(int slot, int AIN, int gain)
 
     _currentSlot = slot;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    auto response = _portManager.slipCommand(QByteArray((char*)&pkt, sizeof(pkt)));
 
     if(response.size())
     {
@@ -401,7 +401,7 @@ int TestClient::daliOn()
     pkt.h.dataLen = 1;
     pkt.state = 1;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    auto response = _portManager.slipCommand(QByteArray((char*)&pkt, sizeof(pkt)));
 
     if(response.size())
     {
@@ -428,7 +428,7 @@ int TestClient::daliOff()
     pkt.h.dataLen = 1;
     pkt.state = 0;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    auto response = _portManager.slipCommand(QByteArray((char*)&pkt, sizeof(pkt)));
 
     if(response.size())
     {
@@ -453,7 +453,7 @@ int TestClient::readDaliADC()
     pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 0;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    auto response = _portManager.slipCommand(QByteArray((char*)&pkt, sizeof(pkt)));
 
     if(response.size())
     {
@@ -483,7 +483,7 @@ int TestClient::readDinADC(int slot, int DIN)
     pkt.dut = slot;
     pkt.din = DIN;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    auto response = _portManager.slipCommand(QByteArray((char*)&pkt, sizeof(pkt)));
 
     if(response.size())
     {
@@ -508,7 +508,7 @@ int TestClient::read24V()
     pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 0;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    auto response = _portManager.slipCommand(QByteArray((char*)&pkt, sizeof(pkt)));
 
     if(response.size())
     {
@@ -533,7 +533,7 @@ int TestClient::read3V()
     pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 0;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    auto response = _portManager.slipCommand(QByteArray((char*)&pkt, sizeof(pkt)));
 
     if(response.size())
     {
@@ -558,7 +558,7 @@ int TestClient::readTemperature()
     pkt.h.sequence = ++_sequenceCounter;
     pkt.h.dataLen = 0;
 
-    auto response = _portManager.slipCommand(0, QByteArray((char*)&pkt, sizeof(pkt)));
+    auto response = _portManager.slipCommand(QByteArray((char*)&pkt, sizeof(pkt)));
 
     if(response.size())
     {

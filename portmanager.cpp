@@ -6,10 +6,14 @@
 #include <QDebug>
 
 static constexpr char
-    END_SLIP_OCTET  = -64, //0xC0
-    END_SUBS_OCTET  = -36, //0xDC
-    ESC_SLIP_OCTET  = -37, //0xDB
-    ESC_SUBS_OCTET  = -35; //0xDD
+    END_SLIP_OCTET = -64, // 0xC0
+    END_SUBS_OCTET = -36, // 0xDC
+    ESC_SLIP_OCTET = -37, // 0xDB
+    ESC_SUBS_OCTET = -35; // 0xDD
+
+static constexpr int
+    SLIP_TIMEOUT  = 3000,
+    RAILS_TIMEOUT = 5000;
 
 static constexpr int MIN_FRAME_SIZE = sizeof(quint8) + sizeof(quint16) + 1;
 
@@ -66,7 +70,6 @@ static inline void _encodeSymbol(QByteArray &buffer, char ch) Q_DECL_NOTHROW
 
 PortManager::PortManager(QObject *parent) : QObject(parent), _serial(this)
 {
-    connect(&_serial, &QSerialPort::readyRead, this, &PortManager::onSerialPortReadyRead);
     connect(&_serial, &QSerialPort::errorOccurred, this, &PortManager::onSerialPortErrorOccurred);
 }
 
@@ -81,7 +84,7 @@ void PortManager::setPort(const QString &name, qint32 baudRate, QSerialPort::Dat
         && _serial.setFlowControl(flowControl);
 
     if (!res)
-        qDebug() << _serial.errorString();
+        qCritical() << _serial.errorString();
 }
 
 void PortManager::open()
@@ -92,7 +95,7 @@ void PortManager::open()
     }
 
     if (!_serial.open(QSerialPort::ReadWrite))
-        qDebug() << "an error occures when opening serial port: " << _serial.errorString();
+        qCritical() << "an error occures when opening serial port: " << _serial.errorString();
     else
     {
         _serial.readAll();
@@ -108,272 +111,78 @@ void PortManager::close()
     }
 }
 
-QStringList PortManager::slipCommand(int channel, const QByteArray &frame)
+QStringList PortManager::slipCommand(const QByteArray &frame)
 {
-    _response.clear();
-    _currentChannelWaitReply = channel;
-    _currentSequence = frame.at(2);
-    sendFrame(channel, frame);
+    if (frame.size() < (int)sizeof(MB_Packet_t))
+        return QStringList();
 
-    if(_response.isEmpty())
+    _serial.clear();
+    sendFrame(0, frame);
+    for (;;)
     {
-        _logger->logDebug("Timeout for the response waiting.");
+        QByteArray reply = waitForFrame(SLIP_TIMEOUT);
+
+        if (reply.isEmpty())
+        {
+            QCoreApplication::processEvents();
+
+            return QStringList();
+        }
+
+        int channel;
+        QByteArray message;
+
+        if (decodeFrame(reply, channel, message)
+                && 0 == channel
+                && message.size() >= (int)sizeof(MB_Packet_t)
+                && frame.at(2) == message.at(2))
+        {
+            QCoreApplication::processEvents();
+
+            return decodeSlipResponse(message);
+        }
     }
-//    emit responseRecieved(_response);
-    return _response;
 }
 
 QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
 {
-    if(channel > 3)
+    if (channel < 1 || channel > 3)
         return QStringList();
 
-    _currentChannelWaitReply = channel;
-    _railReply[channel].clear();
-    _response.clear();
-    _syncCommand = cmd;
-    _syncReplies.clear();
+    QString response;
+
+    _serial.clear();
     sendFrame(channel, cmd + "\r\n\r\n");
-
-    if(_response.isEmpty())
+    for (;;)
     {
-        _logger->logDebug("Timeout for the response waiting.");
-    }
-//    emit responseRecieved(_response);
-    return _response;
-}
+        QByteArray reply = waitForFrame(RAILS_TIMEOUT);
 
-void PortManager::onSerialPortReadyRead()
-{
-    if(_currentChannelWaitReply == -1)
-    {
-        _serial.readAll();
+        if (reply.isEmpty())
+        {
+            QCoreApplication::processEvents();
+
+            return QStringList();
+        }
+
+        int ch;
+        QByteArray part;
+
+        if (decodeFrame(reply, ch, part) && ch == channel)
+        {
+            response += part;
+            if (part.contains("\r\n> "))
+                break;
+        }
     }
 
-    else
-    {
-        processResponsePacket();
-    }
+    QCoreApplication::processEvents();
+
+    return response.replace(QChar('{'), QChar(' ')).replace(QChar('}'), QChar(' ')).replace(QChar('\n'), QChar(' ')).replace(QChar('\r'), QChar(' ')).replace(QChar('>'), QChar(' ')).simplified().split(' ');
 }
 
 void PortManager::onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode)
 {
-    if (errorCode != QSerialPort::NoError)
-        _logger->logError("Serial port error occurred " + QString().setNum(errorCode) + " on port " + _serial.portName());
-}
-
-void PortManager::processResponsePacket()
-{
-    while (_serial.bytesAvailable())
-    {
-        QByteArray buffer = _serial.readAll();
-        foreach (char ch, buffer)
-        {
-            if (ch == END_SLIP_OCTET)
-                if (_frameStarted)
-                {
-                    if (_recvBuffer.size() >= MIN_FRAME_SIZE)
-                    {
-                        decodeFrame();
-                        _frameStarted = false;
-                    }
-                    _recvBuffer.clear();
-                }
-                else
-                {
-                    _frameStarted = true;
-                    _recvBuffer.clear();
-                }
-            else
-                if (_frameStarted)
-                    _recvBuffer.append(ch);
-        }
-    }
-}
-
-void PortManager::decodeFrame() Q_DECL_NOTHROW
-{
-    QByteArray decodedBuffer;
-//    static QByteArray railReply;
-
-    // Write unescaped buffer.
-    decodedBuffer.reserve(_recvBuffer.size());
-    for (int i = 0; i < _recvBuffer.size(); ++i)
-    {
-        char ch = _recvBuffer.at(i);
-
-        if (ch == ESC_SLIP_OCTET)
-        {
-            ++i;
-            if (i >= _recvBuffer.size())
-            {
-                _logger->logError("SLIP. Decode frame. Unfinished escape sequence.");
-                return;
-            }
-            switch (_recvBuffer.at(i))
-            {
-                case END_SUBS_OCTET:
-                    decodedBuffer.append(END_SLIP_OCTET);
-                    break;
-
-                case ESC_SUBS_OCTET:
-                    decodedBuffer.append(ESC_SLIP_OCTET);
-                    break;
-
-                default:
-                    _logger->logError("SLIP. Decode frame. Invalid escape sequence.");
-                    return;
-            }
-        }
-        else
-            decodedBuffer.append(ch);
-    }
-    if (decodedBuffer.size() < MIN_FRAME_SIZE)
-    {
-        _logger->logError("SLIP. Decode frame. Frame too short.");
-        return;
-    }
-
-    // Calculate CRC.
-    int frameSize = decodedBuffer.size() - 2;
-    quint16
-        frameCrc = 0xFFFF,
-        bufferCrc = (quint8)decodedBuffer.at(frameSize + 1) | ((quint16)decodedBuffer.at(frameSize) << 8);
-
-    for (int i = 0; i < frameSize; ++i)
-    {
-        quint8 index = (quint8)decodedBuffer.at(i) ^ (frameCrc >> 8);
-
-        frameCrc = _crc_ccitt_lut[index] ^ (frameCrc << 8);
-    }
-
-    // Check CRC.
-    if (frameCrc != bufferCrc)
-    {
-        _logger->logError("SLIP. Decode frame. Invalid Frame CRC.");
-        return;
-    }
-
-    // Frame received successfully.
-
-    int channel = decodedBuffer.at(0);
-    QByteArray frame = decodedBuffer.mid(1, frameSize - 1);
-
-    switch(channel)
-    {
-    case 0:
-        onSlipPacketReceived(decodedBuffer.at(0), frame);
-        break;
-
-    case 1:
-    case 2:
-    case 3:
-        _railReply[channel] += frame;
-        if(frame.contains("> "))
-        {
-            onSlipPacketReceived(channel, _railReply[channel]);
-            _railReply[channel].clear();
-        }
-        break;
-    }
-}
-
-void PortManager::onSlipPacketReceived(quint8 channel, QByteArray frame) noexcept
-{
-    if(_currentChannelWaitReply != channel)
-        return;
-
-    switch (channel)
-    {
-        case 0:
-            if (frame.size() >= (int)sizeof(MB_Packet_t))
-            {
-                MB_Packet_t *pkt = (MB_Packet_t*)frame.data();
-
-                pkt->type = qFromBigEndian(pkt->type);
-                switch (pkt->type)
-                {
-                    case MB_STARTUP:
-                        _logger->logInfo("Startup event.");
-                        break;
-
-                    case MB_GENERAL_RESULT:
-                        {
-                            MB_GeneralResult_t *gr = (MB_GeneralResult_t*)pkt;
-
-                            gr->errorCode = qFromBigEndian(gr->errorCode);
-                            if(gr->header.sequence == _currentSequence)
-                            {
-                                _response.push_back(QString().setNum(gr->errorCode));
-                                _currentChannelWaitReply = -1;
-                            }
-
-                        }
-                        break;
-
-                    case MB_ASYNC_EVENT:
-                        {
-                            MB_Event_t *evt = (MB_Event_t*)pkt;
-
-                            evt->eventCode = qFromBigEndian(evt->eventCode);
-                            _logger->logInfo(QString("EVENT: code=%2.").arg(evt->eventCode));
-                        }
-                        break;
-                }
-            }
-            break;
-
-        case 1:
-        case 2:
-        case 3:
-            _response = QString(frame).replace(QChar('{'), QChar(' ')).replace(QChar('}'), QChar(' ')).replace(QChar('\n'), QChar(' ')).replace(QChar('\r'), QChar(' ')).replace(QChar('>'), QChar(' ')).simplified().split(' ');
-            _currentChannelWaitReply = -1;
-            break;
-
-    }
-}
-
-void PortManager::decodeRailtestReply(const QByteArray &reply)
-{
-    if (reply.startsWith("{{(") && reply.endsWith("}}"))
-    {
-        int idx = reply.indexOf(")}");
-
-        if (idx == -1)
-            return;
-
-        auto name = reply.mid(3, idx - 3);
-        auto params = reply.mid(idx + 2, reply.length() - idx - 3).split('}');
-        QVariantMap decodedParams;
-
-        foreach (auto param, params)
-            if (param.startsWith('{'))
-            {
-                idx = param.indexOf(':');
-                if (idx != -1)
-                    decodedParams.insert(param.mid(1, idx - 1), param.mid(idx + 1));
-            }
-
-        if (_syncCommand == name)
-            _syncReplies.append(decodedParams);
-
-        return;
-    }
-
-    if (reply.startsWith("{{") && reply.endsWith("}}"))
-    {
-        auto params = reply.mid(1, reply.length() - 2).split('}');
-        QVariantList decodedParams;
-
-        foreach (auto param, params)
-            if (param.startsWith('{'))
-                decodedParams.append(param.mid(1));
-
-        if (!_syncCommand.isEmpty())
-            _syncReplies.push_back(decodedParams);
-
-        return;
-    }
+    qCritical() << "Serial port error occurred " + QString().setNum(errorCode) + " on port " + _serial.portName();
 }
 
 void PortManager::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
@@ -408,21 +217,193 @@ void PortManager::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
     encodedBuffer.append(END_SLIP_OCTET);
 
     // Write encoded frame to serial port.
-//    qDebug() << "Frame to be sended: " << frame << " ; encoded: " << encodedBuffer;
     _serial.write(encodedBuffer);
-    waitCommandFinished();
 }
 
-void PortManager::waitCommandFinished()
+QByteArray PortManager::waitForFrame(int msecs)
 {
-    QTime expire = QTime::currentTime().addMSecs(_timeout);
-    while(_currentChannelWaitReply >= 0)
-    {
-        QCoreApplication::processEvents();
+    bool started = false;
+    QByteArray frame;
 
-        if(QTime::currentTime() > expire)
+    for(;;)
+    {
+        if (!_serial.waitForReadyRead(msecs))
+            return QByteArray();
+
+        QByteArray buffer = _serial.readAll();
+
+        foreach (char ch, buffer)
         {
-           _currentChannelWaitReply = -1;
+            if (ch == END_SLIP_OCTET)
+                if (started)
+                {
+                    if (frame.size() >= MIN_FRAME_SIZE)
+                        return frame;
+
+                    frame.clear();
+                }
+                else
+                {
+                    started = true;
+                    frame.clear();
+                }
+            else
+                if (started)
+                    frame.append(ch);
         }
     }
 }
+
+bool PortManager::decodeFrame(const QByteArray &frame, int &channel, QByteArray &message)
+{
+    QByteArray decodedBuffer;
+
+    // Write unescaped buffer.
+    decodedBuffer.reserve(frame.size());
+    for (int i = 0; i < frame.size(); ++i)
+    {
+        char ch = frame.at(i);
+
+        if (ch == ESC_SLIP_OCTET)
+        {
+            ++i;
+            if (i >= frame.size())
+            {
+                qWarning() << "SLIP. Decode frame. Unfinished escape sequence.";
+
+                return false;
+            }
+            switch (frame.at(i))
+            {
+                case END_SUBS_OCTET:
+                    decodedBuffer.append(END_SLIP_OCTET);
+                    break;
+
+                case ESC_SUBS_OCTET:
+                    decodedBuffer.append(ESC_SLIP_OCTET);
+                    break;
+
+                default:
+                    qWarning() << "SLIP. Decode frame. Invalid escape sequence.";
+
+                    return false;
+            }
+        }
+        else
+            decodedBuffer.append(ch);
+    }
+    if (decodedBuffer.size() < MIN_FRAME_SIZE)
+    {
+        qWarning() << "SLIP. Decode frame. Frame too short.";
+
+        return false;
+    }
+
+    // Calculate CRC.
+    int frameSize = decodedBuffer.size() - 2;
+    quint16
+        frameCrc = 0xFFFF,
+        bufferCrc = (quint8)decodedBuffer.at(frameSize + 1) | ((quint16)decodedBuffer.at(frameSize) << 8);
+
+    for (int i = 0; i < frameSize; ++i)
+    {
+        quint8 index = (quint8)decodedBuffer.at(i) ^ (frameCrc >> 8);
+
+        frameCrc = _crc_ccitt_lut[index] ^ (frameCrc << 8);
+    }
+
+    // Check CRC.
+    if (frameCrc != bufferCrc)
+    {
+        qWarning() << "SLIP. Decode frame. Invalid Frame CRC.";
+
+        return false;
+    }
+
+    // Frame received successfully.
+    channel = decodedBuffer.at(0);
+    message = decodedBuffer.mid(1, frameSize - 1);
+
+    return true;
+}
+
+QStringList PortManager::decodeSlipResponse(const QByteArray &frame)
+{
+    MB_Packet_t *pkt = (MB_Packet_t*)frame.data();
+
+    pkt->type = qFromBigEndian(pkt->type);
+    switch (pkt->type)
+    {
+        case MB_STARTUP:
+            qInfo() << "Startup event.";
+            break;
+
+        case MB_GENERAL_RESULT:
+            {
+                MB_GeneralResult_t *gr = (MB_GeneralResult_t*)pkt;
+
+                gr->errorCode = qFromBigEndian(gr->errorCode);
+
+                return QStringList() << QString::number(gr->errorCode);
+            }
+
+        case MB_ASYNC_EVENT:
+            {
+                MB_Event_t *evt = (MB_Event_t*)pkt;
+
+                evt->eventCode = qFromBigEndian(evt->eventCode);
+                qInfo() << QString("EVENT: code=%2.").arg(evt->eventCode);
+            }
+            break;
+    }
+
+    return QStringList();
+}
+
+/*
+QPair<QString, QVariant> PortManager::decodeRailtestResponse(const QByteArray &reply)
+{
+    QPair<QString, QVariant> ret;
+
+    if (reply.startsWith("{{(") && reply.endsWith("}}"))
+    {
+        int idx = reply.indexOf(")}");
+
+        if (idx == -1)
+            return ret;
+
+        auto name = reply.mid(3, idx - 3);
+        auto params = reply.mid(idx + 2, reply.length() - idx - 3).split('}');
+        QVariantMap decodedParams;
+
+        foreach (auto param, params)
+            if (param.startsWith('{'))
+            {
+                idx = param.indexOf(':');
+                if (idx != -1)
+                    decodedParams.insert(param.mid(1, idx - 1), param.mid(idx + 1));
+            }
+
+        ret.first = name;
+        ret.second = decodedParams;
+
+        return ret;
+    }
+
+    if (reply.startsWith("{{") && reply.endsWith("}}"))
+    {
+        auto params = reply.mid(1, reply.length() - 2).split('}');
+        QVariantList decodedParams;
+
+        foreach (auto param, params)
+            if (param.startsWith('{'))
+                decodedParams.append(param.mid(1));
+
+        ret.second = decodedParams;
+
+        return ret;
+    }
+
+    return ret;
+}
+*/

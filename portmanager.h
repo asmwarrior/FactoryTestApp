@@ -24,50 +24,30 @@ public:
                  QSerialPort::StopBits stopBits = QSerialPort::OneStop,
                  QSerialPort::FlowControl flowControl = QSerialPort::NoFlowControl);
 
-    void setLogger(const QSharedPointer<Logger>& logger) {_logger = logger;}
+    void setLogger(const QSharedPointer<Logger>& logger) { Q_UNUSED(logger); }
+
+    QStringList slipCommand(const QByteArray &frame);
+    QStringList railtestCommand(int channel, const QByteArray &cmd);
 
 public slots:
 
     void open();
     void close();
-
-    QStringList slipCommand(int channel, const QByteArray &frame);
-    QStringList railtestCommand(int channel, const QByteArray &cmd);
-
-    void setTimeout(int value) {_timeout = value;}
-
-signals:
-
-//    void responseRecieved(QStringList response);
+    void setTimeout(int value) { Q_UNUSED(value); }
 
 private slots:
 
-    void onSerialPortReadyRead();
     void onSerialPortErrorOccurred(QSerialPort::SerialPortError errorCode);
-    void sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW;
-    void processResponsePacket();
-    void decodeFrame() Q_DECL_NOTHROW;
-    void onSlipPacketReceived(quint8 channel, QByteArray frame) Q_DECL_NOTHROW;
-    void decodeRailtestReply(const QByteArray &reply);
-    void waitCommandFinished();
 
 private:
 
-    QSharedPointer<Logger> _logger;
     QSerialPort _serial;
-    int _currentChannelWaitReply = -1;
-    uint8_t _currentSequence;
 
-    bool _frameStarted;
-    QByteArray _recvBuffer;
-
-    QByteArray _syncCommand;
-    QVariantList _syncReplies;
-
-    QStringList _response;
-    int _timeout = 10000;
-
-    QByteArray _railReply[4];
+    void sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW;
+    QByteArray waitForFrame(int msecs = 3000);
+    static bool decodeFrame(const QByteArray &frame, int &channel, QByteArray &message);
+    static QStringList decodeSlipResponse(const QByteArray &frame);
+    /* static QPair<QString, QVariant> decodeRailtestResponse(const QByteArray &message); */
 };
 
 #endif // PORTMANAGER_H
