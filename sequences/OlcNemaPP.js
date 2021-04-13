@@ -70,16 +70,16 @@ NemaPP =
                         delay(5000);
                         NemaPP.powerOn();
                         jlink.connect();
-                        if (jlink.erase() < 0)
+                        if (jlink.erase() === 0)
                         {
-                            logger.logError("Flash memory for the DUT " + testClient.dutNo(slot) + " has NOT been unlocked and erased.");
-                            logger.logDebug("Flash memory for the DUT " + testClient.dutNo(slot) + " has NOT been unlocked and erased.");
+                            logger.logInfo("Flash memory for the DUT " + testClient.dutNo(slot) + " has been unlocked and erased succesfully.");
+                            logger.logDebug("Flash memory for the DUT " + testClient.dutNo(slot) + " has been unlocked and erased succesfully.");
                         }
 
                         else
                         {
-                            logger.logInfo("Flash memory for the DUT " + testClient.dutNo(slot) + " has been unlocked and erased succesfully.");
-                            logger.logDebug("Flash memory for the DUT " + testClient.dutNo(slot) + " has been unlocked and erased succesfully.");
+                            logger.logError("Flash memory for the DUT " + testClient.dutNo(slot) + " has NOT been unlocked and erased.");
+                            logger.logDebug("Flash memory for the DUT " + testClient.dutNo(slot) + " has NOT been unlocked and erased.");
                         }
                     }
 
@@ -129,13 +129,13 @@ NemaPP =
                 testClient.setDutProperty(slot, "state", 0);
                 testClient.setDutProperty(slot, "checked", false);
                 testClient.setTimeout(300);
-                for (let j = 0; j < 3; j++)
+                for (j = 0; j < 3; j++)
                 {
                     let voltage = testClient.readAIN(slot, 4, 0);
 
                     if (voltage > 40000)
                     {
-                        logger.logSuccess("Device connected to the slot " + testClient.dutNo(slot) + " detected.");
+                        logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no() + " detected.");
                         testClient.setDutProperty(slot, "state", 1);
                         testClient.setDutProperty(slot, "checked", true);
                         break;
