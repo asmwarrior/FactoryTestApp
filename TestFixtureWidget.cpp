@@ -78,7 +78,9 @@ TestFixtureWidget::TestFixtureWidget(SessionManager* session, QWidget* parent) :
     mainLayout->addLayout(selectionButtonsLayout);
 
     _selectAllButton = new QPushButton("Select all DUTs");
-    _selectAllButton->setFixedSize(120, 40);
+    _selectAllButton->setMinimumWidth(120);
+    _selectAllButton->setMinimumHeight(40);
+//    _selectAllButton->setFixedSize(120, 40);
     selectionButtonsLayout->addWidget(_selectAllButton);
     connect(_selectAllButton, &QPushButton::clicked, [=]()
     {
@@ -91,7 +93,9 @@ TestFixtureWidget::TestFixtureWidget(SessionManager* session, QWidget* parent) :
     });
 
     _reverseSelectionButton = new QPushButton("Reverse Selection");
-    _reverseSelectionButton->setFixedSize(120, 40);
+    _reverseSelectionButton->setMinimumWidth(120);
+    _reverseSelectionButton->setMinimumHeight(40);
+//    _reverseSelectionButton->setFixedSize(120, 40);
     selectionButtonsLayout->addWidget(_reverseSelectionButton);
     selectionButtonsLayout->addStretch();
 

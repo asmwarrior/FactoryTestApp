@@ -13,7 +13,9 @@ DutInfoWidget::DutInfoWidget(SessionManager *session, QWidget *parent) : QWidget
     setLayout(mainLayout);
 
     QGroupBox* widgetBox = new QGroupBox("DUT information");
-    widgetBox->setFixedSize(300, 258);
+    widgetBox->setMinimumWidth(300);
+    widgetBox->setMinimumHeight(298);
+//    widgetBox->setFixedSize(300, 258);
     mainLayout->addWidget(widgetBox);
     mainLayout->addStretch();
 
