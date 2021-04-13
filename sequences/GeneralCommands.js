@@ -593,10 +593,10 @@ GeneralCommands =
 
                     if(response.length > 1)
                     {
-                        if (response[2].includes("opwr"))
+                        if (response[1].includes("opwr"))
                         {
                             patternFound = true;
-                            let x = Number(response[2].slice(5, 5));
+                            let x = Number(response[1].slice(5, 5));
 
                             if (x < 0)
                             {
