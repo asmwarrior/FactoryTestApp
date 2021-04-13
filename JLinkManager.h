@@ -4,7 +4,7 @@
 #include <QSettings>
 #include "Logger.h"
 
-#include "JLinkSDK/JLinkARMDLL.h"
+#include <JLinkARMDLL.h>
 
 
 class JLinkManager : public QObject
