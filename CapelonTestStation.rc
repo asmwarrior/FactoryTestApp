@@ -1,1 +1,39 @@
-IDI_ICON1 ICON DISCARDABLE "Resources/application.ico"
+#include <windows.h>
+#include "version.h"
+
+#ifndef DEBUG
+    #define VER_DEBUG  0
+#else
+    #define VER_DEBUG  VS_FF_DEBUG
+#endif
+
+IDI_ICON1       ICON DISCARDABLE "Resources/application.ico"
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION    	CTS_VER_MAJOR,CTS_VER_MINOR,CTS_VER_REVISION,CTS_VER_BUILD
+PRODUCTVERSION 	CTS_VER_MAJOR,CTS_VER_MINOR,CTS_VER_REVISION,CTS_VER_BUILD
+FILEFLAGSMASK  	VS_FFI_FILEFLAGSMASK
+FILEFLAGS      	VER_DEBUG
+FILEOS         	VOS_NT_WINDOWS32
+FILETYPE       	VFT_APP
+FILESUBTYPE    	VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName",      "Capelon AB"
+            VALUE "FileDescription",  "Capelon Test Station"
+            VALUE "FileVersion",      CTS_VERSION
+            VALUE "InternalName",     "Capelon Test Station"
+            VALUE "LegalCopyright",   "Copyright (C) 2021 Capelon AB"
+            VALUE "OriginalFilename", "CapelonTestStation.exe"
+            VALUE "ProductName",      "Capelon Test Station"
+            VALUE "ProductVersion",   CTS_VERSION
+        END
+    END
+
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 0x4E4
+    END
+END

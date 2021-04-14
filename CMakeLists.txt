@@ -17,6 +17,7 @@ find_package(JLinkSDK REQUIRED)
 find_package(Qt5 COMPONENTS Widgets Qml Sql Network SerialPort REQUIRED)
 
 set(HEADERS
+    version.h
     ActionHintWidget.h
     Database.h
     Dut.h
