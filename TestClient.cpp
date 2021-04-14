@@ -30,7 +30,6 @@ TestClient::~TestClient()
 void TestClient::setLogger(const QSharedPointer<Logger> &logger)
 {
     _logger = logger;
-    _portManager.setLogger(logger);
 }
 
 void TestClient::setPort(const QString &portName)
@@ -40,21 +39,10 @@ void TestClient::setPort(const QString &portName)
 
 void TestClient::open()
 {
-    _portManager.open();
-
-    setTimeout(1000);
-
-    int csa = readCSA(0);
-
-    if(csa > 0)
-    {
+    if(_portManager.open() && readCSA(0) != NO_RESPONSE)
         _isConnected = true;
-    }
-
     else
         qDebug() << "MeasBoard" << _no << "is not connected";
-
-    setTimeout(10000);
 }
 
 QStringList TestClient::availiblePorts() const
@@ -76,22 +64,17 @@ void TestClient::open(QString id)
         if(portInfo.serialNumber() == id)
         {
             _portManager.setPort(portInfo.portName());
-
             if(_portManager.open())
             {
-                int csa = readCSA(0);
-                if(csa != -1)
+                if(readCSA(0) != NO_RESPONSE)
                 {
                     _isConnected = true;
                     _logger->logDebug(QString("Connection to the Measuring Board %1 has been established on %2").arg(_no).arg(portInfo.portName()));
                 }
-
                 else
                     _logger->logDebug(QString("Connection to the Measuring Board %1 has NOT been established").arg(_no));
-
                 break;
             }
-
             else
             {
                 _logger->logError(QString("Error occured when opening COM port %1 for the Measuring Board %2").arg(portInfo.portName()).arg(_no));

@@ -83,7 +83,7 @@ public slots:
     QStringList railtestCommand(int channel, const QByteArray &cmd);
     void testRadio(int slot, QString RfModuleId, int channel, int power, int minRSSI, int maxRSSI, int count);
 
-    void setTimeout(int value) {_portManager.setTimeout(value);}
+    void setTimeout(int value) { Q_UNUSED(value); }
 
 signals:
 

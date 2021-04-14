@@ -21,8 +21,6 @@ public:
                  QSerialPort::StopBits stopBits = QSerialPort::OneStop,
                  QSerialPort::FlowControl flowControl = QSerialPort::NoFlowControl);
 
-    void setLogger(const QSharedPointer<Logger>& logger) { Q_UNUSED(logger); }
-
     QStringList slipCommand(const QByteArray &frame);
     QStringList railtestCommand(int channel, const QByteArray &cmd);
 
@@ -30,7 +28,6 @@ public slots:
 
     bool open();
     void close();
-    void setTimeout(int value) { Q_UNUSED(value); }
 
 private:
 
