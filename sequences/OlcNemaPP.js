@@ -67,7 +67,7 @@ NemaPP =
                     if (jlink.erase() < 0)
                     {
                         NemaPP.powerOff();
-                        delay(10000);
+                        delay(5000);
                         NemaPP.powerOn();
                         jlink.connect();
                         if (jlink.erase() < 0)

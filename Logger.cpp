@@ -84,4 +84,13 @@ void Logger::on_logDebug(const QString message)
     _debugLogWidget->addItem(message);
     _debugLogWidget->scrollToBottom();
     qInfo().noquote() << message;
+
+    QFile log_file(_settings->value("workDirectory").toString() + "/reports/" + QDateTime::currentDateTime().toString("yyyy-MM-dd") + ".log");
+
+    log_file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+
+    log_file.write(QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit());
+    log_file.write(" " + message.toLocal8Bit());
+    log_file.write("\n");
+    log_file.close();
 }

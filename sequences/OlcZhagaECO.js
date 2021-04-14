@@ -137,8 +137,8 @@ ZhagaECO =
     powerTable: [   -100, -100, -100,
                     -100, -100, -100,
                     -100, -100, -100,
-                    -100, -100, -100,
-                    -100, -100, -100  ],
+                    -70, -100, -100,
+                    -70, -100, -100  ],
 
     testRadio: function ()
     {
@@ -213,7 +213,7 @@ methodManager.addFunctionToGeneralList("Test connection to JLink", GeneralComman
 methodManager.addFunctionToGeneralList("Establish connection to sockets", ZhagaECO.openTestClients);
 methodManager.addFunctionToGeneralList("Clear previous test results for DUTs", GeneralCommands.clearDutsInfo);
 methodManager.addFunctionToGeneralList("Detect DUTs", GeneralCommands.detectDuts);
-methodManager.addFunctionToGeneralList("Erase chip", GeneralCommands.earaseChip);
+//methodManager.addFunctionToGeneralList("Erase chip", GeneralCommands.earaseChip);
 methodManager.addFunctionToGeneralList("Unlock and erase chip", GeneralCommands.unlockAndEraseChip);
 methodManager.addFunctionToGeneralList("Download Railtest", ZhagaECO.downloadRailtest);
 methodManager.addFunctionToGeneralList("Read CSA", GeneralCommands.readCSA);
