@@ -86,13 +86,23 @@ void PortManager::setPort(const QString &name, qint32 baudRate, QSerialPort::Dat
         qCritical() << "Serial port set() error:" << getSerialError();
 }
 
-void PortManager::open()
+bool PortManager::open()
 {
     if (_serial.isOpen())
+    {
         _serial.close();
+    }
 
     if (!_serial.open(QSerialPort::ReadWrite))
-        qCritical() << "Serial open() error:" << getSerialError();
+    {
+        qCritical() << "An error occures when opening serial port: " << _serial.errorString();
+        return false;
+    }
+    else
+    {
+        _serial.readAll();
+        return true;
+    }
 }
 
 void PortManager::close()

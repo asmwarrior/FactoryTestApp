@@ -28,7 +28,7 @@ public:
 
 public slots:
 
-    void open();
+    bool open();
     void close();
     void setTimeout(int value) { Q_UNUSED(value); }
 

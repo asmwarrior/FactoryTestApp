@@ -5,6 +5,8 @@
 #include <QSerialPortInfo>
 #include <math.h>
 
+static const int NO_RESPONSE = -100;
+
 TestClient::TestClient(const QSharedPointer<QSettings> &settings, int no, QObject *parent)
     : QObject(parent),
       _portManager(this),
@@ -74,21 +76,27 @@ void TestClient::open(QString id)
         if(portInfo.serialNumber() == id)
         {
             _portManager.setPort(portInfo.portName());
-            _portManager.open();
 
-            setTimeout(1000);
-            int csa = readCSA(0);
-            if(csa != -1)
+            if(_portManager.open())
             {
-                _isConnected = true;
-                _logger->logDebug(QString("Connection to the Measuring Board %1 has been established on %2").arg(_no).arg(portInfo.portName()));
+                int csa = readCSA(0);
+                if(csa != -1)
+                {
+                    _isConnected = true;
+                    _logger->logDebug(QString("Connection to the Measuring Board %1 has been established on %2").arg(_no).arg(portInfo.portName()));
+                }
+
+                else
+                    _logger->logDebug(QString("Connection to the Measuring Board %1 has NOT been established").arg(_no));
+
+                break;
             }
 
             else
-                _logger->logDebug(QString("Connection to the Measuring Board %1 has NOT been established").arg(_no));
-
-            setTimeout(10000);
-            break;
+            {
+                _logger->logError(QString("Error occured when opening COM port %1 for the Measuring Board %2").arg(portInfo.portName()).arg(_no));
+                _logger->logDebug(QString("Error occured when opening COM port %1 for the Measuring Board %2").arg(portInfo.portName()).arg(_no));
+            }
         }
     }
 }
@@ -165,7 +173,7 @@ int TestClient::switchSWD(int slot)
         return response[0].toInt();
     }
 
-    return -1;
+    return NO_RESPONSE;
 }
 
 
@@ -196,7 +204,7 @@ int TestClient::powerOn(int slot)
         return response[0].toInt();
     }
 
-    return -1;
+    return NO_RESPONSE;
 }
 
 int TestClient::powerOff(int slot)
@@ -226,7 +234,7 @@ int TestClient::powerOff(int slot)
         return response[0].toInt();
     }
 
-    return -1;
+    return NO_RESPONSE;
 }
 
 int TestClient::readDIN(int slot, int DIN)
@@ -256,7 +264,7 @@ int TestClient::readDIN(int slot, int DIN)
         return response[0].toInt();
     }
 
-    return -1;
+    return NO_RESPONSE;
 }
 
 int TestClient::setDOUT(int slot, int DOUT)
@@ -288,7 +296,7 @@ int TestClient::setDOUT(int slot, int DOUT)
         return response[0].toInt();
     }
 
-    return -1;
+    return NO_RESPONSE;
 }
 
 int TestClient::clearDOUT(int slot, int DOUT)
@@ -320,7 +328,7 @@ int TestClient::clearDOUT(int slot, int DOUT)
         return response.last().toInt();
     }
 
-    return -1;
+    return NO_RESPONSE;
 }
 
 int TestClient::readCSA(int gain)
@@ -347,7 +355,7 @@ int TestClient::readCSA(int gain)
         return response[0].toInt();
     }
 
-    return -1;
+    return NO_RESPONSE;
 }
 
 int TestClient::readAIN(int slot, int AIN, int gain)
@@ -381,7 +389,7 @@ int TestClient::readAIN(int slot, int AIN, int gain)
         return response[0].toInt();
     }
 
-    return -1;
+    return NO_RESPONSE;
 }
 
 int TestClient::daliOn()
@@ -408,7 +416,7 @@ int TestClient::daliOn()
         return response[0].toInt();
     }
 
-    return -1;
+    return NO_RESPONSE;
 }
 
 int TestClient::daliOff()
@@ -435,7 +443,7 @@ int TestClient::daliOff()
         return response[0].toInt();
     }
 
-    return -1;
+    return NO_RESPONSE;
 }
 
 int TestClient::readDaliADC()
@@ -460,7 +468,7 @@ int TestClient::readDaliADC()
         return response[0].toInt();
     }
 
-    return -1;
+    return NO_RESPONSE;
 }
 
 int TestClient::readDinADC(int slot, int DIN)
@@ -490,7 +498,7 @@ int TestClient::readDinADC(int slot, int DIN)
         return response[0].toInt();
     }
 
-    return -1;
+    return NO_RESPONSE;
 }
 
 int TestClient::read24V()
@@ -515,7 +523,7 @@ int TestClient::read24V()
         return response[0].toInt();
     }
 
-    return -1;
+    return NO_RESPONSE;
 }
 
 int TestClient::read3V()
@@ -540,7 +548,7 @@ int TestClient::read3V()
         return response[0].toInt();
     }
 
-    return -1;
+    return NO_RESPONSE;
 }
 
 int TestClient::readTemperature()
@@ -565,7 +573,7 @@ int TestClient::readTemperature()
         return response[0].toInt();
     }
 
-    return -1;
+    return NO_RESPONSE;
 }
 
 QStringList TestClient::railtestCommand(int channel, const QByteArray &cmd)
