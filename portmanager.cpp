@@ -142,12 +142,17 @@ QStringList PortManager::slipCommand(const QByteArray &frame)
 
         if (decodeFrame(reply, channel, message)
                 && 0 == channel
-                && message.size() >= (int)sizeof(MB_Packet_t)
+                && message.size() >= (int)sizeof(MB_GeneralResult_t)
                 && frame.at(2) == message.at(2))
         {
-            QCoreApplication::processEvents();
+            const MB_GeneralResult_t *gr = (const MB_GeneralResult_t*)message.constData();
 
-            return decodeSlipResponse(message);
+            if (MB_GENERAL_RESULT == qFromBigEndian(gr->header.type))
+            {
+                QCoreApplication::processEvents();
+
+                return QStringList() << QString::number(qFromBigEndian(gr->errorCode));
+            }
         }
 
         // Timeout when no any frame decoded.
@@ -395,39 +400,6 @@ bool PortManager::decodeFrame(const QByteArray &frame, int &channel, QByteArray 
     message = decodedBuffer.mid(1, frameSize - 1);
 
     return true;
-}
-
-QStringList PortManager::decodeSlipResponse(const QByteArray &frame)
-{
-    MB_Packet_t *pkt = (MB_Packet_t*)frame.data();
-
-    pkt->type = qFromBigEndian(pkt->type);
-    switch (pkt->type)
-    {
-        case MB_STARTUP:
-            qInfo() << "Startup event.";
-            break;
-
-        case MB_GENERAL_RESULT:
-            {
-                MB_GeneralResult_t *gr = (MB_GeneralResult_t*)pkt;
-
-                gr->errorCode = qFromBigEndian(gr->errorCode);
-
-                return QStringList() << QString::number(gr->errorCode);
-            }
-
-        case MB_ASYNC_EVENT:
-            {
-                MB_Event_t *evt = (MB_Event_t*)pkt;
-
-                evt->eventCode = qFromBigEndian(evt->eventCode);
-                qInfo() << QString("EVENT: code=%2.").arg(evt->eventCode);
-            }
-            break;
-    }
-
-    return QStringList();
 }
 
 QString PortManager::getSerialError()

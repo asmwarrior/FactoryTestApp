@@ -36,7 +36,6 @@ private:
     void sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW;
     QByteArray waitForFrame(int msecs = 3000);
     static bool decodeFrame(const QByteArray &frame, int &channel, QByteArray &message);
-    static QStringList decodeSlipResponse(const QByteArray &frame);
     QString getSerialError();
 };
 
