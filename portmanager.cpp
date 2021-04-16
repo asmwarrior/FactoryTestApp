@@ -2,18 +2,14 @@
 
 #include <QtEndian>
 #include <QCoreApplication>
-
 #include <QDebug>
+#include <QElapsedTimer>
 
 static constexpr char
     END_SLIP_OCTET = -64, // 0xC0
     END_SUBS_OCTET = -36, // 0xDC
     ESC_SLIP_OCTET = -37, // 0xDB
     ESC_SUBS_OCTET = -35; // 0xDD
-
-static constexpr int
-    SLIP_TIMEOUT  = 3000,
-    RAILS_TIMEOUT = 5000;
 
 static constexpr int MIN_FRAME_SIZE = sizeof(quint8) + sizeof(quint16) + 1;
 
@@ -68,6 +64,16 @@ static inline void _encodeSymbol(QByteArray &buffer, char ch) Q_DECL_NOTHROW
     }
 }
 
+static int _restTime(int timeout, int elapsed)
+{
+    if (timeout < 0)
+        return -1;
+
+    timeout = timeout - elapsed;
+
+    return timeout < 0 ? 0 : timeout;
+}
+
 PortManager::PortManager(QObject *parent) : QObject(parent), _serial(this)
 {
 }
@@ -107,7 +113,7 @@ void PortManager::close()
         _serial.close();
 }
 
-QStringList PortManager::slipCommand(const QByteArray &frame)
+QStringList PortManager::slipCommand(const QByteArray &frame, int msecs)
 {
     if (!_serial.isOpen())
     {
@@ -119,23 +125,18 @@ QStringList PortManager::slipCommand(const QByteArray &frame)
     if (frame.size() < (int)sizeof(MB_Packet_t))
         return QStringList();
 
+    QElapsedTimer stopWatch;
+
     QCoreApplication::processEvents();
     _serial.clear();
     sendFrame(0, frame);
-
-    qint64 timeout = QDateTime::currentMSecsSinceEpoch() + SLIP_TIMEOUT;
-
-    for (;;)
+    for (stopWatch.start(); _restTime(msecs, stopWatch.elapsed()) > 0;)
     {
-        QByteArray reply = waitForFrame(SLIP_TIMEOUT);
+        QByteArray reply = waitForFrame(_restTime(msecs, stopWatch.elapsed()));
 
         // Timeout when no reply received.
         if (reply.isEmpty())
-        {
-            QCoreApplication::processEvents();
-
-            return QStringList();
-        }
+            break;
 
         int channel;
         QByteArray message;
@@ -154,18 +155,14 @@ QStringList PortManager::slipCommand(const QByteArray &frame)
                 return QStringList() << QString::number(qFromBigEndian(gr->errorCode));
             }
         }
-
-        // Timeout when no any frame decoded.
-        if (QDateTime::currentMSecsSinceEpoch() >= timeout)
-        {
-            QCoreApplication::processEvents();
-
-            return QStringList();
-        }
     }
+
+    QCoreApplication::processEvents();
+
+    return QStringList();
 }
 
-QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
+QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd, int msecs)
 {
     if (!_serial.isOpen())
     {
@@ -177,27 +174,21 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
     if (channel < 1 || channel > 3)
         return QStringList();
 
-    bool started = false;
+    bool startPrefixFound = false;
     QByteArray startPrefix = "{{(" + cmd.trimmed().split(' ').at(0) + ")}";
     QString response;
+    QElapsedTimer stopWatch;
 
     QCoreApplication::processEvents();
     _serial.clear();
     sendFrame(channel, cmd + "\r\n\r\n");
-
-    qint64 timeout = QDateTime::currentMSecsSinceEpoch() + RAILS_TIMEOUT;
-
-    for (;;)
+    for (stopWatch.start(); _restTime(msecs, stopWatch.elapsed()) > 0;)
     {
-        QByteArray reply = waitForFrame(RAILS_TIMEOUT);
+        QByteArray reply = waitForFrame(_restTime(msecs, stopWatch.elapsed()));
 
         // Timeout when no reply received.
         if (reply.isEmpty())
-        {
-            QCoreApplication::processEvents();
-
-            return QStringList();
-        }
+            break;
 
         int ch;
         QByteArray part;
@@ -207,7 +198,7 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
             int idx;
 
             response += part;
-            if (started)
+            if (startPrefixFound)
             {
                 idx = response.indexOf("\r\n> ", 0, Qt::CaseInsensitive);
                 if (idx >= 0)
@@ -221,24 +212,25 @@ QStringList PortManager::railtestCommand(int channel, const QByteArray &cmd)
                 idx = response.indexOf(startPrefix, 0, Qt::CaseInsensitive);
                 if (idx >= 0)
                 {
-                    started = true;
+                    startPrefixFound = true;
                     response = response.mid(idx);
                 }
             }
-        }
-
-        // Timeout when no any frame decoded.
-        if (QDateTime::currentMSecsSinceEpoch() >= timeout)
-        {
-            QCoreApplication::processEvents();
-
-            return QStringList();
         }
     }
 
     QCoreApplication::processEvents();
 
-    return response.replace(QChar('{'), QChar(' ')).replace(QChar('}'), QChar(' ')).replace(QChar('\n'), QChar(' ')).replace(QChar('\r'), QChar(' ')).replace(QChar('>'), QChar(' ')).simplified().split(' ');
+    return startPrefixFound ?
+          response
+              .replace(QChar('{'), QChar(' '))
+              .replace(QChar('}'), QChar(' '))
+              .replace(QChar('\n'), QChar(' '))
+              .replace(QChar('\r'), QChar(' '))
+              .replace(QChar('>'), QChar(' '))
+              .simplified()
+              .split(' ')
+        : QStringList();
 }
 
 void PortManager::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
@@ -273,25 +265,25 @@ void PortManager::sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW
     encodedBuffer.append(END_SLIP_OCTET);
 
     // Write encoded frame to serial port.
-    if (_serial.write(encodedBuffer) < 0)
-        qCritical() << "Serial write() error:" << getSerialError();
+    _serial.write(encodedBuffer);
+    _serial.flush();
+    _serial.flush();
 }
 
 QByteArray PortManager::waitForFrame(int msecs)
 {
     bool started = false;
     QByteArray frame;
-    qint64 timeout = QDateTime::currentMSecsSinceEpoch() + msecs;
+    QElapsedTimer stopWatch;
 
-    for(;;)
+    for (stopWatch.start(); _restTime(msecs, stopWatch.elapsed()) > 0;)
     {
         // Timeout when no response received.
-        if (!_serial.waitForReadyRead(msecs))
+        if (!_serial.waitForReadyRead(_restTime(msecs, stopWatch.elapsed())))
         {
             if (_serial.error())
                 qCritical() << "Serial waitForReadyRead() error:" << getSerialError();
-
-            return QByteArray();
+            break;
         }
 
         QByteArray buffer = _serial.readAll();
@@ -299,8 +291,7 @@ QByteArray PortManager::waitForFrame(int msecs)
         if (buffer.isEmpty() && _serial.error())
         {
             qCritical() << "Serial readAll() error:" << getSerialError();
-
-            return QByteArray();
+            break;
         }
 
         foreach (char ch, buffer)
@@ -322,11 +313,9 @@ QByteArray PortManager::waitForFrame(int msecs)
                 if (started)
                     frame.append(ch);
         }
-
-        // Timeout when no any full frame reached.
-        if (QDateTime::currentMSecsSinceEpoch() >= timeout)
-            return QByteArray();
     }
+
+    return QByteArray();
 }
 
 bool PortManager::decodeFrame(const QByteArray &frame, int &channel, QByteArray &message)
