@@ -56,7 +56,10 @@ void TestMethodManager::runTestFunction(const QString &name)
     {
         if(i.functionName == name)
         {
-            i.function.call();
+            auto res = i.function.call();
+
+            if (res.isError())
+                _logger->logError(name + ": " + res.toString());
             break;
         }
     }

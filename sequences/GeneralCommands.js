@@ -4,11 +4,12 @@ var testClientList = [];
 
 function delay(milliseconds)
 {
-  const date = Date.now();
-  let currentDate = null;
-  do {
-    currentDate = Date.now();
-  } while (currentDate - date < milliseconds);
+    const date = Date.now();
+    let currentDate = null;
+
+    do {
+        currentDate = Date.now();
+     } while (currentDate - date < milliseconds);
 }
 
 GeneralCommands =
@@ -36,8 +37,8 @@ GeneralCommands =
                 if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
                 {
                     testClient.powerOn(slot);
-                    delay(1000);
                     testClient.switchSWD(slot);
+                    delay(1000);
 
                     jlink.selectByUSB();
                     jlink.open();
@@ -120,8 +121,8 @@ GeneralCommands =
                 if(testClient.isDutAvailable(slot) && testClient.isDutChecked(slot))
                 {
                     testClient.powerOn(slot);
-                    delay(1000);
                     testClient.switchSWD(slot);
+                    delay(1000);
 
                     jlink.selectByUSB();
                     jlink.open();
@@ -139,12 +140,6 @@ GeneralCommands =
                         logger.logDebug("An error occured when erasing chip in DUT " + testClient.dutNo(slot) + " Error code: " + error);
                     }
 
-                    else
-                    {
-                        logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
-                        logger.logDebug("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
-                    }
-
                     if(testClient.isDutChecked(slot))
                     {
                         error = jlink.downloadFile(dummyFileName, 0);
@@ -156,7 +151,6 @@ GeneralCommands =
                             logger.logError("Failed to load the Railtest into the chip flash memory for DUT " + testClient.dutNo(slot));
                             logger.logDebug("An error occured when downloading " + dummyFileName + " for DUT " + testClient.dutNo(slot) + " Error code: " + error);
                         }
-
                         else
                         {
                             error = jlink.downloadFile(railtestFileName, 0);
@@ -168,7 +162,6 @@ GeneralCommands =
                                 logger.logError("Failed to load the Railtest into the chip flash memory for DUT " + testClient.dutNo(slot));
                                 logger.logDebug("An error occured when downloading " + railtestFileName + " for DUT " + testClient.dutNo(slot) + " Error code: " + error);
                             }
-
                             else
                             {
                                 testClient.setDutProperty(slot, "railtestDownloaded", true);
@@ -206,8 +199,8 @@ GeneralCommands =
                 if(testClient.isDutChecked(slot) && (testClient.dutState(slot) === 2))
                 {
                     testClient.powerOn(slot);
-                    delay(1000);
                     testClient.switchSWD(slot);
+                    delay(1000);
 
                     jlink.selectByUSB();
                     jlink.open();
@@ -226,12 +219,8 @@ GeneralCommands =
                             logger.logError("Unable to earase chip flash memory in DUT " + testClient.dutNo(slot));
                             logger.logDebug("An error occured when erasing chip in DUT " + testClient.dutNo(slot) + " Error code: " + error);
                         }
-
                         else
                         {
-                            logger.logInfo("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
-                            logger.logDebug("Chip flash in DUT " + testClient.dutNo(slot) + " has been erased.");
-
                             error = jlink.downloadFile(softwareFileName, 0);
 
                             if(error < 0)
@@ -397,74 +386,6 @@ GeneralCommands =
                 testClient.resetDut(slot);
             }
         }
-    },
-
-    //---
-
-    detectDuts: function ()
-    {
-        actionHintWidget.showProgressHint("Detecting DUTs in the testing fixture...");
-
-        for (var slot = 1; slot < SLOTS_NUMBER + 1; slot++)
-        {
-            for (var i = 0; i < testClientList.length; i++)
-            {
-                let testClient = testClientList[i];
-
-                if(!testClient.isConnected())
-                    continue;
-
-                testClient.setTimeout(500);
-                testClient.powerOff(slot);
-                testClient.setTimeout(10000);
-            }
-        }
-        delay(100);
-
-
-        for (slot = 1; slot < SLOTS_NUMBER + 1; slot++)
-        {
-            for (i = 0; i < testClientList.length; i++)
-            {
-                var testClient = testClientList[i];
-
-                if(!testClient.isConnected())
-                    continue;
-
-                if(!testClientList[i].isDutChecked(slot))
-                {
-                    testClient.setTimeout(500);
-//                    logger.logDebug("Attempting connection to slot " + slot + " of board " + testClient.no() + "...");
-
-                    var prevCSA = testClient.readCSA(0);
-                    if (prevCSA === 0)
-                        prevCSA = testClient.readCSA(0);
-                    testClient.powerOn(slot);
-                    var currCSA = testClient.readCSA(0);
-                    if (currCSA === 0)
-                        currCSA = testClient.readCSA(0);
-
-                    if((currCSA - prevCSA) > 15)
-                    {
-                        logger.logSuccess("Device connected to the slot " + slot + " of the test board " + testClient.no() + " detected.");
-                        logger.logDebug("Device connected to the slot " + slot + " of the test board " + testClient.no() + " detected.");
-                        testClient.setDutProperty(slot, "state", 1);
-                        testClient.setDutProperty(slot, "checked", true);
-                    }
-
-                    else
-                    {
-                        logger.logDebug("No device connected to the slot " + slot + " of the test board " + testClient.no() + " detected.");
-                        testClient.setDutProperty(slot, "state", 0);
-                        testClient.setDutProperty(slot, "checked", false);
-                    }
-
-                    testClient.setTimeout(10000);
-                }
-            }
-        }
-
-        actionHintWidget.showProgressHint("READY");
     },
 
     //---
@@ -682,16 +603,13 @@ GeneralCommands =
     {
         actionHintWidget.showProgressHint("Testing DALI interface...");
 
-        GeneralCommands.powerOn();
-
         for (var i = 0; i < testClientList.length; i++)
         {
             if(testClientList[i].isConnected())
                 testClientList[i].daliOn();
         }
-        delay(500);
+        delay(1000);
 
-//        for(let slot = 1; slot < SLOTS_NUMBER + 1; slot++)
         for(let slot = 3; slot > 0; slot--)
         {
             for (let i = 0; i < testClientList.length; i++)
@@ -699,15 +617,24 @@ GeneralCommands =
                 if(testClientList[i].isDutAvailable(slot) && testClientList[i].isDutChecked(slot))
                 {
                     let testClient = testClientList[i];
-                    let responseString = testClient.railtestCommand(slot, "dali 0xFF90 16 0 1000000").join(' ');
+                    let daliOk = false;
+                    let responseString = "";
 
-                    if(responseString.includes("error:0"))
+                    for (j = 0; j < 3; j++)
+                    {
+                        responseString = testClient.railtestCommand(slot, "dali 0xFF90 16 0 250000").join(' ');
+                        if (responseString.includes("error:0") && responseString.includes("reply_bits:8"))
+                        {
+                            daliOk = true;
+                            break;
+                        }
+                    }
+                    if (daliOk)
                     {
                         testClient.setDutProperty(slot, "daliChecked", true);
                         logger.logSuccess("DALI interface for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
                         logger.logDebug("DALI interface for DUT " + testClient.dutNo(slot) + " has been tested successfully.");
                     }
-
                     else
                     {
                         testClient.setDutProperty(slot, "daliChecked", false);
