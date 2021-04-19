@@ -21,8 +21,8 @@ public:
                  QSerialPort::StopBits stopBits = QSerialPort::OneStop,
                  QSerialPort::FlowControl flowControl = QSerialPort::NoFlowControl);
 
-    QStringList slipCommand(const QByteArray &frame);
-    QStringList railtestCommand(int channel, const QByteArray &cmd);
+    QStringList slipCommand(const QByteArray &frame, int msecs = 5000);
+    QStringList railtestCommand(int channel, const QByteArray &cmd, int msecs = 5000);
 
 public slots:
 
@@ -34,7 +34,7 @@ private:
     QSerialPort _serial;
 
     void sendFrame(int channel, const QByteArray &frame) Q_DECL_NOTHROW;
-    QByteArray waitForFrame(int msecs = 3000);
+    QByteArray waitForFrame(int msecs);
     static bool decodeFrame(const QByteArray &frame, int &channel, QByteArray &message);
     QString getSerialError();
 };
