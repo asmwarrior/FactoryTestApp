@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "CapelonTestStation"
-#define MyAppVersion "0.6.27"
+#define MyAppVersion "0.6.52"
 #define MyAppPublisher "Capelon AB"
 #define MyAppURL "https://www.capelon.se"
 #define MyAppExeName "CapelonTestStation.exe"
@@ -20,8 +20,8 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=d:\Upwork\Capelon\CapelonTestStation_installer\lic.txt
-InfoAfterFile=d:\Upwork\Capelon\CapelonTestStation_installer\third_party.txt
+;LicenseFile=d:\Upwork\Capelon\CapelonTestStation_installer\lic.txt
+InfoAfterFile=d:\Upwork\Capelon\CapelonTestStation_installer\info_after.txt
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 OutputDir=d:\Upwork\Capelon\CapelonTestStation_installer
@@ -48,7 +48,9 @@ Source: "d:\Upwork\Capelon\CapelonTestStation_installer\settings_files\*"; DestD
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\Test Station User Guide"; Filename: "{app}\TestStation user guide.pdf"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\TestStation user guide.pdf"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall
 

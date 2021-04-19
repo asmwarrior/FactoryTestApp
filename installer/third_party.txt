@@ -1,1 +1,0 @@
-PostgreSQL database drivers should be installed to properly application work
