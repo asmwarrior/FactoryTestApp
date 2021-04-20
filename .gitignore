@@ -1,6 +1,7 @@
 /build
 /.vs
 /out
+/installer/*.exe
 
 CMakeLists.txt.user
 CMakeSettings.json
