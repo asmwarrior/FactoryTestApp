@@ -1,9 +1,0 @@
-eoe 1
-swdselect
-si swd
-speed 5000
-Device EFR32FG12PXXXF1024
-connect
-erase
-loadfile C:\ProgramData\Capelon\Software\olc_zhaga_software.hex
-q

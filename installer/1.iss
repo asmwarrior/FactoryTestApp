@@ -20,14 +20,14 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
-;LicenseFile=d:\Upwork\Capelon\CapelonTestStation_installer\lic.txt
-InfoAfterFile=d:\Upwork\Capelon\CapelonTestStation_installer\info_after.txt
+;LicenseFile=lic.txt
+InfoAfterFile=info_after.txt
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputDir=d:\Upwork\Capelon\CapelonTestStation_installer
+OutputDir=.
 OutputBaseFilename=CapelonTestStationSetup
-SetupIconFile=d:\Upwork\Capelon\CapelonTestStation_installer\appIcon.ico
-WizardImageFile=d:\Upwork\Capelon\CapelonTestStation_installer\finish.bmp
+SetupIconFile=appIcon.ico
+WizardImageFile=finish.bmp
 WizardImageStretch=no
 Compression=lzma
 SolidCompression=yes
@@ -40,9 +40,14 @@ WizardStyle=modern
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "d:\Upwork\Capelon\CapelonTestStation_installer\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "d:\Upwork\Capelon\CapelonTestStation_installer\files\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "d:\Upwork\Capelon\CapelonTestStation_installer\settings_files\*"; DestDir: "{localappdata}\{#MyAppPublisher}\{#MyAppName}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\3rdParty\Qt\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\3rdParty\JLink_SDK_V698a\JLinkARM.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\doc\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\sequences\*"; DestDir: "{localappdata}\{#MyAppPublisher}\{#MyAppName}\sequences"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\labels\*"; DestDir: "{localappdata}\{#MyAppPublisher}\{#MyAppName}\labels"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "reports\*"; DestDir: "{localappdata}\{#MyAppPublisher}\{#MyAppName}\reports"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\settings.ini"; DestDir: "{localappdata}\{#MyAppPublisher}\{#MyAppName}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -52,5 +57,4 @@ Name: "{autodesktop}\Test Station User Guide"; Filename: "{app}\TestStation user
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
-Filename: "{app}\TestStation user guide.pdf"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall
 
